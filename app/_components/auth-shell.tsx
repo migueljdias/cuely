@@ -8,12 +8,12 @@ export function AuthShell({ title, children }: { title: string; children: ReactN
       <SiteHeader />
       <main id="main" className="wrap auth">
         <h1 className="page-title">{title}</h1>
-        <p className="page-lede">You don&apos;t need an account to use Cuely. Sign in for an API key and your plan.</p>
+        <p className="page-lede">A free account lets your AI tool use Cuely. Sign in with Google or GitHub to get your key.</p>
         {authConfigured() ? (
           <div className="auth-clerk">{children}</div>
         ) : (
           <p className="notice" role="status">
-            Accounts aren&apos;t switched on yet. Cuely works without one: connect your agent from the home page.
+            Accounts aren&apos;t switched on yet.
           </p>
         )}
       </main>

@@ -1,47 +1,16 @@
 import { categories, recipes, tools, POLICY } from "@/catalog";
 import { recommendStack } from "@/engine/recommend";
-import { ConnectTabs, type ConnectOption } from "./_components/connect-tabs";
+import { ENDPOINT, KEY_PAGE, connectOptions } from "@/connect";
+import { PLANS } from "@/plans";
+import { ConnectTabs } from "./_components/connect-tabs";
 import { SiteFooter, SiteHeader } from "./_components/chrome";
 import { CopyButton } from "./_components/copy";
 import { RevealObserver } from "./_components/reveal";
 import { ToolLogo } from "./_components/tool-logo";
 import { Transcript } from "./_components/transcript";
 
-const ENDPOINT = "https://cuely.dev/api/mcp";
 const DEMO_PROMPT = "I'm building a SaaS for a fintech startup";
-
-const connect: ConnectOption[] = [
-  {
-    id: "claude-code",
-    label: "Claude Code",
-    where: "Run once in your terminal.",
-    code: `claude mcp add --transport http cuely ${ENDPOINT}`,
-  },
-  {
-    id: "cursor",
-    label: "Cursor",
-    where: "Add to ~/.cursor/mcp.json (or .cursor/mcp.json in a project).",
-    code: `{\n  "mcpServers": {\n    "cuely": { "url": "${ENDPOINT}" }\n  }\n}`,
-  },
-  {
-    id: "vscode",
-    label: "VS Code",
-    where: "Add to .vscode/mcp.json in your workspace.",
-    code: `{\n  "servers": {\n    "cuely": { "type": "http", "url": "${ENDPOINT}" }\n  }\n}`,
-  },
-  {
-    id: "claude",
-    label: "Claude app",
-    where: "Settings, then Connectors, then Add custom connector. Paste the URL.",
-    code: ENDPOINT,
-  },
-  {
-    id: "other",
-    label: "Any MCP client",
-    where: "Streamable HTTP transport. No auth header, no account.",
-    code: ENDPOINT,
-  },
-];
+const connect = connectOptions();
 
 const mcpTools = [
   {
@@ -87,8 +56,8 @@ export default function Home() {
             <h1>The honest second opinion your agent asks before it builds</h1>
             <p className="lede">
               Tell your agent what you&apos;re making. It asks Cuely which tools to use and how to set them up, and gets
-              a stack with reasons, real free-plan limits and step-by-step recipes. Free, no account, and no vendor can
-              pay to be the answer.
+              a stack with reasons, real free-plan limits and step-by-step recipes. Free with a quick sign-in, and no
+              vendor can pay to be the answer.
             </p>
             <div className="endpoint">
               <span className="endpoint-label">Endpoint</span>
@@ -167,6 +136,11 @@ export default function Home() {
             <p>
               Cuely speaks MCP over Streamable HTTP. Add it once and any session can use it. Then just ask:{" "}
               <q>Use Cuely to choose the stack for this.</q>
+            </p>
+            <p>
+              It needs a free account: Claude signs you in when you connect. For other tools,{" "}
+              <a href={KEY_PAGE}>get a free key</a> with Google or GitHub. Free includes{" "}
+              {PLANS.free.perDay.toLocaleString("en-US")} tool calls a day.
             </p>
           </div>
           <ConnectTabs options={connect} />
@@ -259,7 +233,7 @@ export default function Home() {
                   settles close calls.
                 </li>
                 <li>
-                  <b>Same answer for everyone.</b> No accounts, no personalization, no live model call deciding your
+                  <b>Same answer for everyone.</b> Free or Pro, no personalization, no live model call deciding your
                   stack. The same description returns the same stack.
                 </li>
                 <li>

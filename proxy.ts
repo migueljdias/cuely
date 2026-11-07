@@ -30,5 +30,5 @@ export default function proxy(req: NextRequest, ev: NextFetchEvent) {
 }
 
 export const config = {
-  matcher: ["/((?!_next|api/mcp|api/stripe|llms\\.txt|.*\\.[a-zA-Z0-9]+$).*)", "/robots.txt", "/sitemap.xml"],
+  matcher: ["/((?!_next|api/mcp|api/stripe|\\.well-known|llms\\.txt|.*\\.[a-zA-Z0-9]+$).*)", "/robots.txt", "/sitemap.xml"],
 };

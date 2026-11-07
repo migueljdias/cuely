@@ -461,6 +461,9 @@ section {
   color: var(--text-2);
   margin: 0;
 }
+.connect-intro p + p {
+  margin-top: 12px;
+}
 .connect-intro q {
   color: var(--text);
 }
@@ -888,7 +891,7 @@ section {
 }
 .plan-table {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   border-top: 1px solid var(--line);
 }
 .plan {
@@ -1359,4 +1362,22 @@ section {
     padding: 0 2px;
     font-size: 14px;
   }
+}
+
+/* /connect, also what a browser sees at /api/mcp */
+.connect-page {
+  padding-bottom: 64px;
+}
+.connect-page .endpoint {
+  margin: 8px 0 40px;
+}
+.connect-page .connect {
+  display: block;
+  padding: 32px 0;
+}
+.connect-page .section-title {
+  margin-bottom: 16px;
+}
+.connect-page .panel .btn {
+  align-self: flex-start;
 }

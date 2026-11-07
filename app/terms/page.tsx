@@ -27,8 +27,9 @@ export default function Terms() {
 
       <h2>Accounts and API keys</h2>
       <p>
-        You don&apos;t need an account to use Cuely. If you create one, keep your sign-in and API keys private. You&apos;re
-        responsible for activity under your keys, and you can revoke a key at any time from your account page.
+        Anyone can read the website. Using the MCP server needs a free account. Keep your sign-in and API keys private.
+        You&apos;re responsible for activity under your account and keys, and you can revoke a key at any time from your
+        account page. Each plan has daily and per-minute limits, shown on the pricing page.
       </p>
 
       <h2>Fair use</h2>

@@ -1,8 +1,7 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createMcpHandler } from "@/mcp/http";
-import { createRateLimiter } from "@/mcp/rate-limit";
+import { createMcpHandler, memoryUsageCounter } from "@/mcp/http";
 import { memoryRepository } from "@/repo";
 import { serve } from "./helpers";
 
@@ -14,9 +13,17 @@ describe("MCP over Streamable HTTP", () => {
   let client: Client;
 
   beforeAll(async () => {
-    srv = await serve(createMcpHandler({ repo, limiter: createRateLimiter(1000) }));
+    srv = await serve(
+      createMcpHandler({
+        repo,
+        keyLookup: async (k) => (k === "cuely_test" ? { keyId: 1, userId: "user_t", plan: "pro" } : null),
+        countUsage: memoryUsageCounter(),
+      }),
+    );
     client = new Client({ name: "cuely-test", version: "1.0.0" });
-    await client.connect(new StreamableHTTPClientTransport(srv.url));
+    await client.connect(
+      new StreamableHTTPClientTransport(srv.url, { requestInit: { headers: { authorization: "Bearer cuely_test" } } }),
+    );
   });
   afterAll(async () => {
     await client.close();
@@ -91,27 +98,27 @@ describe("HTTP behavior", () => {
     const srv = await serve(createMcpHandler({ repo: memoryRepository() }));
     const info = await fetch(srv.url).then((r) => r.json());
     expect(info.tools).toHaveLength(4);
+    expect(info.auth.oauth).toBe("https://cuely.dev/.well-known/oauth-protected-resource/api/mcp");
     const pre = await fetch(srv.url, { method: "OPTIONS" });
     expect(pre.status).toBe(204);
     expect(pre.headers.get("access-control-allow-origin")).toBe("*");
     await srv.close();
   });
 
-  it("rate-limits by IP with 429 and Retry-After", async () => {
-    const srv = await serve(createMcpHandler({ repo: memoryRepository(), limiter: createRateLimiter(2) }));
-    const body = JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list", params: {} });
-    const send = (ip: string) =>
-      fetch(srv.url, {
-        method: "POST",
-        headers: { "content-type": "application/json", accept: "application/json, text/event-stream", "x-forwarded-for": ip },
-        body,
-      });
-    expect((await send("1.1.1.1")).status).toBe(200);
-    expect((await send("1.1.1.1")).status).toBe(200);
-    const third = await send("1.1.1.1");
-    expect(third.status).toBe(429);
-    expect(Number(third.headers.get("retry-after"))).toBeGreaterThan(0);
-    expect((await send("2.2.2.2")).status).toBe(200);
+  it("refuses a call with no credential: 401 pointing at sign-in and at the key page", async () => {
+    const srv = await serve(createMcpHandler({ repo: memoryRepository(), keyLookup: async () => null }));
+    const res = await fetch(srv.url, {
+      method: "POST",
+      headers: { "content-type": "application/json", accept: "application/json, text/event-stream" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 7, method: "initialize", params: {} }),
+    });
+    expect(res.status).toBe(401);
+    expect(res.headers.get("www-authenticate")).toBe(
+      'Bearer resource_metadata="https://cuely.dev/.well-known/oauth-protected-resource/api/mcp"',
+    );
+    const body = await res.json();
+    expect(body.id).toBe(7);
+    expect(body.error.message).toMatch(/app\.cuely\.dev\/account/);
     await srv.close();
   });
 });

@@ -6,8 +6,8 @@ import { generateApiKey, hashApiKey, looksLikeApiKey, readApiKey } from "@/accou
 import { accountStore } from "@/accounts/store";
 import { formEncode, paymentsConfig, priceMatches, signStripePayload, verifyStripeSignature } from "@/billing/stripe";
 import { handleStripeWebhook } from "@/billing/webhook";
-import { createMcpHandler } from "@/mcp/http";
-import { createRateLimiter } from "@/mcp/rate-limit";
+import { createMcpHandler, memoryUsageCounter, nextUtcMidnight } from "@/mcp/http";
+import { clerkIssuer, protectedResourceMetadata } from "@/mcp/oauth";
 import { PLANS } from "@/plans";
 import { memoryRepository } from "@/repo";
 import { serve } from "./helpers";
@@ -132,43 +132,116 @@ describe("Accounts and the Stripe webhook", () => {
     expect(row.lastUsedAt).not.toBeNull();
     const stored = await query("select key_hash from api_keys");
     expect(JSON.stringify(stored)).not.toContain(key);
+    expect(await store.countKeys("user_1")).toBe(1);
     await store.revokeKey("user_1", row.id);
     expect(await store.resolveKey(key)).toBeNull();
+    expect(await store.countKeys("user_1")).toBe(0);
+  });
+
+  it("counts tool calls per day and requests per minute in one upsert", async () => {
+    await store.ensure("user_2", null);
+    const a = await store.countRequest("user_2", 0);
+    expect(a).toMatchObject({ calls: 0, minuteCalls: 1 });
+    const b = await store.countRequest("user_2", 1);
+    expect(b.calls).toBe(1);
+    expect(b.minuteCalls).toBe(2);
+    // A new minute starts the minute count again; the day keeps counting.
+    await query("update api_usage set minute_start = minute_start - interval '1 minute' where user_id = 'user_2'");
+    const c = await store.countRequest("user_2", 2);
+    expect(c).toMatchObject({ calls: 3, minuteCalls: 1 });
+    const usage = await store.usage("user_2");
+    expect(usage).toHaveLength(1);
+    expect(usage[0].calls).toBe(3);
   });
 });
 
-describe("MCP with an API key", () => {
-  const body = JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list", params: {} });
-  const send = (url: string | URL, key?: string) =>
+describe("MCP access and plan limits", () => {
+  const call = (n: number) => JSON.stringify({ jsonrpc: "2.0", id: n, method: "tools/call", params: { name: "list_categories", arguments: {} } });
+  const list = JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list", params: {} });
+  const send = (url: string | URL, body: string, auth?: string) =>
     fetch(url, {
       method: "POST",
       headers: {
         "content-type": "application/json",
         accept: "application/json, text/event-stream",
         "x-forwarded-for": "9.9.9.9",
-        ...(key ? { authorization: `Bearer ${key}` } : {}),
+        ...(auth ? { authorization: `Bearer ${auth}` } : {}),
       },
       body,
     });
+  const owners: Record<string, { keyId: number; userId: string; plan: "free" | "pro" }> = {
+    cuely_free: { keyId: 1, userId: "user_f", plan: "free" },
+    cuely_free2: { keyId: 2, userId: "user_f", plan: "free" },
+    cuely_pro: { keyId: 3, userId: "user_p", plan: "pro" },
+  };
+  const make = (now: () => number) =>
+    createMcpHandler({
+      repo: memoryRepository(),
+      keyLookup: async (k) => owners[k] ?? null,
+      oauthLookup: async (_req, token) => (token === "aa.bb.cc" ? { keyId: 0, userId: "user_o", plan: "free" } : null),
+      countUsage: memoryUsageCounter(now),
+      now,
+    });
 
-  it("works with no key, rejects an unknown key, and limits by the key's plan", async () => {
-    const srv = await serve(
-      createMcpHandler({
-        repo: memoryRepository(),
-        limiter: createRateLimiter(1),
-        keyLimiters: { free: createRateLimiter(2), pro: createRateLimiter(5) },
-        keyLookup: async (k) => (k === "cuely_free" ? { keyId: 1, plan: "free" } : k === "cuely_pro" ? { keyId: 2, plan: "pro" } : null),
-      }),
-    );
-    expect((await send(srv.url)).status).toBe(200);
-    expect((await send(srv.url)).status).toBe(429);
-    expect((await send(srv.url, "cuely_nope")).status).toBe(401);
-    expect((await send(srv.url, "cuely_free")).status).toBe(200);
-    expect((await send(srv.url, "cuely_free")).status).toBe(200);
-    expect((await send(srv.url, "cuely_free")).status).toBe(429);
-    const pro = await send(srv.url, "cuely_pro");
-    expect(pro.status).toBe(200);
-    expect(pro.headers.get("x-ratelimit-limit")).toBe("1200");
+  it("needs a key or a sign-in, and rejects unknown ones", async () => {
+    const srv = await serve(make(Date.now));
+    expect((await send(srv.url, list)).status).toBe(401);
+    expect((await send(srv.url, list, "cuely_nope")).status).toBe(401);
+    const bad = await send(srv.url, list, "xx.yy.zz");
+    expect(bad.status).toBe(401);
+    expect(bad.headers.get("www-authenticate")).toMatch(/error="invalid_token"/);
+    expect((await send(srv.url, list, "cuely_free")).status).toBe(200);
+    expect((await send(srv.url, list, "aa.bb.cc")).status).toBe(200);
     await srv.close();
+  });
+
+  it("caps Free at 200 tool calls a day per account, across keys, with a reset time and upgrade link", async () => {
+    let t = Date.UTC(2026, 10, 7, 18, 0, 0);
+    const srv = await serve(make(() => t));
+    for (let i = 0; i < PLANS.free.perDay; i++) {
+      if (i % 25 === 0) t += 61_000; // stay under the per-minute limit
+      const res = await send(srv.url, call(i), i % 2 ? "cuely_free" : "cuely_free2");
+      expect(res.status).toBe(200);
+    }
+    const over = await send(srv.url, call(999), "cuely_free");
+    expect(over.status).toBe(429);
+    const body = await over.json();
+    expect(body.id).toBe(999);
+    expect(body.error.data.limit).toBe("day");
+    expect(body.error.data.reset_at).toBe(new Date(nextUtcMidnight(t)).toISOString());
+    expect(body.error.data.upgrade_url).toBe("https://app.cuely.dev/account");
+    expect(body.error.message).toMatch(/200 tool calls a day/);
+    expect(Number(over.headers.get("retry-after"))).toBeGreaterThan(0);
+    // Listing tools still works, so the client can connect and show the error on the call.
+    expect((await send(srv.url, list, "cuely_free")).status).toBe(200);
+    // The next UTC day starts fresh.
+    t = nextUtcMidnight(t) + 1000;
+    expect((await send(srv.url, call(1000), "cuely_free")).status).toBe(200);
+    await srv.close();
+  });
+
+  it("caps requests per minute by plan", async () => {
+    const t = Date.UTC(2026, 10, 7, 18, 0, 5);
+    const srv = await serve(make(() => t));
+    for (let i = 0; i < PLANS.free.perMinute; i++) expect((await send(srv.url, list, "cuely_free")).status).toBe(200);
+    const over = await send(srv.url, list, "cuely_free");
+    expect(over.status).toBe(429);
+    expect((await over.json()).error.data.limit).toBe("minute");
+    expect(over.headers.get("retry-after")).toBe("55");
+    for (let i = 0; i < PLANS.free.perMinute + 1; i++) expect((await send(srv.url, list, "cuely_pro")).status).toBe(200);
+    const pro = await send(srv.url, call(1), "cuely_pro");
+    expect(pro.headers.get("x-ratelimit-limit")).toBe("5000");
+    expect(pro.headers.get("x-ratelimit-remaining")).toBe("4999");
+    await srv.close();
+  });
+});
+
+describe("OAuth metadata", () => {
+  it("names Clerk as the authorization server for this MCP URL", () => {
+    const pk = `pk_live_${Buffer.from("clerk.cuely.dev$").toString("base64")}`;
+    expect(clerkIssuer({ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk })).toBe("https://clerk.cuely.dev");
+    expect(clerkIssuer({})).toBeNull();
+    const meta = protectedResourceMetadata();
+    expect(meta.resource).toBe("https://cuely.dev/api/mcp");
   });
 });

@@ -1,6 +1,6 @@
 /**
  * End-to-end check: connects to a running Cuely with the official MCP client
- * and calls every tool. Usage: CUELY_URL=http://localhost:3000/api/mcp npm run e2e
+ * and calls every tool. Usage: CUELY_URL=http://localhost:3000/api/mcp [CUELY_KEY=cuely_...] npm run e2e
  */
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
@@ -14,7 +14,10 @@ const check = (name: string, ok: boolean, detail = "") => {
 const text = (r: any) => (r.content as { text: string }[]).map((c) => c.text).join("\n");
 
 const client = new Client({ name: "cuely-e2e", version: "1.0.0" });
-await client.connect(new StreamableHTTPClientTransport(url));
+const key = process.env.CUELY_KEY;
+await client.connect(
+  new StreamableHTTPClientTransport(url, key ? { requestInit: { headers: { authorization: `Bearer ${key}` } } } : undefined),
+);
 check("initialize", client.getServerVersion()?.name === "cuely", JSON.stringify(client.getServerVersion()));
 
 const { tools } = await client.listTools();

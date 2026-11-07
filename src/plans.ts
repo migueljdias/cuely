@@ -1,14 +1,21 @@
 /**
  * Plans change how much you can call Cuely, never what it answers.
  * The recommendation engine has no access to plans, accounts or payments.
+ *
+ * The website is open to everyone. The MCP server needs an API key from an account,
+ * free or Pro, and its limits are counted per account (all of its keys together).
  */
-export type PlanId = "anonymous" | "free" | "pro";
+export type PlanId = "free" | "pro";
 
 export interface Plan {
   id: PlanId;
   name: string;
-  /** MCP requests per minute. Anonymous is counted per IP, keyed plans per key. */
+  /** MCP requests per minute, per account. Covers every request, including connect and tools/list. */
   perMinute: number;
+  /** Tool calls per day (UTC), per account. Connecting and listing tools don't count. */
+  perDay: number;
+  /** Active API keys an account can hold. */
+  maxKeys: number;
   priceLabel: string;
   /** Monthly price in US cents. Checkout refuses a Stripe price that doesn't match. */
   priceCents: number;
@@ -16,41 +23,38 @@ export interface Plan {
   features: string[];
 }
 
+const n = (v: number) => v.toLocaleString("en-US");
+
+const free = { perMinute: 30, perDay: 200, maxKeys: 1 };
+const pro = { perMinute: 120, perDay: 5000, maxKeys: 10 };
+
 export const PLANS: Record<PlanId, Plan> = {
-  anonymous: {
-    id: "anonymous",
-    name: "No account",
-    perMinute: Number(process.env.CUELY_RATE_LIMIT_PER_MINUTE) || 60,
-    priceLabel: "$0",
-    priceCents: 0,
-    summary: "Connect the endpoint and go.",
-    features: ["Every tool, recipe and recommendation", "60 requests a minute per IP"],
-  },
   free: {
     id: "free",
     name: "Free",
-    perMinute: 120,
+    ...free,
     priceLabel: "$0",
     priceCents: 0,
-    summary: "Everything a solo builder needs. Most people never need more.",
+    summary: "Everything a solo builder needs. Sign in with Google or GitHub and get a key in seconds.",
     features: [
       "Every tool, recipe and recommendation",
       "The same answers as every other plan",
-      "An API key for your agents",
-      "120 requests a minute per key",
+      "One API key for your agents",
+      `${n(free.perDay)} tool calls a day, ${free.perMinute} requests a minute`,
     ],
   },
   pro: {
     id: "pro",
     name: "Pro",
-    perMinute: 1200,
+    ...pro,
     priceLabel: "$10 a month",
     priceCents: 1000,
-    summary: "For teams and heavy automated use.",
+    summary: "For agencies, teams and agents that run all day.",
     features: [
       "Everything in Free, with the same answers",
-      "1,200 requests a minute per key",
-      "Shared team workspaces and private recipes (coming)",
+      `${n(pro.perDay)} tool calls a day, ${pro.perMinute} requests a minute`,
+      `Up to ${pro.maxKeys} API keys`,
+      "Daily usage history on your account page",
     ],
   },
 };

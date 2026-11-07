@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { getAccountStore } from "@/accounts/store";
 import { currentUser } from "@/auth/server";
 import { paymentsConfig, priceMatches, stripeGet, stripePost, type StripePrice } from "@/billing/stripe";
-import { PLANS } from "@/plans";
+import { PLANS, planFor } from "@/plans";
 import { APP_URL, SITE_URL } from "@/site";
 
 // Overridable for local testing; production uses cuely.dev and app.cuely.dev.
@@ -24,9 +24,17 @@ async function requireUser() {
 export type KeyState = { key?: string; error?: string } | null;
 
 export async function createKeyAction(_prev: KeyState, form: FormData): Promise<KeyState> {
-  const { user, store } = await requireUser();
-  const existing = await store.listKeys(user.id);
-  if (existing.length >= 10) return { error: "You have 10 keys. Revoke one to make another." };
+  const { user, store, account } = await requireUser();
+  const plan = planFor(account.plan);
+  const existing = await store.countKeys(user.id);
+  if (existing >= plan.maxKeys) {
+    return {
+      error:
+        plan.id === "free"
+          ? "The Free plan has one key. Revoke it to make a new one, or upgrade to Pro for up to 10."
+          : `You have ${plan.maxKeys} keys. Revoke one to make another.`,
+    };
+  }
   const key = await store.createKey(user.id, String(form.get("name") ?? "").trim() || "default");
   revalidatePath("/account");
   return { key };

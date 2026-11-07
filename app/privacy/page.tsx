@@ -20,12 +20,18 @@ export default function Privacy() {
         to <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.
       </p>
 
-      <h2>Using Cuely without an account</h2>
+      <h2>Browsing the website</h2>
       <p>
-        You can call the MCP server with no account. For each call Cuely records which tool was used and which categories or
-        recipe were asked about, so it can see what builders need. It does not store the description your agent sends, and it
-        does not store your IP address. Your IP is used briefly in memory to apply rate limits, and a hash of it, salted
-        and reset daily, lets Cuely count callers per day without tracking anyone over time.
+        You can read cuely.dev without an account. The site doesn&apos;t use advertising or tracking cookies.
+      </p>
+
+      <h2>Using the MCP server</h2>
+      <p>
+        The MCP server needs a free account. For each call Cuely records which tool was used and which categories or
+        recipe were asked about, so it can see what builders need. It does not store the description your agent sends,
+        and it does not store your IP address. It counts your account&apos;s calls per day and per minute to apply your
+        plan&apos;s limits, and keeps those daily counts so you can see your usage. Requests without a valid key or
+        sign-in are limited by IP address, in memory only.
       </p>
 
       <h2>If you create an account</h2>
@@ -42,6 +48,10 @@ export default function Privacy() {
         <li>
           <strong>API keys:</strong> Cuely stores only a hash of each key, its name, its first few characters and when it was
           last used. The full key is shown to you once and never stored.
+        </li>
+        <li>
+          <strong>Connector sign-in:</strong> when you connect Cuely in Claude or another AI tool, Clerk signs you in and
+          gives that tool an access token for Cuely. Cuely checks the token on each call and doesn&apos;t store it.
         </li>
       </ul>
 

@@ -95,3 +95,14 @@ create table if not exists stripe_events (
   type        text not null,
   received_at timestamptz not null default now()
 );
+
+-- MCP usage per account per UTC day, for the plan limits. One row per account per day.
+-- calls counts tool calls (tools/call); minute_calls counts every request in the current minute.
+create table if not exists api_usage (
+  user_id      text not null references accounts(user_id) on delete cascade,
+  day          date not null,
+  calls        integer not null default 0,
+  minute_start timestamptz not null default date_trunc('minute', now()),
+  minute_calls integer not null default 0,
+  primary key (user_id, day)
+);

@@ -1,6 +1,6 @@
 # Cuely
 
-Honest stack picks for coding agents. Cuely is a free, remote MCP server that an agent calls to find out which tools to use, and how to set them up, for what the user is building. No account, and no vendor can pay for placement.
+Honest stack picks for coding agents. Cuely is a free, remote MCP server that an agent calls to find out which tools to use, and how to set them up, for what the user is building. It needs a free account (OAuth sign-in or an API key), and no vendor can pay for placement. The website itself is open to everyone.
 
 - MCP endpoint (Streamable HTTP): `https://cuely.dev/api/mcp`
 - Landing page: `https://cuely.dev`
@@ -81,7 +81,7 @@ On Vercel, `vercel-build` runs `scripts/seed.ts --production-only` before `next 
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `DATABASE_URL` | unset | Postgres (Neon) connection string. Unset means in-memory catalog and no usage log. |
-| `CUELY_RATE_LIMIT_PER_MINUTE` | `60` | Requests per minute per IP on `/api/mcp`. Excess gets HTTP 429 with `Retry-After`. |
+| `CLERK_ISSUER_URL` | from the publishable key | Clerk Frontend API used as the OAuth issuer in the MCP metadata (production: `https://clerk.cuely.dev`). |
 | `CUELY_HASH_SALT` | `cuely` | Salt for the daily caller hash. Set a random value in production. |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | unset | Clerk publishable key (`pk_test_...` or `pk_live_...`). Read at build time, so redeploy after setting it. Unset means accounts are off. |
 | `CLERK_SECRET_KEY` | unset | Clerk secret key (`sk_test_...` or `sk_live_...`). |
@@ -92,15 +92,33 @@ On Vercel, `vercel-build` runs `scripts/seed.ts --production-only` before `next 
 | `STRIPE_MANAGED_PAYMENTS` | `on` | Stripe Managed Payments at checkout (Stripe is merchant of record and handles tax). Set `off` to sell as yourself. The product needs an eligible tax code. |
 | `CUELY_SITE_URL` | `https://cuely.dev` | Base for Stripe return links. |
 
-The rate limiter is in memory per function instance: enough to blunt abuse at launch. Swap in a shared store when traffic grows.
+Plan limits are counted in Postgres (`api_usage`, one row per account per UTC day), so they hold across function instances. Requests without a valid credential are capped per IP in memory before any database work.
 
 ## Accounts and API keys
 
-Accounts are optional. Anyone can call `/api/mcp` with no key at the anonymous limit. Signing up (email and password, or Google) is handled by Clerk, which holds the user records. Cuely keeps a small `accounts` row per Clerk user ID (`user_...`) with the plan and Stripe customer ID. `proxy.ts` runs Clerk on pages only; `/api/mcp` and the Stripe webhook never pass through it.
+The website is open to everyone; the MCP endpoint needs an account (see MCP access below). Signing up (email and password, or Google) is handled by Clerk, which holds the user records. Cuely keeps a small `accounts` row per Clerk user ID (`user_...`) with the plan and Stripe customer ID. `proxy.ts` runs Clerk on pages only; `/api/mcp` and the Stripe webhook never pass through it.
 
 The site runs on two hosts from one deployment. `cuely.dev` serves the landing page, pricing, legal pages, `llms.txt` and the MCP endpoint. `app.cuely.dev` serves `/sign-in`, `/sign-up` and `/account` (its root redirects to `/account`). `proxy.ts` sends each page to its host using `src/hosts.ts`, maps the old `/auth/sign-in` and `/auth/sign-up` paths, and serves a disallow-all `robots.txt` on the app host; `next.config.ts` adds `X-Robots-Tag: noindex` there. The Clerk session is shared because both hosts are under the production domain. Other hosts (previews, localhost) are left alone.
 
-From `/account` a signed-in user can make up to 10 API keys. A key is shown once; only its SHA-256 hash is stored. An agent sends it as `Authorization: Bearer cuely_...` (or `x-api-key`). The key sets the rate limit (free 120 a minute, Pro 1,200) and nothing else: the recommendation engine never sees the plan, so money cannot touch a ranking. An unknown or revoked key gets HTTP 401 rather than silently falling back.
+From `/account` a signed-in user can make API keys (Free one, Pro up to 10). A key is shown once; only its SHA-256 hash is stored. An agent sends it as `Authorization: Bearer cuely_...` (or `x-api-key`).
+
+## MCP access and limits
+
+Every POST to `/api/mcp` needs one of:
+
+- **OAuth (Claude's custom connector, other OAuth MCP clients).** A request without a credential gets HTTP 401 with `WWW-Authenticate: Bearer resource_metadata="https://cuely.dev/.well-known/oauth-protected-resource/api/mcp"`. That RFC 9728 document names Clerk (`https://clerk.cuely.dev`) as the authorization server. The client registers with a Client ID Metadata Document (CIMD; dynamic client registration is off), signs the person in with Clerk and sends the access token as a Bearer. `src/mcp/oauth.ts` verifies it with `@clerk/backend` `authenticateRequest(..., { acceptsToken: "oauth_token", audience: "https://cuely.dev/api/mcp" })`. The Clerk production instance has this URL registered as an MCP server (audience claim and CIMD on). The first connector sign-in creates the Free account row.
+- **API key.** `Authorization: Bearer cuely_...` from `/account`. For Cursor, VS Code, Claude Code and scripts.
+
+Limits are per account, across all its keys and connectors (`src/plans.ts`):
+
+| Plan | Tool calls a day (UTC) | Requests a minute | Keys |
+| --- | --- | --- | --- |
+| Free | 200 | 30 | 1 |
+| Pro | 5,000 | 120 | 10 |
+
+Only `tools/call` counts toward the day; connecting and `tools/list` count toward the minute only. Each request is one upsert into `api_usage`. Over a limit gets HTTP 429 with `Retry-After`, the reset time, and an upgrade link on Free; the instance then answers that account from memory until the reset. Responses carry `x-ratelimit-limit`, `x-ratelimit-remaining` and `x-ratelimit-reset` for the daily quota. Key and token lookups are cached for 60 s per instance, so a revoked key or a plan change can take up to a minute. The plan never reaches the recommendation engine, so money cannot touch a ranking.
+
+A browser opening `https://cuely.dev/api/mcp` (Accept `text/html`, no MCP or Authorization headers) is rewritten to `/connect`, a noindexed page with connect steps. Without `DATABASE_URL` outside production (local dev), the endpoint stays open with Free limits counted in memory; production without a database refuses calls. `CUELY_KEY=cuely_... npm run e2e` runs the end-to-end check with a key.
 
 ## Payments (Stripe)
 

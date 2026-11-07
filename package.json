@@ -15,6 +15,7 @@
     "vercel-build": "tsx scripts/seed.ts --production-only && next build"
   },
   "dependencies": {
+    "@clerk/backend": "^3.27.0",
     "@clerk/nextjs": "^7.9.25",
     "@modelcontextprotocol/sdk": "^1.32.2",
     "@neondatabase/serverless": "^1.2.0",

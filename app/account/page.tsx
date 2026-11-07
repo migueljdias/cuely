@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getAccountStore } from "@/accounts/store";
 import { authConfigured, currentUser } from "@/auth/server";
 import { paymentsConfig } from "@/billing/stripe";
+import { ENDPOINT } from "@/connect";
 import { PLANS, planFor } from "@/plans";
 import { SiteFooter, SiteHeader } from "../_components/chrome";
 import { NewKey } from "./_new-key";
@@ -11,7 +12,6 @@ import { checkoutAction, portalAction, revokeKeyAction } from "./actions";
 export const metadata: Metadata = { title: "Account · Cuely", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
-const ENDPOINT = "https://cuely.dev/api/mcp";
 
 function day(iso: string | null) {
   return iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "never";
@@ -24,6 +24,9 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const store = await getAccountStore();
   const account = store ? await store.ensure(user.id, user.email) : null;
   const keys = store ? await store.listKeys(user.id) : [];
+  const usage = store ? await store.usage(user.id, 14) : [];
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const today = Math.min(usage.find((u) => u.day === todayIso)?.calls ?? 0, planFor(account?.plan).perDay);
   const plan = planFor(account?.plan);
   const payments = paymentsConfig();
   const { checkout } = await searchParams;
@@ -47,7 +50,9 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
               {plan.name} plan
               {payments.mode === "test" && <span className="tag">Test mode</span>}
             </h2>
-            <p className="muted">{plan.perMinute.toLocaleString("en-US")} MCP requests a minute per key</p>
+            <p className="muted">
+              {plan.perDay.toLocaleString("en-US")} tool calls a day, {plan.perMinute} requests a minute
+            </p>
           </div>
           <p>
             Every plan gets the same recommendations. Plans change limits, never answers.
@@ -70,10 +75,33 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
           )}
         </section>
 
+        <section className="panel" aria-labelledby="usage-title">
+          <div className="panel-head">
+            <h2 id="usage-title">Usage</h2>
+            <p className="muted">Counted for your whole account. Days reset at 00:00 UTC.</p>
+          </div>
+          <p>
+            Today: <strong>{today.toLocaleString("en-US")}</strong> of {plan.perDay.toLocaleString("en-US")} tool calls.
+          </p>
+          {plan.id === "pro" && usage.length > 0 && (
+            <ul className="key-list">
+              {usage.map((u) => (
+                <li key={u.day}>
+                  <span>{day(`${u.day}T12:00:00Z`)}</span>
+                  <span className="muted">{u.calls.toLocaleString("en-US")} calls</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
         <section className="panel" aria-labelledby="keys-title">
           <div className="panel-head">
             <h2 id="keys-title">API keys</h2>
-            <p className="muted">Optional. A key ties your agent&apos;s calls to your plan.</p>
+            <p className="muted">
+              For Cursor, VS Code, Claude Code and scripts. The Claude app signs in on its own and needs no key.{" "}
+              {plan.id === "free" ? "Free includes one key." : `Pro includes up to ${plan.maxKeys}.`}
+            </p>
           </div>
           {keys.length > 0 && (
             <ul className="key-list">
@@ -95,7 +123,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
             </ul>
           )}
           <NewKey />
-          <p className="muted small">Send it with each request:</p>
+          <p className="muted small">Add it to Claude Code (or see cuely.dev for Cursor and VS Code):</p>
           <pre className="snippet">
             <code>{`claude mcp add --transport http cuely ${ENDPOINT} \\\n  --header "Authorization: Bearer YOUR_KEY"`}</code>
           </pre>

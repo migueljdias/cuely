@@ -10,6 +10,15 @@ export interface Account {
   currentPeriodEnd: string | null;
 }
 
+export interface UsageCount {
+  /** Tool calls today (UTC), including this request. */
+  calls: number;
+  /** Requests in the current minute, including this one. */
+  minuteCalls: number;
+  /** When the current minute window started, in ms. */
+  minuteStart: number;
+}
+
 export interface ApiKeyRow {
   id: number;
   name: string;
@@ -113,6 +122,41 @@ export function accountStore(query: QueryFn) {
 
     async revokeKey(userId: string, id: number): Promise<void> {
       await query("update api_keys set revoked_at = now() where user_id = $1 and id = $2 and revoked_at is null", [userId, id]);
+    },
+
+    async countKeys(userId: string): Promise<number> {
+      const rows = await query("select count(*)::int as n from api_keys where user_id = $1 and revoked_at is null", [userId]);
+      return Number(rows[0]?.n ?? 0);
+    },
+
+    /**
+     * Counts one MCP request against the account, in one round trip: every request adds to
+     * this minute's count, and toolCalls adds to today's (UTC) count. Returns both totals.
+     */
+    async countRequest(userId: string, toolCalls: number): Promise<UsageCount> {
+      const rows = await query(
+        `insert into api_usage as u (user_id, day, calls, minute_start, minute_calls)
+         values ($1, (now() at time zone 'utc')::date, $2, date_trunc('minute', now()), 1)
+         on conflict (user_id, day) do update set
+           calls = u.calls + excluded.calls,
+           minute_calls = case when u.minute_start = excluded.minute_start then u.minute_calls + 1 else 1 end,
+           minute_start = excluded.minute_start
+         returning calls, minute_calls, minute_start`,
+        [userId, toolCalls],
+      );
+      const r = rows[0];
+      return { calls: Number(r.calls), minuteCalls: Number(r.minute_calls), minuteStart: new Date(r.minute_start).getTime() };
+    },
+
+    /** Tool calls per UTC day, newest first, for the account page. */
+    async usage(userId: string, days = 14): Promise<{ day: string; calls: number }[]> {
+      const rows = await query(
+        `select day::text as day, calls from api_usage
+         where user_id = $1 and day > (now() at time zone 'utc')::date - $2::int
+         order by day desc`,
+        [userId, days],
+      );
+      return rows.map((r) => ({ day: String(r.day), calls: Number(r.calls) }));
     },
 
     /** Looks a presented key up. Returns its id and the owner's plan, or null. */

@@ -6,13 +6,13 @@ import { SiteFooter, SiteHeader } from "../_components/chrome";
 
 export const metadata: Metadata = {
   title: "Pricing · Cuely",
-  description: "Cuely is free for solo builders, with no account needed. Pro adds higher limits for teams. Every plan gets the same answers.",
+  description: "Cuely is free for solo builders with a quick sign-in. Pro adds higher limits for teams. Every plan gets the same answers.",
   alternates: { canonical: "/pricing" },
 };
 
 export default function Pricing() {
   const payments = paymentsConfig();
-  const plans = [PLANS.anonymous, PLANS.free, PLANS.pro];
+  const plans = [PLANS.free, PLANS.pro];
   return (
     <>
       <SiteHeader />
@@ -21,6 +21,10 @@ export default function Pricing() {
         <p className="page-lede">
           Every plan gets the same recommendations, recipes and reasons. Paying changes your limits, never the answer,
           and no vendor can pay to be picked.
+        </p>
+        <p className="page-lede">
+          Anyone can browse Cuely&apos;s recipes and catalog on this site. The MCP server, which your agent calls, needs a
+          free account: Claude signs you in when you connect, and other tools use a free API key.
         </p>
 
         <div className="plan-table" role="list">
@@ -39,11 +43,6 @@ export default function Pricing() {
                   <li key={f}>{f}</li>
                 ))}
               </ul>
-              {p.id === "anonymous" && (
-                <a className="btn btn-quiet" href="/#connect">
-                  Connect your agent
-                </a>
-              )}
               {p.id === "free" && (
                 <a className="btn btn-quiet" href={`${APP_URL}/sign-up`}>
                   Create a free account
@@ -62,7 +61,8 @@ export default function Pricing() {
         </div>
 
         <p className="pricing-note">
-          Prices are in US dollars. Stripe handles every payment; Cuely never sees or stores your card.
+          Limits are per account, across all its keys. A tool call is one question your agent asks Cuely; connecting
+          and listing tools don&apos;t count. Days reset at 00:00 UTC. Prices are in US dollars. Stripe handles every payment; Cuely never sees or stores your card.
         </p>
       </main>
       <SiteFooter />
