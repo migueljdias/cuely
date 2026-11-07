@@ -746,20 +746,9 @@ section {
   max-width: 480px;
   padding-bottom: 64px;
 }
-.auth-card {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--r-card);
-  padding: 24px;
-}
-.auth-or {
-  margin: 20px 0 12px;
-  font: 400 13px var(--mono);
-  color: var(--text-3);
-}
-.auth-switch {
-  color: var(--text-2);
-  margin-top: 20px;
+.auth-clerk {
+  display: flex;
+  justify-content: flex-start;
 }
 .form {
   display: grid;
@@ -1138,9 +1127,6 @@ section {
   }
   .plan .btn {
     align-self: stretch;
-  }
-  .auth-card {
-    padding: 20px 16px;
   }
   .key-list li {
     grid-template-columns: minmax(0, 1fr) auto;

@@ -1,7 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
+import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
+
+const clerkOn = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://cuely.dev"),
@@ -27,7 +30,7 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
+  const page = (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`} suppressHydrationWarning>
       <head>
         {/* Lets CSS hold the hero example back until it can replay; it shows anyway after 2.5s. */}
@@ -38,5 +41,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>{children}</body>
     </html>
+  );
+  // Clerk wraps the page only once its keys are set, so the site runs without them.
+  return clerkOn ? (
+    <ClerkProvider signInUrl="/auth/sign-in" signUpUrl="/auth/sign-up">
+      {page}
+    </ClerkProvider>
+  ) : (
+    page
   );
 }

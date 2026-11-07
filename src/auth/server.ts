@@ -1,22 +1,12 @@
-import { createNeonAuth } from "@neon/auth/next/server";
+import { currentUser as clerkCurrentUser } from "@clerk/nextjs/server";
 
-type NeonAuth = ReturnType<typeof createNeonAuth>;
-let instance: NeonAuth | null = null;
-
-/** True when Neon Auth is configured (production). Local runs and tests work without it. */
+/**
+ * True when Clerk keys are set. Without them the site still runs: the MCP works with no
+ * account, and the sign-in pages say sign-in isn't on yet. The publishable key is read at
+ * build time, so adding the keys needs a redeploy.
+ */
 export function authConfigured(): boolean {
-  return Boolean(process.env.NEON_AUTH_BASE_URL && (process.env.NEON_AUTH_COOKIE_SECRET ?? "").length >= 32);
-}
-
-/** The Neon Auth server instance, created on first use so builds don't need the secrets. */
-export function getAuth(): NeonAuth {
-  if (!authConfigured()) throw new Error("Neon Auth is not configured.");
-  instance ??= createNeonAuth({
-    baseUrl: process.env.NEON_AUTH_BASE_URL!,
-    cookies: { secret: process.env.NEON_AUTH_COOKIE_SECRET! },
-    logLevel: "warn",
-  });
-  return instance;
+  return Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY);
 }
 
 export interface SessionUser {
@@ -29,11 +19,16 @@ export interface SessionUser {
 export async function currentUser(): Promise<SessionUser | null> {
   if (!authConfigured()) return null;
   try {
-    const { data } = await getAuth().getSession();
-    const u = data?.user as { id?: string; email?: string; name?: string } | undefined;
-    return u?.id ? { id: u.id, email: u.email ?? null, name: u.name ?? null } : null;
+    const u = await clerkCurrentUser();
+    if (!u) return null;
+    const email =
+      u.emailAddresses.find((e) => e.id === u.primaryEmailAddressId)?.emailAddress ??
+      u.emailAddresses[0]?.emailAddress ??
+      null;
+    const name = [u.firstName, u.lastName].filter(Boolean).join(" ") || null;
+    return { id: u.id, email, name };
   } catch (err) {
-    console.warn("[auth] getSession failed", err);
+    console.warn("[auth] currentUser failed", err);
     return null;
   }
 }

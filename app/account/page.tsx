@@ -4,7 +4,7 @@ import { getAccountStore } from "@/accounts/store";
 import { authConfigured, currentUser } from "@/auth/server";
 import { paymentsConfig } from "@/billing/stripe";
 import { PLANS, planFor } from "@/plans";
-import { signOutAction } from "../auth/actions";
+import { SignOutButton } from "@clerk/nextjs";
 import { SiteFooter, SiteHeader } from "../_components/chrome";
 import { NewKey } from "./_new-key";
 import { checkoutAction, portalAction, revokeKeyAction } from "./actions";
@@ -35,11 +35,11 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
       <main id="main" className="wrap account">
         <div className="account-head">
           <h1 className="page-title">Your account</h1>
-          <form action={signOutAction}>
-            <button type="submit" className="btn btn-quiet">
+          <SignOutButton redirectUrl="/">
+            <button type="button" className="btn btn-quiet">
               Sign out
             </button>
-          </form>
+          </SignOutButton>
         </div>
         <p className="page-lede">{user.email}</p>
 

@@ -83,8 +83,8 @@ On Vercel, `vercel-build` runs `scripts/seed.ts --production-only` before `next 
 | `DATABASE_URL` | unset | Postgres (Neon) connection string. Unset means in-memory catalog and no usage log. |
 | `CUELY_RATE_LIMIT_PER_MINUTE` | `60` | Requests per minute per IP on `/api/mcp`. Excess gets HTTP 429 with `Retry-After`. |
 | `CUELY_HASH_SALT` | `cuely` | Salt for the daily caller hash. Set a random value in production. |
-| `NEON_AUTH_BASE_URL` | unset | Neon Auth endpoint. Unset means sign-in is off and `/account` sends people to the sign-in page. |
-| `NEON_AUTH_COOKIE_SECRET` | unset | 32+ random characters that sign the session cookie. |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | unset | Clerk publishable key (`pk_test_...` or `pk_live_...`). Read at build time, so redeploy after setting it. Unset means accounts are off. |
+| `CLERK_SECRET_KEY` | unset | Clerk secret key (`sk_test_...` or `sk_live_...`). |
 | `PAYMENTS_MODE` | `off` | `off`, `test` or `live`. Anything unexpected falls back to `off`. |
 | `STRIPE_SECRET_KEY` | unset | Must start `sk_test_` in test mode and `sk_live_` in live mode, or payments stay off. |
 | `STRIPE_PRICE_PRO` | unset | The Stripe price ID (`price_...`) for Pro. |
@@ -95,7 +95,7 @@ The rate limiter is in memory per function instance: enough to blunt abuse at la
 
 ## Accounts and API keys
 
-Accounts are optional. Anyone can call `/api/mcp` with no key at the anonymous limit. Signing up (email and password, or Google) is handled by Neon Auth; its users live in the `neon_auth` schema, and Cuely keeps a small `accounts` row per user with the plan.
+Accounts are optional. Anyone can call `/api/mcp` with no key at the anonymous limit. Signing up (email and password, or Google) is handled by Clerk, which holds the user records. Cuely keeps a small `accounts` row per Clerk user ID (`user_...`) with the plan and Stripe customer ID. `proxy.ts` runs Clerk on pages only; `/api/mcp` and the Stripe webhook never pass through it.
 
 From `/account` a signed-in user can make up to 10 API keys. A key is shown once; only its SHA-256 hash is stored. An agent sends it as `Authorization: Bearer cuely_...` (or `x-api-key`). The key sets the rate limit (free 120 a minute, Pro 1,200) and nothing else: the recommendation engine never sees the plan, so money cannot touch a ranking. An unknown or revoked key gets HTTP 401 rather than silently falling back.
 
