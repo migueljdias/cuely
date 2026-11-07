@@ -69,8 +69,10 @@ Without `DATABASE_URL`, Cuely serves the bundled catalog from memory. With it, t
 
 ```sh
 npm run db:sql                                  # regenerate db/seed.sql from src/catalog
-DATABASE_URL=postgres://... npm run db:seed     # apply schema.sql and seed.sql (idempotent)
+DATABASE_URL=postgres://... npm run db:seed     # apply schema.sql and the seed in one transaction (idempotent)
 ```
+
+On Vercel, `vercel-build` runs `scripts/seed.ts --production-only` before `next build`, so every production deploy syncs the catalog in `src/catalog` into the production database. Preview deploys skip it.
 
 `usage_events` stores the tool name, matched recipe, categories and needs, and a daily-salted hash of the caller's IP so unique callers can be counted per day. It never stores IPs or the user's description.
 
@@ -87,7 +89,7 @@ The rate limiter is in memory per function instance: enough to blunt abuse at la
 ## Deploy (Vercel)
 
 1. Create a Vercel project from this repo (framework: Next.js; no build settings to change).
-2. Optional: set `DATABASE_URL` (Neon) and `CUELY_HASH_SALT`, then run `npm run db:seed` once against that database.
+2. Set `DATABASE_URL` (Neon, production only) and `CUELY_HASH_SALT`. The production build creates the tables and loads the catalog.
 3. Add `cuely.dev` to the project's domains.
 
 Vercel's Hobby plan is for non-commercial use. Move to Pro before paid plans or the site banner go live.
