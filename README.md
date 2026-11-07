@@ -107,13 +107,17 @@ Stripe holds all card data. The database stores only the Stripe customer ID, sub
 - `/account` starts Stripe Checkout for the Pro price and opens the Stripe customer portal for subscribers.
 - `/api/stripe/webhook` verifies the signature, refuses events from the other mode, records each event ID once, and sets the plan from `customer.subscription.*` events (active, trialing or past due means Pro).
 
-Payments are **off** unless `PAYMENTS_MODE` and a matching key are set. To go live:
+Payments are **off** unless `PAYMENTS_MODE` and a matching key are set. Where things stand:
 
-1. Create a Stripe account and a "Cuely Pro" product with a $10 (USD) monthly price. Checkout refuses any other amount, so the price in `src/plans.ts` and in Stripe must match.
-2. In test mode, add a webhook endpoint at `https://cuely.dev/api/stripe/webhook` for `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated` and `customer.subscription.deleted`, and turn on the customer portal.
-3. Set `STRIPE_SECRET_KEY` (`sk_test_...`), `STRIPE_PRICE_PRO`, `STRIPE_WEBHOOK_SECRET` and `PAYMENTS_MODE=test` in Vercel, redeploy, and buy Pro with a Stripe test card.
-4. Move the Vercel project to Pro (Hobby is non-commercial).
-5. Repeat step 2 in live mode, swap in the live key, live price and live webhook secret, and set `PAYMENTS_MODE=live`.
+- **Sandbox (done):** the "Cuely Pro" product, a $10 USD monthly price with a SaaS tax code, the webhook at `https://cuely.dev/api/stripe/webhook` (`checkout.session.completed`, `customer.subscription.created`, `.updated`, `.deleted`) and the customer portal exist. `STRIPE_SECRET_KEY` (`sk_test_...`), `STRIPE_PRICE_PRO`, `STRIPE_WEBHOOK_SECRET` and `PAYMENTS_MODE=test` are set in Vercel. Checkout refuses any price that isn't exactly the amount in `src/plans.ts`.
+- **Live (prepared, unused):** the same product, price, webhook and portal exist in the live account. The live price ID and webhook secret are stored in Vercel as `STRIPE_PRICE_PRO_LIVE` and `STRIPE_WEBHOOK_SECRET_LIVE` (Production), which the app does not read.
+
+Going live is the owner's call, not an automatic step:
+
+1. Move the Vercel project to Pro (Hobby is non-commercial only).
+2. Put the live secret key (`sk_live_...`) in `STRIPE_SECRET_KEY`.
+3. Copy `STRIPE_PRICE_PRO_LIVE` into `STRIPE_PRICE_PRO` and `STRIPE_WEBHOOK_SECRET_LIVE` into `STRIPE_WEBHOOK_SECRET`.
+4. Set `PAYMENTS_MODE=live` and redeploy.
 
 ## Deploy (Vercel)
 
