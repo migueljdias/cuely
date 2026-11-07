@@ -98,6 +98,8 @@ The rate limiter is in memory per function instance: enough to blunt abuse at la
 
 Accounts are optional. Anyone can call `/api/mcp` with no key at the anonymous limit. Signing up (email and password, or Google) is handled by Clerk, which holds the user records. Cuely keeps a small `accounts` row per Clerk user ID (`user_...`) with the plan and Stripe customer ID. `proxy.ts` runs Clerk on pages only; `/api/mcp` and the Stripe webhook never pass through it.
 
+The site runs on two hosts from one deployment. `cuely.dev` serves the landing page, pricing, legal pages, `llms.txt` and the MCP endpoint. `app.cuely.dev` serves `/sign-in`, `/sign-up` and `/account` (its root redirects to `/account`). `proxy.ts` sends each page to its host using `src/hosts.ts`, maps the old `/auth/sign-in` and `/auth/sign-up` paths, and serves a disallow-all `robots.txt` on the app host; `next.config.ts` adds `X-Robots-Tag: noindex` there. The Clerk session is shared because both hosts are under the production domain. Other hosts (previews, localhost) are left alone.
+
 From `/account` a signed-in user can make up to 10 API keys. A key is shown once; only its SHA-256 hash is stored. An agent sends it as `Authorization: Bearer cuely_...` (or `x-api-key`). The key sets the rate limit (free 120 a minute, Pro 1,200) and nothing else: the recommendation engine never sees the plan, so money cannot touch a ranking. An unknown or revoked key gets HTTP 401 rather than silently falling back.
 
 ## Payments (Stripe)

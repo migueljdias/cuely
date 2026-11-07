@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { authConfigured } from "@/auth/server";
-import { SiteFooter, SiteHeader } from "../_components/chrome";
+import { SiteFooter, SiteHeader } from "./chrome";
 
 export function AuthShell({ title, children }: { title: string; children: ReactNode }) {
   return (

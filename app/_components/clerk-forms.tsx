@@ -26,8 +26,8 @@ export function CuelySignIn() {
   return (
     <SignIn
       routing="path"
-      path="/auth/sign-in"
-      signUpUrl="/auth/sign-up"
+      path="/sign-in"
+      signUpUrl="/sign-up"
       forceRedirectUrl="/account"
       fallbackRedirectUrl="/account"
       appearance={clerkAppearance(dark)}
@@ -40,8 +40,8 @@ export function CuelySignUp() {
   return (
     <SignUp
       routing="path"
-      path="/auth/sign-up"
-      signInUrl="/auth/sign-in"
+      path="/sign-up"
+      signInUrl="/sign-in"
       forceRedirectUrl="/account"
       fallbackRedirectUrl="/account"
       appearance={clerkAppearance(dark)}

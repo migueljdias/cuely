@@ -3,6 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { ClerkProvider } from "@clerk/nextjs";
 import { authConfigured } from "@/auth/server";
+import { APP_URL, SITE_URL } from "@/site";
 import "./globals.css";
 
 // Only when both Clerk keys are set, matching proxy.ts and the account page.
@@ -47,11 +48,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   // Clerk wraps the page only once its keys are set, so the site runs without them.
   return clerkOn ? (
     <ClerkProvider
-      signInUrl="/auth/sign-in"
-      signUpUrl="/auth/sign-up"
-      signInForceRedirectUrl="/account"
-      signUpForceRedirectUrl="/account"
-      afterSignOutUrl="/"
+      // Sign-in and the account live on app.cuely.dev; the session is shared across cuely.dev subdomains.
+      signInUrl={`${APP_URL}/sign-in`}
+      signUpUrl={`${APP_URL}/sign-up`}
+      signInForceRedirectUrl={`${APP_URL}/account`}
+      signUpForceRedirectUrl={`${APP_URL}/account`}
+      afterSignOutUrl={`${SITE_URL}/`}
     >
       {page}
     </ClerkProvider>

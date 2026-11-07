@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { paymentsConfig } from "@/billing/stripe";
 import { PLANS } from "@/plans";
+import { APP_URL } from "@/site";
 import { SiteFooter, SiteHeader } from "../_components/chrome";
 
 export const metadata: Metadata = {
@@ -44,7 +45,7 @@ export default function Pricing() {
                 </a>
               )}
               {p.id === "free" && (
-                <a className="btn btn-quiet" href="/auth/sign-up">
+                <a className="btn btn-quiet" href={`${APP_URL}/sign-up`}>
                   Create a free account
                 </a>
               )}
@@ -52,7 +53,7 @@ export default function Pricing() {
                 (payments.mode === "off" ? (
                   <p className="muted small">Pro opens once teams need it. Free has no catch in the meantime.</p>
                 ) : (
-                  <a className="btn btn-primary" href="/account">
+                  <a className="btn btn-primary" href={`${APP_URL}/account`}>
                     Upgrade from your account
                   </a>
                 ))}

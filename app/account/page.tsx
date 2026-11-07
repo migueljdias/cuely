@@ -18,9 +18,9 @@ function day(iso: string | null) {
 }
 
 export default async function AccountPage({ searchParams }: { searchParams: Promise<{ checkout?: string }> }) {
-  if (!authConfigured()) redirect("/auth/sign-in");
+  if (!authConfigured()) redirect("/sign-in");
   const user = await currentUser();
-  if (!user) redirect("/auth/sign-in");
+  if (!user) redirect("/sign-in");
   const store = await getAccountStore();
   const account = store ? await store.ensure(user.id, user.email) : null;
   const keys = store ? await store.listKeys(user.id) : [];
