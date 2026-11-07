@@ -1,6 +1,6 @@
 import type { Category, CategorySlug, Need, Recipe, Tool } from "@/catalog";
 import { POLICY } from "@/catalog";
-import { ALL_NEEDS, detectNeeds, NEED_LABELS, type DetectedNeed } from "./needs";
+import { ALL_NEEDS, detectNeeds, NEED_LABELS, NEED_SHORT, type DetectedNeed } from "./needs";
 
 /** Everything the engine needs; supplied by a repository (memory or Postgres). */
 export interface CatalogSnapshot {
@@ -102,7 +102,7 @@ function alternativeWhen(tool: Tool): string {
     const f = tool.fit[n];
     if (f && f.weight > 0 && (!best || f.weight > best.w)) best = { w: f.weight, need: n, reason: f.reason };
   }
-  return best ? `If ${NEED_LABELS[best.need]} matters most: ${best.reason}` : tool.pitch;
+  return best ? `Choose it for ${NEED_SHORT[best.need]}: ${best.reason}` : tool.pitch;
 }
 
 export function toCard(tool: Tool, reason: string): ToolCard {

@@ -74,3 +74,20 @@ export const NEED_LABELS: Record<Need, string> = {
 };
 
 export const ALL_NEEDS = Object.keys(NEED_TRIGGERS) as Need[];
+
+/** Short noun phrases for sentences like "Choose it for X". */
+export const NEED_SHORT: Record<Need, string> = {
+  b2b: "selling to businesses",
+  regulated: "compliance-heavy products",
+  global_tax: "having sales tax and VAT handled worldwide",
+  open_source: "open source or self-hosting",
+  eu: "EU data and GDPR",
+  low_cost: "the lowest cost",
+  edge: "global low latency",
+  nextjs: "Next.js and React",
+  realtime: "realtime features",
+  fewer_vendors: "fewer vendors",
+  per_tenant_db: "a database per customer",
+  long_running: "background jobs and long-running servers",
+  high_volume: "high volume",
+};

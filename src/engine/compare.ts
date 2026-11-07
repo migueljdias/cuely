@@ -1,6 +1,6 @@
 import type { Need, Tool } from "@/catalog";
 import { POLICY } from "@/catalog";
-import { detectNeeds, NEED_LABELS } from "./needs";
+import { detectNeeds, NEED_LABELS, NEED_SHORT } from "./needs";
 import { METHOD_URL, resolveTool, scoreTool, type CatalogSnapshot } from "./recommend";
 
 export interface CompareInput {
@@ -77,7 +77,10 @@ export function compareTools(catalog: CatalogSnapshot, input: CompareInput): Com
   const winner = sa === sb ? (a!.baseline <= b!.baseline ? a! : b!) : sa > sb ? a! : b!;
   const loser = winner === a ? b! : a!;
   const verdict = needs.length
-    ? `For what you described (${needs.map((n) => NEED_LABELS[n]).join("; ")}), ${winner.name} fits better. Pick ${loser.name} instead if ${differences.find((d) => (loser === a ? d.a.weight > d.b.weight : d.b.weight > d.a.weight))?.label ?? "its strengths below matter more to you"}.`
+    ? `For what you described (${needs.map((n) => NEED_LABELS[n]).join("; ")}), ${winner.name} fits better. ${(() => {
+        const edge = differences.find((d) => (loser === a ? d.a.weight > d.b.weight : d.b.weight > d.a.weight));
+        return edge ? `Pick ${loser.name} instead if you care most about ${NEED_SHORT[edge.need]}.` : `${loser.name} has no edge for this case.`;
+      })()}`
     : `With no context, ${winner.name} is the default pick: ${winner.pitch} Pass context to get a verdict for your case.`;
 
   return {
