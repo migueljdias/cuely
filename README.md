@@ -94,6 +94,10 @@ The rate limiter is in memory per function instance: enough to blunt abuse at la
 
 Vercel's Hobby plan is for non-commercial use. Move to Pro before paid plans or the site banner go live.
 
+## Theming
+
+All colour, type, radius and motion values are tokens at the top of `app/globals.css`. A rebrand changes that block (plus `app/icon.svg`); the components use only the tokens. The accent has one job on the page: the dot that marks a pick.
+
 ## Adding to the catalog
 
 - A tool: add an entry to `src/catalog/tools.ts` with facts from the vendor's own site, the page you read, and today's date. Give it a unique `baseline` in its category and fit weights with reasons.

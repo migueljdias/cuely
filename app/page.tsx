@@ -92,9 +92,7 @@ export default function Home() {
         <section className="hero wrap">
           <div className="hero-copy">
             <p className="eyebrow">MCP server for coding agents</p>
-            <h1>
-              The honest <em>second opinion</em> your agent asks before it builds.
-            </h1>
+            <h1>The honest second opinion your agent asks before it builds</h1>
             <p className="lede">
               Tell your agent what you&apos;re making. It asks Cuely which tools to use and how to set them up, and gets
               a stack with reasons, real free-plan limits and step-by-step recipes. Free, no account, and no vendor can
@@ -111,38 +109,42 @@ export default function Home() {
           </div>
 
           <figure className="transcript" aria-label="Example: an agent asks Cuely for a stack">
-            <div className="t-bar" aria-hidden="true">
-              <span />
-              <span />
-              <span />
-              <b>agent session</b>
+            <div className="t-bar">
+              <span>agent session</span>
+              <span>cuely.dev/api/mcp</span>
             </div>
             <div className="t-body">
-              <p className="t-user">
+              <p className="t-line">
                 <span className="t-who">you</span>
-                {DEMO_PROMPT}. Use Cuely for the stack.
+                <span>{DEMO_PROMPT}. Use Cuely for the stack.</span>
               </p>
-              <p className="t-call">
+              <p className="t-line">
                 <span className="t-who">agent</span>
-                <code>
-                  cuely.recommend_stack(<span className="str">&quot;SaaS for a fintech startup&quot;</span>)
+                <code className="t-code">
+                  recommend_stack(<span className="t-str">&quot;SaaS for a fintech startup&quot;</span>)
                 </code>
               </p>
               <ol className="t-result">
                 {demoRows.map((s) => (
                   <li key={s.category}>
-                    <span className="t-cat">{s.categoryName}</span>
-                    <span className="t-pick">{s.pick.name}</span>
+                    <span className="t-cat">{s.categoryName.toLowerCase()}</span>
+                    <span className="t-pick">
+                      <span className="cue" aria-hidden="true" />
+                      {s.pick.name}
+                    </span>
                     <span className="t-why">{s.pick.reason}</span>
                   </li>
                 ))}
               </ol>
-              <p className="t-next">
+              <p className="t-line">
                 <span className="t-who">cuely</span>
-                Matched recipe <code>{demo.productType.recipe}</code>. Next: get_recipe for the build steps.
+                <span>
+                  Matched recipe <code className="t-code">{demo.productType.recipe}</code>. Next: get_recipe for the
+                  build steps.
+                </span>
               </p>
             </div>
-            <figcaption>Live output from the catalog, not a mockup.</figcaption>
+            <figcaption>Live output from the catalog, not a mockup</figcaption>
           </figure>
         </section>
 
@@ -195,15 +197,17 @@ export default function Home() {
           <h2 id="tools-title" className="section-title">
             Four tools, all read-only
           </h2>
-          <ul className="tool-grid">
+          <dl className="tool-list">
             {mcpTools.map((t) => (
-              <li key={t.name}>
-                <code className="tool-name">{t.name}</code>
-                <code className="tool-sig">({t.sig})</code>
-                <p>{t.what}</p>
-              </li>
+              <div key={t.name} className="tool-row">
+                <dt>
+                  <code className="tool-name">{t.name}</code>
+                  <code className="tool-sig">({t.sig})</code>
+                </dt>
+                <dd>{t.what}</dd>
+              </div>
             ))}
-          </ul>
+          </dl>
         </section>
 
         <section className="catalog wrap" aria-labelledby="catalog-title">
@@ -216,29 +220,43 @@ export default function Home() {
               recipe. Every free plan and price was read from the vendor&apos;s own site on {verified}.
             </p>
           </div>
-          <ul className="cat-grid">
-            {categories.map((c) => {
-              const inCat = tools.filter((t) => t.category === c.slug).sort((a, b) => a.baseline - b.baseline);
-              return (
-                <li key={c.slug}>
-                  <h3>{c.name}</h3>
-                  <p>{c.description}</p>
-                  <ul className="chips">
-                    {inCat.map((t) => (
-                      <li key={t.slug}>{t.name}</li>
-                    ))}
-                  </ul>
-                </li>
-              );
-            })}
-          </ul>
+          <table className="ledger">
+            <caption className="sr-only">Categories, the default pick in each, and the other tools Cuely weighs</caption>
+            <thead>
+              <tr>
+                <th scope="col">Category</th>
+                <th scope="col">Default pick</th>
+                <th scope="col">Also weighed</th>
+              </tr>
+            </thead>
+            <tbody>
+              {categories.map((c) => {
+                const inCat = tools.filter((t) => t.category === c.slug).sort((a, b) => a.baseline - b.baseline);
+                const [first, ...rest] = inCat;
+                return (
+                  <tr key={c.slug}>
+                    <th scope="row">
+                      <span className="l-cat">{c.name}</span>
+                      <span className="l-desc">{c.description}</span>
+                    </th>
+                    <td className="l-pick">
+                      <span className="cue" aria-hidden="true" />
+                      {first?.name}
+                    </td>
+                    <td className="l-rest">{rest.map((t) => t.name).join(", ")}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          <p className="ledger-note">
+            The default pick is where the rules land with no needs given. Describe your build and it can change.
+          </p>
         </section>
 
         <section id="method" className="method" aria-labelledby="method-title">
           <div className="wrap method-inner">
-            <h2 id="method-title">
-              Money never touches <em>the ranking.</em>
-            </h2>
+            <h2 id="method-title">Money never touches the ranking</h2>
             <div className="method-body">
               <p className="method-lede">{POLICY}</p>
               <ul className="rules">
@@ -273,7 +291,6 @@ export default function Home() {
           <span className="cue" aria-hidden="true" />
           cuely
         </a>
-        <p>Kept current by Claude, checked against each vendor&apos;s own site.</p>
         <p className="muted">© 2026 Cuely</p>
       </footer>
     </>
