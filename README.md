@@ -96,7 +96,7 @@ Vercel's Hobby plan is for non-commercial use. Move to Pro before paid plans or 
 
 ## Theming
 
-All colour, type, radius and motion values are tokens at the top of `app/globals.css`. A rebrand changes that block (plus `app/icon.svg`); the components use only the tokens. The accent has one job on the page: the dot that marks a pick.
+All colour, type, radius and motion values are tokens at the top of `app/globals.css`. A rebrand changes that block, the logo files in `public/brand/` and the icons in `app/` (`icon.svg`, `favicon.ico`, `apple-icon.png`, `opengraph-image.png`, `twitter-image.png`); the components use only the tokens. The brand kit (logo option 55, Funnel Display and Funnel Sans) is documented in `brand.md` alongside the source files. The accent has one job on the page: the dot that marks a pick.
 
 ## Adding to the catalog
 

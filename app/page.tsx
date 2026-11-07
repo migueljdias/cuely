@@ -78,8 +78,10 @@ export default function Home() {
       </a>
       <header className="nav wrap">
         <a href="/" className="wordmark" aria-label="Cuely home">
-          <span className="cue" aria-hidden="true" />
-          cuely
+          <picture>
+            <source srcSet="/brand/cuely-logo-dark.svg" media="(prefers-color-scheme: dark)" />
+            <img src="/brand/cuely-logo-light.svg" alt="Cuely" width="89" height="28" />
+          </picture>
         </a>
         <nav aria-label="Primary">
           <a href="#how">How it works</a>
@@ -288,8 +290,10 @@ export default function Home() {
 
       <footer className="footer wrap">
         <a href="/" className="wordmark small" aria-label="Cuely home">
-          <span className="cue" aria-hidden="true" />
-          cuely
+          <picture>
+            <source srcSet="/brand/cuely-logo-dark.svg" media="(prefers-color-scheme: dark)" />
+            <img src="/brand/cuely-logo-light.svg" alt="Cuely" width="70" height="22" />
+          </picture>
         </a>
         <p className="muted">© 2026 Cuely</p>
       </footer>

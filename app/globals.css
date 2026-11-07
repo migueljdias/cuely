@@ -1,32 +1,32 @@
 /*
   Cuely theme tokens. Rebrand by changing this block only:
-  the accent (the cue light), the neutral ramp, and the three type families.
+  the accent, the neutral ramp, and the three type families.
   The accent marks one thing on the page: the pick.
 */
 :root {
-  /* Accent: the cue light */
-  --accent: #ff5a1f;
-  --accent-ink: #b33a0c; /* accent as text on paper, 4.5:1 or better */
+  /* Accent: Cuely blue */
+  --accent: #1f4bd8;
+  --accent-ink: #1a3fb8; /* accent as text on paper, 4.5:1 or better */
 
-  /* One warm neutral ramp */
-  --bg: #f3efe6;
-  --surface: #fbf9f4;
-  --surface-2: #ebe5d8;
-  --text: #12110e;
-  --text-2: #4a463d;
-  --text-3: #6f695b;
+  /* One cool neutral ramp */
+  --bg: #f5f7fc;
+  --surface: #ffffff;
+  --surface-2: #e9edf7;
+  --text: #0e1220;
+  --text-2: #444b5e;
+  --text-3: #5b6378;
   --line: color-mix(in srgb, var(--text) 12%, transparent);
 
   /* The dark "terminal" surfaces (transcript, code, method band) */
-  --term: #12110e;
-  --term-text: #ece7dc;
-  --term-text-2: #a39c8c;
+  --term: #0b1226;
+  --term-text: #e6eaf5;
+  --term-text-2: #9aa3bc;
   --term-line: color-mix(in srgb, var(--term-text) 10%, transparent);
-  --term-code: #ffb08a;
+  --term-code: #c7d3ff;
 
   /* Type */
-  --display: "Instrument Serif", "Iowan Old Style", Georgia, serif;
-  --sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display: "Funnel Display", ui-sans-serif, system-ui, sans-serif;
+  --sans: "Funnel Sans", var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
 
   /* Shape and motion */
@@ -40,15 +40,15 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --accent: #ff6a33;
-    --accent-ink: #ff8a5c;
-    --bg: #0e0d0b;
-    --surface: #161512;
-    --surface-2: #1d1b17;
-    --text: #efeae0;
-    --text-2: #b9b2a3;
-    --text-3: #8f887a;
-    --term: #161512;
+    --accent: #2f5bff;
+    --accent-ink: #86a0ff;
+    --bg: #0b1226;
+    --surface: #111a33;
+    --surface-2: #18223f;
+    --text: #e9edf7;
+    --text-2: #b3bbd0;
+    --text-3: #8c95ad;
+    --term: #111a33;
     color-scheme: dark;
   }
 }
@@ -153,19 +153,16 @@ pre {
 .wordmark {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-family: var(--display);
-  font-size: 28px;
-  line-height: 1;
+  line-height: 0;
   text-decoration: none;
 }
-.wordmark .cue {
-  width: 10px;
-  height: 10px;
-  margin-top: 4px;
+.wordmark img {
+  display: block;
+  height: 28px;
+  width: auto;
 }
-.wordmark.small {
-  font-size: 24px;
+.wordmark.small img {
+  height: 22px;
 }
 
 /* Hero */
@@ -185,10 +182,10 @@ pre {
 }
 h1 {
   font-family: var(--display);
-  font-weight: 400;
+  font-weight: 700;
   font-size: clamp(44px, 6vw, 80px);
   line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   margin: 0 0 24px;
   text-wrap: balance;
 }
@@ -338,10 +335,10 @@ section {
 }
 .section-title {
   font-family: var(--display);
-  font-weight: 400;
+  font-weight: 700;
   font-size: clamp(36px, 4.2vw, 52px);
   line-height: 1.04;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.025em;
   margin: 0 0 32px;
 }
 
@@ -561,10 +558,10 @@ section {
 }
 .method h2 {
   font-family: var(--display);
-  font-weight: 400;
+  font-weight: 700;
   font-size: clamp(40px, 5vw, 64px);
   line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   margin: 0;
   text-wrap: balance;
 }
