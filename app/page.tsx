@@ -1,6 +1,7 @@
 import { categories, recipes, tools, POLICY } from "@/catalog";
 import { recommendStack } from "@/engine/recommend";
 import { ConnectTabs, type ConnectOption } from "./_components/connect-tabs";
+import { SiteFooter, SiteHeader } from "./_components/chrome";
 import { CopyButton } from "./_components/copy";
 import { RevealObserver } from "./_components/reveal";
 import { ToolLogo } from "./_components/tool-logo";
@@ -77,22 +78,7 @@ export default function Home() {
 
   return (
     <>
-      <a className="skip" href="#main">
-        Skip to content
-      </a>
-      <header className="nav wrap">
-        <a href="/" className="wordmark" aria-label="Cuely home">
-          <picture>
-            <source srcSet="/brand/cuely-logo-dark.svg" media="(prefers-color-scheme: dark)" />
-            <img src="/brand/cuely-logo-light.svg" alt="Cuely" width="89" height="28" />
-          </picture>
-        </a>
-        <nav aria-label="Primary">
-          <a href="#how">How it works</a>
-          <a href="#connect">Connect</a>
-          <a href="#method">Method</a>
-        </nav>
-      </header>
+      <SiteHeader />
 
       <main id="main">
         <section className="hero wrap">
@@ -294,15 +280,7 @@ export default function Home() {
       </main>
       <RevealObserver />
 
-      <footer className="footer wrap">
-        <a href="/" className="wordmark small" aria-label="Cuely home">
-          <picture>
-            <source srcSet="/brand/cuely-logo-dark.svg" media="(prefers-color-scheme: dark)" />
-            <img src="/brand/cuely-logo-light.svg" alt="Cuely" width="70" height="22" />
-          </picture>
-        </a>
-        <p className="muted">© 2026 Cuely</p>
-      </footer>
+      <SiteFooter />
     </>
   );
 }

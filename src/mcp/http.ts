@@ -1,11 +1,30 @@
 import { createHash } from "node:crypto";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
+import { readApiKey } from "@/accounts/keys";
+import { getAccountStore } from "@/accounts/store";
+import { PLANS } from "@/plans";
 import { getRepository, type Repository } from "@/repo";
 import { clientIp, createRateLimiter, type RateLimiter } from "./rate-limit";
 import { createCuelyServer } from "./server";
 
-const limit = Number(process.env.CUELY_RATE_LIMIT_PER_MINUTE) || 60;
+const limit = PLANS.anonymous.perMinute;
 const defaultLimiter = createRateLimiter(limit);
+const keyLimiters = { free: createRateLimiter(PLANS.free.perMinute), pro: createRateLimiter(PLANS.pro.perMinute) };
+
+export type KeyLookup = (key: string) => Promise<{ keyId: number; plan: "free" | "pro" } | null>;
+
+/** Key lookups are cached for a minute, so a busy agent costs one database read a minute. */
+const keyCache = new Map<string, { at: number; value: Awaited<ReturnType<KeyLookup>> }>();
+const defaultKeyLookup: KeyLookup = async (key) => {
+  const hit = keyCache.get(key);
+  if (hit && Date.now() - hit.at < 60_000) return hit.value;
+  const store = await getAccountStore();
+  const found = store ? await store.resolveKey(key) : null;
+  const value = found ? { keyId: found.keyId, plan: found.plan } : null;
+  if (keyCache.size > 5000) keyCache.clear();
+  keyCache.set(key, { at: Date.now(), value });
+  return value;
+};
 
 const CORS = {
   "access-control-allow-origin": "*",
@@ -29,6 +48,8 @@ export function callerHash(ip: string, day = new Date().toISOString().slice(0, 1
 export interface HandlerOptions {
   repo?: Repository;
   limiter?: RateLimiter;
+  keyLookup?: KeyLookup;
+  keyLimiters?: { free: RateLimiter; pro: RateLimiter };
 }
 
 /**
@@ -37,6 +58,8 @@ export interface HandlerOptions {
  */
 export function createMcpHandler(opts: HandlerOptions = {}) {
   const limiter = opts.limiter ?? defaultLimiter;
+  const lookupKey = opts.keyLookup ?? defaultKeyLookup;
+  const limiters = opts.keyLimiters ?? keyLimiters;
 
   return async function handle(req: Request): Promise<Response> {
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
@@ -55,9 +78,28 @@ export function createMcpHandler(opts: HandlerOptions = {}) {
     }
 
     const ip = clientIp(req);
-    const rl = limiter.check(ip);
+
+    // An API key is optional. With one, limits follow the key's plan. Answers never do.
+    const presented = readApiKey(req);
+    let bucket = { limiter, key: ip, perMinute: limit, caller: ip };
+    if (presented) {
+      const found = await lookupKey(presented).catch(() => null);
+      if (!found) {
+        return Response.json(
+          {
+            jsonrpc: "2.0",
+            error: { code: -32001, message: "Unknown or revoked Cuely API key. Remove the header to use Cuely without one." },
+            id: null,
+          },
+          { status: 401, headers: CORS },
+        );
+      }
+      bucket = { limiter: limiters[found.plan], key: `k${found.keyId}`, perMinute: PLANS[found.plan].perMinute, caller: `k${found.keyId}` };
+    }
+
+    const rl = bucket.limiter.check(bucket.key);
     const rlHeaders = {
-      "x-ratelimit-limit": String(limit),
+      "x-ratelimit-limit": String(bucket.perMinute),
       "x-ratelimit-remaining": String(rl.remaining),
       "x-ratelimit-reset": String(rl.resetSeconds),
     };
@@ -65,7 +107,7 @@ export function createMcpHandler(opts: HandlerOptions = {}) {
       return Response.json(
         {
           jsonrpc: "2.0",
-          error: { code: -32029, message: `Rate limit reached (${limit} requests per minute). Retry in ${rl.resetSeconds}s.` },
+          error: { code: -32029, message: `Rate limit reached (${bucket.perMinute} requests per minute). Retry in ${rl.resetSeconds}s.` },
           id: null,
         },
         { status: 429, headers: { ...CORS, ...rlHeaders, "retry-after": String(rl.resetSeconds) } },
@@ -81,7 +123,7 @@ export function createMcpHandler(opts: HandlerOptions = {}) {
     }
 
     const repo = opts.repo ?? (await getRepository());
-    const server = createCuelyServer({ repo, callerHash: callerHash(ip) });
+    const server = createCuelyServer({ repo, callerHash: callerHash(bucket.caller) });
     const transport = new WebStandardStreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
       enableJsonResponse: true,

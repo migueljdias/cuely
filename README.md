@@ -83,8 +83,36 @@ On Vercel, `vercel-build` runs `scripts/seed.ts --production-only` before `next 
 | `DATABASE_URL` | unset | Postgres (Neon) connection string. Unset means in-memory catalog and no usage log. |
 | `CUELY_RATE_LIMIT_PER_MINUTE` | `60` | Requests per minute per IP on `/api/mcp`. Excess gets HTTP 429 with `Retry-After`. |
 | `CUELY_HASH_SALT` | `cuely` | Salt for the daily caller hash. Set a random value in production. |
+| `NEON_AUTH_BASE_URL` | unset | Neon Auth endpoint. Unset means sign-in is off and `/account` sends people to the sign-in page. |
+| `NEON_AUTH_COOKIE_SECRET` | unset | 32+ random characters that sign the session cookie. |
+| `PAYMENTS_MODE` | `off` | `off`, `test` or `live`. Anything unexpected falls back to `off`. |
+| `STRIPE_SECRET_KEY` | unset | Must start `sk_test_` in test mode and `sk_live_` in live mode, or payments stay off. |
+| `STRIPE_PRICE_PRO` | unset | The Stripe price ID (`price_...`) for Pro. |
+| `STRIPE_WEBHOOK_SECRET` | unset | The signing secret (`whsec_...`) of the webhook endpoint. |
+| `CUELY_SITE_URL` | `https://cuely.dev` | Base for Stripe return links. |
 
 The rate limiter is in memory per function instance: enough to blunt abuse at launch. Swap in a shared store when traffic grows.
+
+## Accounts and API keys
+
+Accounts are optional. Anyone can call `/api/mcp` with no key at the anonymous limit. Signing up (email and password, or Google) is handled by Neon Auth; its users live in the `neon_auth` schema, and Cuely keeps a small `accounts` row per user with the plan.
+
+From `/account` a signed-in user can make up to 10 API keys. A key is shown once; only its SHA-256 hash is stored. An agent sends it as `Authorization: Bearer cuely_...` (or `x-api-key`). The key sets the rate limit (free 120 a minute, Pro 1,200) and nothing else: the recommendation engine never sees the plan, so money cannot touch a ranking. An unknown or revoked key gets HTTP 401 rather than silently falling back.
+
+## Payments (Stripe)
+
+Stripe holds all card data. The database stores only the Stripe customer ID, subscription ID, status and period end.
+
+- `/account` starts Stripe Checkout for the Pro price and opens the Stripe customer portal for subscribers.
+- `/api/stripe/webhook` verifies the signature, refuses events from the other mode, records each event ID once, and sets the plan from `customer.subscription.*` events (active, trialing or past due means Pro).
+
+Payments are **off** unless `PAYMENTS_MODE` and a matching key are set. To go live:
+
+1. Create a Stripe account and a "Cuely Pro" product with a monthly price.
+2. In test mode, add a webhook endpoint at `https://cuely.dev/api/stripe/webhook` for `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated` and `customer.subscription.deleted`, and turn on the customer portal.
+3. Set `STRIPE_SECRET_KEY` (`sk_test_...`), `STRIPE_PRICE_PRO`, `STRIPE_WEBHOOK_SECRET` and `PAYMENTS_MODE=test` in Vercel, redeploy, and buy Pro with a Stripe test card.
+4. Move the Vercel project to Pro (Hobby is non-commercial).
+5. Repeat step 2 in live mode, swap in the live key, live price and live webhook secret, and set `PAYMENTS_MODE=live`.
 
 ## Deploy (Vercel)
 

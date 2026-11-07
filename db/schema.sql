@@ -60,3 +60,38 @@ create table if not exists usage_events (
   caller_hash text
 );
 create index if not exists usage_events_created_idx on usage_events (created_at);
+
+-- Accounts (Phase 3). Users live in Neon Auth (schema neon_auth). This table keeps
+-- only what Cuely needs: the plan and the Stripe customer ID. Stripe holds all card data.
+-- Plans change rate limits only. Nothing here is ever read by the recommendation engine.
+create table if not exists accounts (
+  user_id                text primary key,
+  email                  text,
+  plan                   text not null default 'free' check (plan in ('free', 'pro')),
+  plan_status            text,
+  stripe_customer_id     text unique,
+  stripe_subscription_id text,
+  current_period_end     timestamptz,
+  created_at             timestamptz not null default now(),
+  updated_at             timestamptz not null default now()
+);
+
+-- Optional MCP API keys. Only a SHA-256 hash is stored, the key is shown once.
+create table if not exists api_keys (
+  id           bigserial primary key,
+  user_id      text not null references accounts(user_id) on delete cascade,
+  name         text not null default 'default',
+  prefix       text not null,
+  key_hash     text not null unique,
+  created_at   timestamptz not null default now(),
+  last_used_at timestamptz,
+  revoked_at   timestamptz
+);
+create index if not exists api_keys_user_idx on api_keys (user_id);
+
+-- Stripe webhook events already handled, so a retried delivery is applied once.
+create table if not exists stripe_events (
+  id          text primary key,
+  type        text not null,
+  received_at timestamptz not null default now()
+);
