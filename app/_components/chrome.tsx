@@ -41,6 +41,8 @@ export function SiteFooter() {
         <a href="/pricing">Pricing</a>
         <a href="/#method">Method</a>
         <a href="/llms.txt">llms.txt</a>
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
       </nav>
       <p className="muted">© 2026 Cuely</p>
     </footer>

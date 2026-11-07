@@ -910,6 +910,33 @@ section {
   font-size: 14px;
 }
 
+/* Legal pages */
+.legal-body {
+  max-width: 40em;
+  margin-top: 8px;
+}
+.legal-body h2 {
+  font-family: var(--display);
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  margin: 36px 0 8px;
+}
+.legal-body p,
+.legal-body li {
+  color: var(--text-2);
+  line-height: 1.65;
+}
+.legal-body ul {
+  padding-left: 1.2em;
+}
+.legal-body li + li {
+  margin-top: 8px;
+}
+.legal-body a {
+  color: var(--accent);
+  overflow-wrap: anywhere;
+}
+
 /* Footer */
 .footer {
   display: flex;
