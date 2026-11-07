@@ -41,6 +41,11 @@ describe("Payments switch", () => {
     expect(paymentsConfig({ PAYMENTS_MODE: "live", STRIPE_SECRET_KEY: "sk_test_x", STRIPE_PRICE_PRO: "price_1" }).mode).toBe("off");
     expect(paymentsConfig({ PAYMENTS_MODE: "test", STRIPE_SECRET_KEY: "sk_test_x" }).mode).toBe("off");
     expect(paymentsConfig({ PAYMENTS_MODE: "test", STRIPE_SECRET_KEY: "sk_test_x", STRIPE_PRICE_PRO: "price_1" }).mode).toBe("test");
+    expect(paymentsConfig({ PAYMENTS_MODE: "test", STRIPE_SECRET_KEY: "sk_test_x", STRIPE_PRICE_PRO: "price_1" }).managedPayments).toBe(true);
+    expect(
+      paymentsConfig({ PAYMENTS_MODE: "test", STRIPE_SECRET_KEY: "sk_test_x", STRIPE_PRICE_PRO: "price_1", STRIPE_MANAGED_PAYMENTS: "off" })
+        .managedPayments,
+    ).toBe(false);
   });
 
   it("encodes nested params the way Stripe expects", () => {

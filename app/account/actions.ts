@@ -67,6 +67,8 @@ export async function checkoutAction(): Promise<void> {
     success_url: `${SITE}/account?checkout=done`,
     cancel_url: `${SITE}/pricing`,
     subscription_data: { metadata: { cuely_user_id: user.id } },
+    // Stripe as merchant of record: it collects and files sales tax and VAT.
+    ...(cfg.managedPayments ? { managed_payments: { enabled: "true" } } : {}),
   });
   redirect(session.url);
 }

@@ -89,6 +89,7 @@ On Vercel, `vercel-build` runs `scripts/seed.ts --production-only` before `next 
 | `STRIPE_SECRET_KEY` | unset | Must start `sk_test_` in test mode and `sk_live_` in live mode, or payments stay off. |
 | `STRIPE_PRICE_PRO` | unset | The Stripe price ID (`price_...`) for Pro. |
 | `STRIPE_WEBHOOK_SECRET` | unset | The signing secret (`whsec_...`) of the webhook endpoint. |
+| `STRIPE_MANAGED_PAYMENTS` | `on` | Stripe Managed Payments at checkout (Stripe is merchant of record and handles tax). Set `off` to sell as yourself. The product needs an eligible tax code. |
 | `CUELY_SITE_URL` | `https://cuely.dev` | Base for Stripe return links. |
 
 The rate limiter is in memory per function instance: enough to blunt abuse at launch. Swap in a shared store when traffic grows.

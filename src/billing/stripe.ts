@@ -8,6 +8,9 @@ import { createHmac, timingSafeEqual } from "node:crypto";
  *   PAYMENTS_MODE=off   (default) checkout and portal are unavailable
  *   PAYMENTS_MODE=test  needs STRIPE_SECRET_KEY starting sk_test_
  *   PAYMENTS_MODE=live  needs STRIPE_SECRET_KEY starting sk_live_
+ *
+ * Checkout uses Stripe Managed Payments (Stripe is merchant of record and handles
+ * sales tax and VAT) unless STRIPE_MANAGED_PAYMENTS=off.
  */
 export type PaymentsMode = "off" | "test" | "live";
 
@@ -18,6 +21,8 @@ export interface PaymentsConfig {
   secretKey?: string;
   priceId?: string;
   webhookSecret?: string;
+  /** Stripe acts as merchant of record at checkout. */
+  managedPayments?: boolean;
 }
 
 export function paymentsConfig(env: Record<string, string | undefined> = process.env): PaymentsConfig {
@@ -33,7 +38,8 @@ export function paymentsConfig(env: Record<string, string | undefined> = process
   if (!priceId || !priceId.startsWith("price_")) {
     return { mode: "off", reason: "STRIPE_PRICE_PRO is missing." };
   }
-  return { mode, secretKey, priceId, webhookSecret };
+  const managedPayments = (env.STRIPE_MANAGED_PAYMENTS ?? "on").trim().toLowerCase() !== "off";
+  return { mode, secretKey, priceId, webhookSecret, managedPayments };
 }
 
 /** Flattens nested params into Stripe's form encoding: a[b][0]=c. */
