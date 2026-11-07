@@ -103,3 +103,7 @@ All colour, type, radius and motion values are tokens at the top of `app/globals
 - A tool: add an entry to `src/catalog/tools.ts` with facts from the vendor's own site, the page you read, and today's date. Give it a unique `baseline` in its category and fit weights with reasons.
 - A recipe: add a file under `src/catalog/recipes/`, register it in `src/catalog/index.ts`. Tests check that every tool it names exists in the right category.
 - Then run `npm test` and `npm run db:sql`.
+
+### Tool marks and motion
+
+Tool logos come from [simple-icons](https://simpleicons.org) (CC0-1.0), vendored as path data in `src/logos.ts` and drawn in the current text colour at one size, so no tool looks louder than another. Each mark belongs to its owner and only identifies the tool. Tools without a simple-icons mark get a plain monogram. The hero example replays once when it scrolls into view and sections rise in once; both are skipped under `prefers-reduced-motion`, and the page reads fully without JavaScript.

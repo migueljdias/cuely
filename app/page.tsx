@@ -2,6 +2,9 @@ import { categories, recipes, tools, POLICY } from "@/catalog";
 import { recommendStack } from "@/engine/recommend";
 import { ConnectTabs, type ConnectOption } from "./_components/connect-tabs";
 import { CopyButton } from "./_components/copy";
+import { RevealObserver } from "./_components/reveal";
+import { ToolLogo } from "./_components/tool-logo";
+import { Transcript } from "./_components/transcript";
 
 const ENDPOINT = "https://cuely.dev/api/mcp";
 const DEMO_PROMPT = "I'm building a SaaS for a fintech startup";
@@ -70,6 +73,7 @@ export default function Home() {
   const demo = recommendStack({ categories, tools, recipes }, { description: DEMO_PROMPT });
   const demoRows = demo.stack.filter((s) => ["hosting", "database", "auth", "payments", "email", "storage"].includes(s.category));
   const verified = formatDate(tools[0].verifiedOn);
+  const alphabetical = [...tools].sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <>
@@ -110,51 +114,38 @@ export default function Home() {
             </a>
           </div>
 
-          <figure className="transcript" aria-label="Example: an agent asks Cuely for a stack">
-            <div className="t-bar">
-              <span>agent session</span>
-              <span>cuely.dev/api/mcp</span>
-            </div>
-            <div className="t-body">
-              <p className="t-line">
-                <span className="t-who">you</span>
-                <span>{DEMO_PROMPT}. Use Cuely for the stack.</span>
-              </p>
-              <p className="t-line">
-                <span className="t-who">agent</span>
-                <code className="t-code">
-                  recommend_stack(<span className="t-str">&quot;SaaS for a fintech startup&quot;</span>)
-                </code>
-              </p>
-              <ol className="t-result">
-                {demoRows.map((s) => (
-                  <li key={s.category}>
-                    <span className="t-cat">{s.categoryName.toLowerCase()}</span>
-                    <span className="t-pick">
-                      <span className="cue" aria-hidden="true" />
-                      {s.pick.name}
-                    </span>
-                    <span className="t-why">{s.pick.reason}</span>
-                  </li>
-                ))}
-              </ol>
-              <p className="t-line">
-                <span className="t-who">cuely</span>
-                <span>
-                  Matched recipe <code className="t-code">{demo.productType.recipe}</code>. Next: get_recipe for the
-                  build steps.
-                </span>
-              </p>
-            </div>
-            <figcaption>Live output from the catalog, not a mockup</figcaption>
-          </figure>
+          <Transcript
+            prompt={`${DEMO_PROMPT}. Use Cuely for the stack.`}
+            query="SaaS for a fintech startup"
+            recipe={demo.productType.recipe}
+            rows={demoRows.map((r) => ({
+              category: r.categoryName.toLowerCase(),
+              name: r.pick.name,
+              reason: r.pick.reason,
+              logo: <ToolLogo slug={r.pick.slug} name={r.pick.name} />,
+            }))}
+          />
+        </section>
+
+        <section className="field wrap" aria-labelledby="field-title" data-reveal>
+          <h2 id="field-title" className="field-title">
+            The {tools.length} tools Cuely weighs, A to Z. None of them pays to be here.
+          </h2>
+          <ul className="field-list">
+            {alphabetical.map((t, i) => (
+              <li key={t.slug} style={{ "--i": i } as React.CSSProperties}>
+                <ToolLogo slug={t.slug} name={t.name} size={20} />
+                <span>{t.name}</span>
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section id="how" className="how wrap" aria-labelledby="how-title">
-          <h2 id="how-title" className="section-title">
+          <h2 id="how-title" className="section-title" data-reveal>
             How it works
           </h2>
-          <ol className="steps">
+          <ol className="steps" data-reveal>
             <li>
               <span className="num">01</span>
               <h3>Your agent describes the build</h3>
@@ -183,7 +174,7 @@ export default function Home() {
         </section>
 
         <section id="connect" className="connect wrap" aria-labelledby="connect-title">
-          <div className="connect-intro">
+          <div className="connect-intro" data-reveal>
             <h2 id="connect-title" className="section-title">
               Connect in one step
             </h2>
@@ -196,12 +187,12 @@ export default function Home() {
         </section>
 
         <section className="tools wrap" aria-labelledby="tools-title">
-          <h2 id="tools-title" className="section-title">
+          <h2 id="tools-title" className="section-title" data-reveal>
             Four tools, all read-only
           </h2>
           <dl className="tool-list">
             {mcpTools.map((t) => (
-              <div key={t.name} className="tool-row">
+              <div key={t.name} className="tool-row" data-reveal>
                 <dt>
                   <code className="tool-name">{t.name}</code>
                   <code className="tool-sig">({t.sig})</code>
@@ -213,7 +204,7 @@ export default function Home() {
         </section>
 
         <section className="catalog wrap" aria-labelledby="catalog-title">
-          <div className="catalog-head">
+          <div className="catalog-head" data-reveal>
             <h2 id="catalog-title" className="section-title">
               The catalog
             </h2>
@@ -222,7 +213,7 @@ export default function Home() {
               recipe. Every free plan and price was read from the vendor&apos;s own site on {verified}.
             </p>
           </div>
-          <table className="ledger">
+          <table className="ledger" data-reveal>
             <caption className="sr-only">Categories, the default pick in each, and the other tools Cuely weighs</caption>
             <thead>
               <tr>
@@ -232,20 +223,34 @@ export default function Home() {
               </tr>
             </thead>
             <tbody>
-              {categories.map((c) => {
+              {categories.map((c, ci) => {
                 const inCat = tools.filter((t) => t.category === c.slug).sort((a, b) => a.baseline - b.baseline);
                 const [first, ...rest] = inCat;
                 return (
-                  <tr key={c.slug}>
+                  <tr key={c.slug} style={{ "--i": ci } as React.CSSProperties}>
                     <th scope="row">
                       <span className="l-cat">{c.name}</span>
                       <span className="l-desc">{c.description}</span>
                     </th>
                     <td className="l-pick">
-                      <span className="cue" aria-hidden="true" />
-                      {first?.name}
+                      {first && (
+                        <span className="l-tool">
+                          <ToolLogo slug={first.slug} name={first.name} />
+                          {first.name}
+                          <span className="cue" aria-hidden="true" />
+                        </span>
+                      )}
                     </td>
-                    <td className="l-rest">{rest.map((t) => t.name).join(", ")}</td>
+                    <td className="l-rest">
+                      <span className="sr-only">Also weighed: </span>
+                      {rest.map((t, i) => (
+                        <span key={t.slug} className="l-tool">
+                          <ToolLogo slug={t.slug} name={t.name} />
+                          {t.name}
+                          {i < rest.length - 1 && <span className="sr-only">,</span>}
+                        </span>
+                      ))}
+                    </td>
                   </tr>
                 );
               })}
@@ -257,7 +262,7 @@ export default function Home() {
         </section>
 
         <section id="method" className="method" aria-labelledby="method-title">
-          <div className="wrap method-inner">
+          <div className="wrap method-inner" data-reveal>
             <h2 id="method-title">Money never touches the ranking</h2>
             <div className="method-body">
               <p className="method-lede">{POLICY}</p>
@@ -287,6 +292,7 @@ export default function Home() {
           </div>
         </section>
       </main>
+      <RevealObserver />
 
       <footer className="footer wrap">
         <a href="/" className="wordmark small" aria-label="Cuely home">

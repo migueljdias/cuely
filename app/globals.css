@@ -65,6 +65,7 @@ html {
 
 body {
   margin: 0;
+  overflow-x: clip;
   background: var(--bg);
   color: var(--text);
   font-family: var(--sans);
@@ -172,7 +173,7 @@ pre {
   gap: 64px;
   align-items: center;
   padding-top: 48px;
-  padding-bottom: 96px;
+  padding-bottom: 72px;
 }
 .eyebrow {
   font-family: var(--mono);
@@ -302,7 +303,7 @@ h1 {
 }
 .t-result li {
   display: grid;
-  grid-template-columns: 68px 148px 1fr;
+  grid-template-columns: 68px 172px 1fr;
   gap: 12px;
   padding: 8px 0;
   border-bottom: 1px solid var(--term-line);
@@ -327,6 +328,57 @@ h1 {
   padding: 12px 20px 16px;
   font: 400 12px var(--mono);
   color: var(--term-text-2);
+}
+
+/* Tool marks: one size, current text colour, so no tool looks louder than another */
+.logo {
+  flex: none;
+  display: inline-block;
+}
+.t-logo {
+  display: inline-flex;
+  color: var(--term-text);
+}
+.caret {
+  display: inline-block;
+  width: 0.55em;
+  height: 1.05em;
+  margin-left: 1px;
+  vertical-align: -0.18em;
+  background: currentColor;
+  opacity: 0.6;
+}
+
+/* The field: every tool in the catalog, A to Z, the same size */
+.field {
+  padding-bottom: 80px;
+}
+.field-title {
+  font: 400 13px/1.5 var(--mono);
+  color: var(--text-3);
+  margin: 0 0 16px;
+}
+.field-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  column-gap: 24px;
+  border-top: 1px solid var(--line);
+}
+.field-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 15px;
+  color: var(--text-2);
+}
+.field-list .logo {
+  color: var(--text);
 }
 
 /* Sections */
@@ -532,9 +584,15 @@ section {
   white-space: nowrap;
   font-weight: 500;
 }
-.l-pick .cue {
-  margin-right: 8px;
-  vertical-align: 2px;
+.l-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.l-rest .l-tool {
+  margin-right: 18px;
+  white-space: nowrap;
+  line-height: 1.9;
 }
 .l-rest {
   color: var(--text-2);
@@ -611,6 +669,10 @@ section {
 
 /* Responsive */
 @media (max-width: 980px) {
+  .steps {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
   .hero,
   .connect,
   .catalog-head,
@@ -640,27 +702,136 @@ section {
   .nav nav a:first-child {
     display: none;
   }
-  .steps {
-    grid-template-columns: 1fr;
-    gap: 32px;
+  h1 {
+    font-size: clamp(36px, 10.4vw, 44px);
+    margin-bottom: 20px;
+  }
+  .lede {
+    font-size: 17px;
+    margin-bottom: 24px;
+  }
+  .section-title {
+    font-size: 32px;
+    margin-bottom: 24px;
+  }
+  .nav {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+  .nav nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 4px;
+  }
+  .hero {
+    gap: 40px;
+    padding-top: 16px;
+    padding-bottom: 56px;
+  }
+  .endpoint {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 4px 12px;
+    padding: 12px 8px 12px 14px;
+  }
+  .endpoint-label {
+    grid-column: 1 / -1;
+  }
+  .endpoint code {
+    font-size: 14px;
+  }
+  .copy {
+    min-height: 44px;
   }
   .how,
   .connect,
   .tools,
   .catalog {
-    padding-top: 64px;
-    padding-bottom: 64px;
+    padding-top: 56px;
+    padding-bottom: 56px;
+  }
+  .field {
+    padding-bottom: 56px;
+  }
+  .field-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 16px;
+  }
+  .field-list li {
+    font-size: 14px;
+    gap: 8px;
+  }
+  .t-bar {
+    padding: 10px 16px;
   }
   .t-bar span:last-child {
     display: none;
+  }
+  .t-body {
+    padding: 16px 16px 4px;
   }
   .t-line {
     grid-template-columns: 1fr;
     gap: 0;
   }
   .t-result li {
-    grid-template-columns: 1fr;
-    gap: 4px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "pick cat"
+      "why why";
+    gap: 2px 12px;
+    padding: 10px 0;
+  }
+  .t-pick {
+    grid-area: pick;
+  }
+  .t-cat {
+    grid-area: cat;
+    text-align: right;
+  }
+  .t-why {
+    grid-area: why;
+  }
+  .transcript figcaption {
+    padding: 12px 16px 14px;
+  }
+  .tablist {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin: 0 -8px;
+    padding: 0 8px;
+  }
+  .tablist::-webkit-scrollbar {
+    display: none;
+  }
+  .tab {
+    flex: none;
+    min-height: 44px;
+    padding: 10px 14px;
+  }
+  .codeblock {
+    padding: 56px 16px 16px;
+  }
+  .tool-row {
+    padding: 20px 0;
+  }
+  .method {
+    padding: 64px 0;
+  }
+  .method h2 {
+    font-size: 36px;
+  }
+  .method-inner {
+    gap: 32px;
+  }
+  .formula {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .footer {
+    padding-bottom: 32px;
   }
   .ledger thead {
     display: none;
@@ -674,7 +845,7 @@ section {
     width: 100%;
   }
   .ledger tr {
-    padding: 16px 0;
+    padding: 20px 0;
     border-bottom: 1px solid var(--line);
   }
   .ledger tbody th,
@@ -686,6 +857,82 @@ section {
     margin-top: 8px;
   }
   .l-rest {
+    margin-top: 4px;
     font-size: 14px;
+  }
+}
+
+/* Motion: short, once, and only when the visitor allows it */
+@media (prefers-reduced-motion: no-preference) {
+  /* Hero example: hidden until it can replay, shown anyway after 2.5s if scripts never run */
+  html.js .transcript .t-step {
+    opacity: 0;
+    animation: cuely-show 0s linear 2.5s forwards;
+  }
+  html.js .transcript.playing .t-step {
+    animation: none;
+    transform: translateY(6px);
+    transition:
+      opacity 420ms var(--ease),
+      transform 420ms var(--ease);
+  }
+  html.js .transcript.playing .t-step.on {
+    opacity: 1;
+    transform: none;
+  }
+  html.js .transcript.playing .t-result {
+    transform: none;
+  }
+  html.js .transcript.playing .t-result li,
+  html.js .transcript.playing .t-result .t-logo {
+    transition:
+      opacity 380ms var(--ease) calc(var(--i, 0) * 110ms),
+      transform 380ms var(--ease) calc(var(--i, 0) * 110ms);
+  }
+  html.js .transcript.playing .t-result:not(.on) li {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  html.js .transcript.playing .t-result:not(.on) .t-logo {
+    transform: scale(0.6);
+  }
+
+  /* Scroll reveals: offscreen sections rise in once */
+  html.reveal-ready [data-reveal] {
+    transition:
+      opacity 640ms var(--ease),
+      transform 640ms var(--ease);
+  }
+  html.reveal-ready [data-reveal]:not(.is-in) {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  html.reveal-ready .field-list li,
+  html.reveal-ready .ledger tbody tr {
+    transition:
+      opacity 480ms var(--ease) calc(var(--i, 0) * 18ms),
+      transform 480ms var(--ease) calc(var(--i, 0) * 18ms);
+  }
+  html.reveal-ready .ledger tbody tr {
+    transition-delay: calc(var(--i, 0) * 40ms);
+  }
+  html.reveal-ready .field:not(.is-in) .field-list li,
+  html.reveal-ready .ledger:not(.is-in) tbody tr {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  /* Small responses to a pointer */
+  .field-list li .logo {
+    transition: transform var(--fast) var(--ease);
+  }
+  .field-list li:hover .logo {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes cuely-show {
+  to {
+    opacity: 1;
   }
 }
