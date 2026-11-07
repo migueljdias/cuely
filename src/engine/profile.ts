@@ -1,0 +1,271 @@
+import { maskText, wordPattern } from "./needs";
+
+/**
+ * The product profile: the few facts about a product that change which kinds of
+ * tools it needs at all (not which tool wins a category). Detected from plain words,
+ * like needs, and published here as part of the method.
+ *
+ * When a fact is unknown and it would change the picks, recommend_stack asks the
+ * agent to put a short question to the user instead of guessing.
+ */
+export type Platform = "web" | "mobile" | "both";
+export type Money = "none" | "users_pay_you" | "users_pay_each_other";
+export type Audience = "customers" | "internal";
+
+export interface Answers {
+  platform?: Platform;
+  money?: Money;
+  audience?: Audience;
+}
+
+export interface Profile {
+  platform: Platform;
+  money: Money;
+  audience: Audience;
+  ai: boolean;
+  rag: boolean;
+  realtime: boolean;
+  /** People provide services in person (walking, cleaning, care): background checks matter. */
+  inPerson: boolean;
+  socialLogin: boolean;
+  /** Where each value came from. */
+  source: Record<"platform" | "money" | "audience", "described" | "answered" | "assumed">;
+  matched: Partial<Record<"platform" | "money" | "audience" | "ai", string>>;
+}
+
+export interface Question {
+  id: "platform" | "money" | "audience" | "what";
+  question: string;
+  /** Why the answer changes the stack, so the agent can explain if asked. */
+  why: string;
+  options?: { value: string; label: string }[];
+}
+
+export interface Coverage {
+  status: "covered" | "partial" | "outside";
+  /** What Cuely does not cover for this product, in plain words. */
+  notes: string[];
+}
+
+const any = (text: string, words: string[]) => words.find((w) => wordPattern(w).test(text)) ?? null;
+
+const MOBILE = ["ios", "android", "iphone", "ipad", "mobile app", "mobile apps", "phone app", "app store",
+  "play store", "google play", "react native", "expo", "flutter", "swift", "swiftui", "kotlin", "native app"];
+const WEB = ["web", "web app", "webapp", "website", "site", "saas", "dashboard", "browser", "next.js", "nextjs",
+  "landing page", "portal", "web first", "web-first", "chrome extension", "pwa"];
+const BOTH = ["web and mobile", "mobile and web", "web and ios", "ios and web", "web plus mobile", "cross-platform web"];
+const APP_WORDS = ["app", "apps", "application"];
+
+const MARKETPLACE = ["marketplace", "commission", "take rate", "our cut", "we keep", "payout", "payouts", "pay out",
+  "split payments", "pay walkers", "pay sellers", "pay hosts", "pay providers", "pay freelancers", "pay drivers",
+  "pay tutors", "pay creators", "service fee", "booking fee", "connect buyers", "buyers and sellers"];
+const PAY_YOU = ["subscription", "subscriptions", "per month", "/month", "/mo", "monthly plan", "paid plan",
+  "paid plans", "pricing", "per-seat", "per seat", "freemium", "charge users", "charge customers", "paywall",
+  "in-app purchase", "in-app purchases", "one-time purchase", "sell it", "sell to", "usage-based", "usage based",
+  "billing", "monetize", "premium", "online store", "my store", "online shop", "web shop", "checkout", "sell", "selling", "subscription box", "shopify", "ecommerce", "e-commerce"];
+const TWO_SIDED = ["book a", "book and pay", "book appointments", "booking", "bookings", "hire", "hiring", "providers", "sellers", "buyers", "hosts",
+  "freelancers", "walkers", "sitters", "tutors", "drivers", "cleaners", "creators", "vendors", "two-sided",
+  "connects", "connect people"];
+const NO_MONEY = ["free app", "no payments", "non-profit", "nonprofit", "internal", "no money"];
+
+const INTERNAL = ["internal tool", "internal app", "internal", "staff", "employees", "employee", "back office",
+  "back-office", "admin panel", "our team uses", "for my team", "for our team", "inventory", "timesheets",
+  "shift schedule", "-person", "person team"];
+const OWN_BUSINESS = ["i run a", "i own a", "my business", "my company", "my shop", "my store", "my restaurant",
+  "my bakery", "my cafe", "my salon", "my clinic", "my gym", "my studio", "my agency", "our business", "our company"];
+const CUSTOMER = ["customers", "clients", "users sign up", "sign up", "the public", "consumers", "subscribers",
+  "patients book", "members", "sell it", "sell to"];
+
+const AI = ["ai", "llm", "llms", "gpt", "chatgpt", "claude", "gemini", "chatbot", "chat bot", "ai assistant", "copilot",
+  "ai agent", "ai agents", "rag", "embeddings", "summarize", "summarise", "answers questions",
+  "answer questions", "chat with", "semantic search", "openai", "anthropic", "machine learning"];
+const RAG = ["rag", "pdf", "pdfs", "documents", "knowledge base", "handbook", "policies", "manuals", "embeddings",
+  "over our docs", "over their docs", "company docs", "files"];
+const IN_PERSON = ["walk", "walker", "walkers", "walking", "sitter", "sitters", "babysit", "babysitter", "nanny",
+  "cleaning", "cleaners", "cleaner", "caregiver", "caregivers", "home care", "handyman", "tutor", "tutors", "drivers",
+  "pet care", "dog"];
+const SOCIAL_LOGIN = ["google login", "google sign-in", "sign in with google", "social login", "facebook login"];
+
+/** Things Cuely doesn't cover. "outside" means the core of the product is out of scope. */
+const OUTSIDE: { words: string[]; note: string; status: "partial" | "outside" }[] = [
+  { words: ["game", "games", "unity", "unreal", "godot", "game engine"], status: "outside",
+    note: "Cuely doesn't cover game engines or game backends." },
+  { words: ["iot", "firmware", "embedded", "arduino", "raspberry pi", "hardware device", "microcontroller"], status: "outside",
+    note: "Cuely doesn't cover hardware, firmware or IoT device fleets." },
+  { words: ["crypto", "blockchain", "web3", "nft", "nfts", "smart contract", "smart contracts", "defi", "token sale"], status: "outside",
+    note: "Cuely doesn't cover blockchain or crypto infrastructure." },
+  { words: ["desktop app", "electron", "tauri", "macos app", "windows app"], status: "partial",
+    note: "Cuely doesn't cover desktop packaging, signing or auto-updates; the stack below covers only the backend parts." },
+  { words: ["online store", "ecommerce", "e-commerce", "shopify", "shipping", "shipped", "physical products", "dropshipping", "subscription box"], status: "partial",
+    note: "Cuely doesn't compare store builders, shipping or inventory systems; for a standard online store, a hosted store builder may beat a custom build." },
+  { words: ["chrome extension", "browser extension"], status: "partial",
+    note: "Cuely doesn't cover browser-extension publishing or store rules." },
+  { words: ["live streaming", "video streaming", "video calls", "video calling"], status: "partial",
+    note: "Cuely doesn't cover video streaming or calling providers yet." },
+  { words: ["train a model", "fine-tune", "fine tune", "fine-tuning", "gpu", "gpus", "training data"], status: "partial",
+    note: "Cuely doesn't cover model training or GPU hosting; it covers calling hosted model APIs." },
+  { words: ["wallet", "neobank", "lending", "hold customer money", "money transfer", "remittance"], status: "partial",
+    note: "Apps that move or hold customer money need licensing review first; Cuely doesn't cover ledgers or banking partners." },
+  { words: ["sms", "text messages", "phone calls", "voice calls"], status: "partial",
+    note: "Cuely doesn't cover SMS or voice providers yet." },
+  { words: ["push notifications"], status: "partial",
+    note: "Cuely doesn't compare push-notification services yet (Expo and Firebase both include one)." },
+];
+
+export function detectCoverage(text: string): Coverage {
+  const t = maskText(text);
+  const hits = OUTSIDE.filter((o) => any(t, o.words));
+  if (!hits.length) return { status: "covered", notes: [] };
+  return {
+    status: hits.some((h) => h.status === "outside") ? "outside" : "partial",
+    notes: hits.map((h) => h.note),
+  };
+}
+
+export interface ProfileResult {
+  profile: Profile;
+  /** Facts that are unknown and would change the picks. */
+  unknown: ("platform" | "money" | "audience")[];
+  vague: boolean;
+}
+
+/** Phrases about the builder, not the product ("I'm a web dev"). */
+const ABOUT_BUILDER = /\b(i'?m|i am|as) an? (web|front[- ]?end|full[- ]?stack|react|mobile|ios|android) (dev|developer|engineer)s?\b|\bweb (dev|developer|developers)\b/gi;
+
+export function detectProfile(text: string, answers: Answers = {}): ProfileResult {
+  const cleaned = text.replace(ABOUT_BUILDER, " ");
+  const t = maskText(cleaned);
+  const raw = cleaned.toLowerCase();
+  const matched: Profile["matched"] = {};
+  const source: Profile["source"] = { platform: "assumed", money: "assumed", audience: "assumed" };
+  const unknown: ProfileResult["unknown"] = [];
+
+  // Platform
+  let platform: Platform = "web";
+  const both = any(raw, BOTH);
+  const mob = any(raw, MOBILE);
+  const web = any(t, WEB);
+  if (answers.platform) {
+    platform = answers.platform;
+    source.platform = "answered";
+  } else if (both || (mob && web && !/web first|web-first/.test(raw))) {
+    platform = "both";
+    source.platform = "described";
+    matched.platform = both ?? `${mob} + ${web}`;
+  } else if (mob) {
+    platform = "mobile";
+    source.platform = "described";
+    matched.platform = mob;
+  } else if (web) {
+    platform = "web";
+    source.platform = "described";
+    matched.platform = web;
+  }
+
+  // Money
+  let money: Money = "none";
+  const mk = any(t, MARKETPLACE) ?? (/\bkeep\s+\d+\s?%|\d+\s?%\s+(cut|fee|commission)/.test(raw) ? "a % cut" : null);
+  const you = any(t, PAY_YOU) ?? (/\$\s?\d+(\.\d+)?\s*(\/|a |per )\s*(month|mo|year|yr)/.test(raw) ? "a monthly price" : null);
+  const twoSided = any(t, TWO_SIDED);
+  const noMoney = any(t, NO_MONEY);
+  if (answers.money) {
+    money = answers.money;
+    source.money = "answered";
+  } else if (mk) {
+    money = "users_pay_each_other";
+    source.money = "described";
+    matched.money = mk;
+  } else if (you) {
+    money = "users_pay_you";
+    source.money = "described";
+    matched.money = you;
+  } else if (noMoney) {
+    money = "none";
+    source.money = "described";
+    matched.money = noMoney;
+  } else if (/(^|[^a-z0-9])(saas|b2b)($|[^a-z0-9])/.test(raw)) {
+    // Software sold as a service charges its customers, even when the description doesn't say how.
+    money = "users_pay_you";
+    source.money = "described";
+    matched.money = "saas";
+  }
+
+  // Audience
+  let audience: Audience = "customers";
+  const internal = any(t, INTERNAL) ?? (/\b\d+[- ]person\b/.test(raw) ? "a small staff" : null);
+  const own = any(raw, OWN_BUSINESS);
+  const customer = any(t, CUSTOMER);
+  if (answers.audience) {
+    audience = answers.audience;
+    source.audience = "answered";
+  } else if (internal && !customer) {
+    audience = "internal";
+    source.audience = "described";
+    matched.audience = internal;
+  } else if (customer || money !== "none") {
+    audience = "customers";
+    source.audience = "described";
+    matched.audience = customer ?? "charges users";
+  }
+
+  const ai = !!any(t, AI);
+  if (ai) matched.ai = any(t, AI)!;
+  const rag = ai && !!any(t, RAG);
+  const realtime = !!any(t, ["realtime", "real-time", "real time", "live updates", "chat", "presence", "collaborative",
+    "multiplayer", "websocket", "websockets", "retro", "retros", "retrospective", "retrospectives", "whiteboard",
+    "live cursors", "co-edit", "co-editing", "live session", "live sessions"]);
+  const inPerson = money === "users_pay_each_other" && !!any(t, IN_PERSON);
+  const socialLogin = !!any(t, SOCIAL_LOGIN);
+
+  // Unknown facts that would change the picks.
+  const hasApp = !!any(t, APP_WORDS);
+  if (source.platform === "assumed" && audience !== "internal" && hasApp) unknown.push("platform");
+  if (source.money === "assumed" && twoSided && audience !== "internal") unknown.push("money");
+  if (source.audience === "assumed" && own) unknown.push("audience");
+
+  const words = t.split(/[^a-z0-9]+/i).filter((w) => w.length > 2);
+  const vague = words.length < 4 && !web && !mob && !ai && !mk && !you && !internal;
+
+  return {
+    profile: { platform, money, audience, ai, rag, realtime, inPerson, socialLogin, source, matched },
+    unknown,
+    vague,
+  };
+}
+
+export const QUESTIONS: Record<Question["id"], Question> = {
+  platform: {
+    id: "platform",
+    question: "Is this a website, a phone app, or both?",
+    why: "A phone app needs app-store builds and in-app purchases instead of web hosting and Stripe checkout.",
+    options: [
+      { value: "web", label: "Website or web app" },
+      { value: "mobile", label: "iPhone or Android app" },
+      { value: "both", label: "Both" },
+    ],
+  },
+  money: {
+    id: "money",
+    question: "Will users pay you, or pay each other through it while you take a cut?",
+    why: "Paying out to other users needs Stripe Connect and provider onboarding; charging users yourself is plain Stripe.",
+    options: [
+      { value: "users_pay_you", label: "Users pay me" },
+      { value: "users_pay_each_other", label: "Users pay each other, I take a cut" },
+      { value: "none", label: "No payments" },
+    ],
+  },
+  audience: {
+    id: "audience",
+    question: "Is this for your own staff, or for your customers?",
+    why: "A staff tool is often best built with a no-code builder and needs no payments, sign-up or marketing site.",
+    options: [
+      { value: "internal", label: "My own staff" },
+      { value: "customers", label: "My customers" },
+    ],
+  },
+  what: {
+    id: "what",
+    question: "What does it do, and who uses it, in a sentence?",
+    why: "The description is too short to tell what kind of product this is.",
+  },
+};

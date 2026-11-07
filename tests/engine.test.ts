@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { categories, recipes, tools } from "@/catalog";
 import { compareTools } from "@/engine/compare";
 import { detectNeeds } from "@/engine/needs";
+import { detectCoverage, detectProfile } from "@/engine/profile";
 import { matchRecipe, recommendStack, resolveTool } from "@/engine/recommend";
 
 const snap = { categories, tools, recipes };
@@ -20,7 +21,7 @@ describe("needs detection", () => {
 
 describe("recommend_stack", () => {
   it("agrees with the B2B SaaS recipe for a plain B2B SaaS description", () => {
-    const r = recommendStack(snap, { description: "B2B SaaS with team workspaces, subscriptions and email invites" });
+    const r = recommendStack(snap, { description: "B2B SaaS for companies, per-seat subscriptions and email invites" });
     expect(r.productType.recipe).toBe("b2b-saas");
     const recipe = recipes.find((x) => x.slug === "b2b-saas")!;
     for (const item of recipe.stack) expect(pick(r, item.category), item.category).toBe(item.tool);
@@ -69,8 +70,9 @@ describe("recommend_stack", () => {
   });
 
   it("returns alternatives and the policy on every answer", () => {
-    const r = recommendStack(snap, { description: "anything" });
-    expect(r.stack).toHaveLength(10);
+    const r = recommendStack(snap, { description: "anything", assumeDefaults: true });
+    expect(r.status).toBe("ok");
+    expect(r.stack.length).toBeGreaterThanOrEqual(8);
     for (const s of r.stack) expect(s.alternatives.length).toBeGreaterThanOrEqual(1);
     expect(r.policy).toMatch(/No vendor can pay/);
   });
@@ -101,5 +103,126 @@ describe("compare_tools and lookups", () => {
   it("routes product descriptions to recipes", () => {
     expect(matchRecipe(recipes, "multi-tenant CRM for agencies")?.slug).toBe("b2b-saas");
     expect(matchRecipe(recipes, "a recipe blog")).toBeNull();
+  });
+});
+
+const EVAL = {
+  retro:
+    "I'm a solo founder building a team retrospective tool. Companies sign up, invite their team, run retros. Monthly per-seat subscription. I know Next.js. What stack should I use?",
+  habit:
+    "I want to build an iOS and Android habit-coaching app with a $7.99/month subscription. I'm a web dev (React). What should I use?",
+  dogs: "I'm building a local dog-walking marketplace. Owners book and pay walkers through the app, we keep 15%. Web first. Stack?",
+  bakery:
+    "I run a 10-person bakery. I want a simple app for staff to log daily inventory and wholesale orders. We use Google Workspace. Should I build it, and with what?",
+  pdfs: "I want to build a chatbot that answers questions over a company's PDFs (HR handbook, policies). Sell it to small companies with usage-based billing. What stack?",
+};
+const catchIds = (r: ReturnType<typeof recommendStack>) => r.summary!.catches.map((c) => c.text).join(" ");
+
+describe("the five eval cases", () => {
+  it("B2B retro tool: realtime, org-aware auth, the SaaS recipe", () => {
+    const r = recommendStack(snap, { description: EVAL.retro });
+    expect(r.status).toBe("ok");
+    expect(r.productType.recipe).toBe("b2b-saas");
+    expect(pick(r, "realtime")).toBe("liveblocks");
+    expect(pick(r, "auth")).toBe("workos-authkit");
+    expect(r.summary!.cost!.text).toMatch(/^About \$\d+\/month at 1,000 users/);
+  });
+
+  it("habit app: phone builds, in-app purchase, no web hosting, Apple's rule first", () => {
+    const r = recommendStack(snap, { description: EVAL.habit });
+    expect(r.profile.platform).toBe("mobile");
+    expect(pick(r, "mobile_build")).toBe("expo-eas");
+    expect(pick(r, "payments")).toBe("revenuecat");
+    expect(pick(r, "hosting")).toBeUndefined();
+    expect(pick(r, "database")).toBe("supabase");
+    expect(r.summary!.catches[0].text).toMatch(/in-app purchase/);
+    expect(r.productType.recipe).toBeNull();
+  });
+
+  it("dog-walking marketplace: Stripe Connect, payouts and background checks", () => {
+    const r = recommendStack(snap, { description: EVAL.dogs });
+    expect(r.profile.money).toBe("users_pay_each_other");
+    expect(r.profile.platform).toBe("web");
+    expect(pick(r, "payments")).toBe("stripe-connect");
+    expect(catchIds(r)).toMatch(/Stripe Connect/);
+    expect(catchIds(r)).toMatch(/background checks/);
+    expect(r.recipeNote).toMatch(/Marketplaces/);
+  });
+
+  it("bakery staff tool: a builder, AppSheet on Workspace, no payments", () => {
+    const r = recommendStack(snap, { description: EVAL.bakery });
+    expect(r.profile.audience).toBe("internal");
+    expect(pick(r, "internal_tools")).toBe("appsheet");
+    expect(pick(r, "payments")).toBeUndefined();
+    expect(r.productType.recipe).toBeNull();
+    expect(r.summary!.cost!.scale).toBe("10_staff");
+    expect(catchIds(r)).toMatch(/AppSheet Core/);
+  });
+
+  it("PDF chatbot: model API, vector search, metered billing, token cost up front", () => {
+    const r = recommendStack(snap, { description: EVAL.pdfs });
+    expect(r.profile.ai).toBe(true);
+    expect(pick(r, "llm")).toBeDefined();
+    expect(pick(r, "vector")).toBe("pgvector");
+    expect(pick(r, "payments")).toBe("stripe");
+    expect(r.summary!.catches[0].text).toMatch(/Tokens/);
+    expect(r.summary!.cost!.monthly).toBeGreaterThan(300);
+  });
+
+  it("all five resolve without questions", () => {
+    for (const d of Object.values(EVAL)) expect(recommendStack(snap, { description: d }).status, d).toBe("ok");
+  });
+});
+
+describe("questions, coverage and misroutes", () => {
+  it("asks web or phone when an app's platform is unknown", () => {
+    const r = recommendStack(snap, { description: "a habit tracking app with streaks and reminders" });
+    expect(r.status).toBe("needs_answers");
+    expect(r.questions.map((q) => q.id)).toContain("platform");
+    expect(r.stack).toHaveLength(0);
+  });
+
+  it("asks who pays whom for a booking app", () => {
+    const r = recommendStack(snap, { description: "a booking app for dog walkers and owners, web" });
+    expect(r.questions.map((q) => q.id)).toContain("money");
+  });
+
+  it("uses answers and assumptions instead of asking again", () => {
+    const d = "a habit tracking app with streaks and reminders";
+    const a = recommendStack(snap, { description: d, answers: { platform: "mobile", money: "users_pay_you" } });
+    expect(a.status).toBe("ok");
+    expect(pick(a, "payments")).toBe("revenuecat");
+    const b = recommendStack(snap, { description: d, assumeDefaults: true });
+    expect(b.status).toBe("ok");
+    expect(b.profile.assumed.length).toBeGreaterThan(0);
+  });
+
+  it("asks what it is when the description is too short", () => {
+    expect(recommendStack(snap, { description: "my idea" }).questions[0].id).toBe("what");
+  });
+
+  it("says when a product is outside coverage", () => {
+    const r = recommendStack(snap, { description: "a multiplayer game for phones" });
+    expect(r.status).toBe("outside_coverage");
+    expect(r.stack).toHaveLength(0);
+    expect(detectCoverage("an online store for candles").status).toBe("partial");
+  });
+
+  it("doesn't read Google Workspace, teams or subscriptions as B2B SaaS", () => {
+    expect(detectNeeds("We use Google Workspace").map((d) => d.need)).not.toContain("b2b");
+    expect(matchRecipe(recipes, "a subscription app for my team")).toBeNull();
+    expect(matchRecipe(recipes, "a workspace for designers")).toBeNull();
+  });
+
+  it("doesn't read React or 'web dev' as a web app when the product is a phone app", () => {
+    const { profile } = detectProfile("an iOS and Android app. I'm a web dev (React).");
+    expect(profile.platform).toBe("mobile");
+    const r = recommendStack(snap, { description: "an iOS and Android app with a paid plan. I'm a web dev (React)." });
+    expect(r.detectedNeeds.map((d) => d.need)).not.toContain("nextjs");
+  });
+
+  it("compare_tools names a better third option for the context", () => {
+    const c = compareTools(snap, { a: "Stripe", b: "Paddle", context: EVAL.dogs });
+    expect(c.ok && c.betterOption?.slug).toBe("stripe-connect");
   });
 });

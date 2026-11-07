@@ -44,8 +44,10 @@ describe("MCP over Streamable HTTP", () => {
     });
     expect(r.isError).toBeFalsy();
     expect(r.structuredContent.productType.recipe).toBe("b2b-saas");
-    expect(r.structuredContent.stack).toHaveLength(10);
-    expect(text(r)).toMatch(/## Auth: WorkOS AuthKit/);
+    expect(r.structuredContent.status).toBe("ok");
+    expect(r.structuredContent.summary.cost.text).toMatch(/at 1,000 users/);
+    expect(text(r)).toMatch(/## Cost/);
+    expect(text(r)).toMatch(/- Auth: WorkOS AuthKit/);
     expect(text(r)).toMatch(/get_recipe/);
   });
 
@@ -74,7 +76,7 @@ describe("MCP over Streamable HTTP", () => {
 
   it("list_categories lists all and expands one", async () => {
     const all: any = await client.callTool({ name: "list_categories", arguments: {} });
-    expect(all.structuredContent.categories).toHaveLength(10);
+    expect(all.structuredContent.categories).toHaveLength(15);
     const one: any = await client.callTool({ name: "list_categories", arguments: { category: "email" } });
     expect(text(one)).toMatch(/Resend/);
     expect(text(one)).toMatch(/3,000 emails per month/);

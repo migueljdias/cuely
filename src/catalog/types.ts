@@ -14,7 +14,12 @@ export type CategorySlug =
   | "dns"
   | "monitoring"
   | "analytics"
-  | "storage";
+  | "storage"
+  | "llm"
+  | "vector"
+  | "realtime"
+  | "mobile_build"
+  | "internal_tools";
 
 /**
  * Needs are what a builder's description can ask for. recommend_stack detects
@@ -34,7 +39,13 @@ export type Need =
   | "fewer_vendors" // wants one platform to cover several categories
   | "per_tenant_db" // a separate database per customer
   | "long_running" // background workers, long jobs, persistent servers
-  | "high_volume"; // large traffic or large send/storage volumes
+  | "high_volume" // large traffic or large send/storage volumes
+  | "mobile" // native iOS or Android app
+  | "marketplace" // users pay each other through the product and the platform takes a cut
+  | "rag" // answers over the user's own documents (retrieval)
+  | "usage_billing" // charges by usage (metered)
+  | "internal" // a tool for the builder's own staff, not for customers
+  | "google_workspace"; // the organization already runs on Google Workspace
 
 export interface Category {
   slug: CategorySlug;
@@ -80,8 +91,25 @@ export interface Tool {
    */
   baseline: number;
   fit: Partial<Record<Need, NeedFit>>;
+  /** What it costs at Cuely's published usage profile (see COST_PROFILE). */
+  cost?: ToolCost;
   /** Date the facts were read from the vendor's own site (YYYY-MM-DD). */
   verifiedOn: string;
+}
+
+/**
+ * Monthly cost at the published usage profile (src/catalog/costs.ts), worked out
+ * from the free-plan and price facts on the vendor's page. monthly is null when the
+ * cost is a share of revenue (payments), which goes in variable instead.
+ */
+export interface ToolCost {
+  monthly: number | null;
+  /** The arithmetic, in one line, so an agent can redo it for other numbers. */
+  basis: string;
+  /** Fees that scale with revenue or payouts, e.g. "2.9% + 30¢ per card charge". */
+  variable?: string;
+  /** "1k_users" (default) or "10_staff" for internal-tool builders. */
+  scale?: "1k_users" | "10_staff";
 }
 
 export interface RecipeStackItem {

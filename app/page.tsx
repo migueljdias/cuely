@@ -15,8 +15,8 @@ const connect = connectOptions();
 const mcpTools = [
   {
     name: "recommend_stack",
-    sig: "description, categories?, already_using?, avoid?",
-    what: "One pick per category with a one-line reason, the free plan's real limits, and the alternatives worth knowing.",
+    sig: "description, answers?, detail?, already_using?, avoid?",
+    what: "The picks that matter, the monthly cost at 1,000 users and the catches that change the plan, then one line per category. Asks a short question first when the answer would change the pick, and says so when a product is outside its coverage.",
   },
   {
     name: "get_recipe",

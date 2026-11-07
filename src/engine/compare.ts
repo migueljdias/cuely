@@ -1,6 +1,7 @@
 import type { Need, Tool } from "@/catalog";
 import { POLICY } from "@/catalog";
 import { detectNeeds, NEED_LABELS, NEED_SHORT } from "./needs";
+import { detectProfile } from "./profile";
 import { METHOD_URL, resolveTool, scoreTool, type CatalogSnapshot } from "./recommend";
 
 export interface CompareInput {
@@ -16,6 +17,7 @@ export type CompareResult =
       tools: ReturnType<typeof side>[];
       differences: { need: Need; label: string; a: { weight: number; reason: string }; b: { weight: number; reason: string } }[];
       verdict: string;
+      betterOption: { slug: string; name: string; reason: string } | null;
       detectedNeeds: Need[];
       policy: string;
       method: string;
@@ -58,7 +60,14 @@ export function compareTools(catalog: CatalogSnapshot, input: CompareInput): Com
     };
   }
 
-  const needs = input.context ? detectNeeds(input.context).map((d) => d.need) : [];
+  const needs: Need[] = input.context ? detectNeeds(input.context).map((d) => d.need) : [];
+  if (input.context) {
+    const { profile } = detectProfile(input.context);
+    const add = (n: Need) => !needs.includes(n) && needs.push(n);
+    if (profile.platform === "mobile" || profile.platform === "both") add("mobile");
+    if (profile.money === "users_pay_each_other") add("marketplace");
+    if (profile.audience === "internal") add("internal");
+  }
   const size = catalog.tools.filter((t) => t.category === a!.category).length;
   const sa = scoreTool(a!, needs, size, false);
   const sb = scoreTool(b!, needs, size, false);
@@ -83,12 +92,27 @@ export function compareTools(catalog: CatalogSnapshot, input: CompareInput): Com
       })()}`
     : `With no context, ${winner.name} is the default pick: ${winner.pitch} Pass context to get a verdict for your case.`;
 
+  // When a third tool in the category fits the context better than either, say so.
+  let betterOption: { slug: string; name: string; reason: string } | null = null;
+  if (needs.length) {
+    const best = catalog.tools
+      .filter((t) => t.category === a!.category)
+      .map((t) => ({ t, s: scoreTool(t, needs, size, false) }))
+      .sort((x, y) => y.s - x.s || x.t.baseline - y.t.baseline)[0];
+    if (best && best.t.slug !== a!.slug && best.t.slug !== b!.slug && best.s > Math.max(sa, sb) + 1) {
+      const top = needs.map((n) => best.t.fit[n]).filter((f) => f && f.weight > 0).sort((x, y) => y!.weight - x!.weight)[0];
+      betterOption = { slug: best.t.slug, name: best.t.name, reason: top?.reason ?? best.t.pitch };
+    }
+  }
+  const fullVerdict = betterOption ? `${verdict} But for this case Cuely would pick neither: ${betterOption.name}. ${betterOption.reason}` : verdict;
+
   return {
     ok: true,
     category: a!.category,
     tools: [side(a!), side(b!)],
     differences,
-    verdict,
+    verdict: fullVerdict,
+    betterOption,
     detectedNeeds: needs,
     policy: POLICY,
     method: METHOD_URL,

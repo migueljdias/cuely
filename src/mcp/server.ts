@@ -7,14 +7,17 @@ import { matchRecipe, recommendStack } from "@/engine/recommend";
 import type { Repository } from "@/repo";
 import { renderCategories, renderCategory, renderCompare, renderRecipe, renderRecommendation } from "./render";
 
-export const SERVER_INFO = { name: "cuely", version: "0.1.0" };
+export const SERVER_INFO = { name: "cuely", version: "0.2.0" };
 
 const CATEGORY_SLUGS = [
   "hosting", "database", "auth", "payments", "email", "secrets", "dns", "monitoring", "analytics", "storage",
+  "llm", "vector", "realtime", "mobile_build", "internal_tools",
 ] as const satisfies readonly CategorySlug[];
 
-export const INSTRUCTIONS = `Cuely recommends tools and setup steps for what a user is building.
-Use recommend_stack first with a one- or two-sentence description of the product (who it's for, what it does, any constraints such as budget, region, compliance, or tools already in use). If it names a recipe, call get_recipe for full setup steps.
+export const INSTRUCTIONS = `Cuely recommends tools and setup steps for what a user is building: web apps, phone apps, marketplaces, AI apps and staff tools.
+Use recommend_stack first with a one- or two-sentence description of the product (who it's for, what it does, any constraints such as budget, region, compliance, or tools already in use). The answer leads with the monthly cost at 1,000 users and the catches that matter.
+If it returns questions, ask the user (or answer from the conversation) and call again with answers. If it says the product is outside Cuely's coverage, tell the user rather than forcing a stack.
+If it names a recipe, call get_recipe for full setup steps.
 Use compare_tools when the user is choosing between two specific tools, and list_categories to browse the catalog.
 Picks come from published rules; no vendor pays for placement. Prices and limits were read from each vendor's own site on the date shown; confirm on the linked page before committing money.`;
 
@@ -38,7 +41,7 @@ export function createCuelyServer(ctx: ServerContext): McpServer {
     {
       title: "Recommend a stack",
       description:
-        "Recommend one tool per category (hosting, database, auth, payments, email, secrets, DNS, monitoring, analytics, storage) for what the user is building, each with a one-line reason, free-plan limits, and alternatives.",
+        "Recommend a stack for what the user is building. Leads with the top picks, the monthly cost at 1,000 users and the 2-3 catches that matter (e.g. Apple's in-app purchase rule, marketplace payouts, AI token costs), then one line per category. Picks only the categories the product needs, from: hosting, database, auth, payments, email, secrets, DNS, monitoring, analytics, storage, AI model APIs, vector search, realtime, mobile builds and internal-tool builders. If the description leaves out something that changes the picks (web or phone app, who pays whom, staff or customers), it returns up to 3 short questions instead; call again with answers. Says so when a product is outside Cuely's coverage.",
       inputSchema: {
         description: z
           .string()
@@ -52,6 +55,25 @@ export function createCuelyServer(ctx: ServerContext): McpServer {
           .array(z.enum(ALL_NEEDS as [Need, ...Need[]]))
           .optional()
           .describe(`Explicit needs, added to those detected from the description: ${ALL_NEEDS.map((n) => `${n} (${NEED_LABELS[n]})`).join(", ")}.`),
+        answers: z
+          .object({
+            platform: z.enum(["web", "mobile", "both"]).optional().describe("Website or web app, phone app, or both."),
+            money: z
+              .enum(["none", "users_pay_you", "users_pay_each_other"])
+              .optional()
+              .describe("No payments, users pay you, or users pay each other and you take a cut."),
+            audience: z.enum(["customers", "internal"]).optional().describe("For customers, or for your own staff."),
+          })
+          .optional()
+          .describe("Answers to questions from an earlier call, or facts you already know from the conversation."),
+        assume_defaults: z
+          .boolean()
+          .optional()
+          .describe("Skip questions and assume the most common case; the answer lists what it assumed."),
+        detail: z
+          .enum(["summary", "full"])
+          .optional()
+          .describe("'summary' (default) is short; 'full' adds each pick's free plan, prices, cost basis and alternatives."),
       },
       annotations: { title: "Recommend a stack", ...readOnly },
     },
@@ -63,6 +85,9 @@ export function createCuelyServer(ctx: ServerContext): McpServer {
         alreadyUsing: args.already_using,
         avoid: args.avoid,
         needs: args.needs,
+        answers: args.answers,
+        assumeDefaults: args.assume_defaults,
+        detail: args.detail,
       });
       log(ctx, "recommend_stack", {
         recipe: rec.productType.recipe,
@@ -70,7 +95,7 @@ export function createCuelyServer(ctx: ServerContext): McpServer {
         needs: rec.detectedNeeds.map((d) => d.need),
       });
       return {
-        content: [{ type: "text", text: renderRecommendation(rec) }],
+        content: [{ type: "text", text: renderRecommendation(rec, args.detail ?? "summary") }],
         structuredContent: rec as unknown as Record<string, unknown>,
       };
     },

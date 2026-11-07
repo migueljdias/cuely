@@ -18,7 +18,7 @@ export function GET() {
     "- Over a limit: HTTP 429 with Retry-After and the reset time. Days reset at 00:00 UTC.",
     "",
     "## Tools",
-    "- recommend_stack(description, categories?, already_using?, avoid?, needs?): one pick per category with reason, free-plan limits, alternatives",
+    "- recommend_stack(description, answers?, assume_defaults?, detail?, categories?, already_using?, avoid?, needs?): leads with the top picks, the monthly cost at 1,000 users and the 2-3 catches that matter, then one pick per needed category. Covers web apps, phone apps, marketplaces, AI apps and staff tools. May return up to 3 questions (web or phone app, who pays whom, staff or customers); call again with answers. Says when a product is outside coverage. detail: \"full\" adds free plans, prices and alternatives.",
     "- get_recipe(product_type, include_steps?): full setup steps for a product type",
     "- compare_tools(a, b, context?): two tools in one category with a verdict",
     "- list_categories(category?): browse the catalog",

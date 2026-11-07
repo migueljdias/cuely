@@ -144,6 +144,7 @@ export const tools: Tool[] = [
       regulated: { weight: 1, reason: "SOC 2 and HIPAA (with a BAA) are listed on the Scale plan." },
       per_tenant_db: { weight: 1, reason: "Up to 100 free projects; branches and projects are cheap to create by API." },
       fewer_vendors: { weight: 1, reason: "Neon Auth adds managed auth in the same database." },
+      mobile: { weight: -2, reason: "No phone-app client library, so a phone app needs a server of your own in between." },
     },
     verifiedOn: V,
   },
@@ -168,6 +169,7 @@ export const tools: Tool[] = [
     selfHostable: true,
     baseline: 2,
     fit: {
+      mobile: { weight: 2, reason: "One client library for database, auth and storage in React Native apps." },
       fewer_vendors: { weight: 3, reason: "Database, auth, storage and realtime come from one dashboard." },
       realtime: { weight: 3, reason: "Built-in realtime subscriptions on Postgres changes." },
       open_source: { weight: 2, reason: "Open source and self-hostable with Docker." },
@@ -249,6 +251,7 @@ export const tools: Tool[] = [
     selfHostable: false,
     baseline: 1,
     fit: {
+      mobile: { weight: 1, reason: "Has an Expo SDK for React Native apps." },
       nextjs: { weight: 3, reason: "First-class Next.js SDK with prebuilt components." },
       b2b: { weight: 1, reason: "Organizations on all plans; SSO and advanced B2B features cost extra." },
       low_cost: { weight: 0, reason: "50k free users, but MFA and SSO need a paid plan." },
@@ -277,6 +280,7 @@ export const tools: Tool[] = [
       low_cost: { weight: 3, reason: "No per-user fees at any scale." },
       b2b: { weight: 1, reason: "Organization and SSO plugins exist, but you operate them yourself." },
       eu: { weight: 2, reason: "User data stays in whatever region your database runs in." },
+      mobile: { weight: -2, reason: "Runs inside your own server, which a phone app on a hosted backend doesn't have." },
     },
     verifiedOn: V,
   },
@@ -297,6 +301,7 @@ export const tools: Tool[] = [
     selfHostable: true,
     baseline: 4,
     fit: {
+      mobile: { weight: 2, reason: "Works from the Supabase React Native client, including Sign in with Apple." },
       fewer_vendors: { weight: 3, reason: "Same vendor and database as Supabase Postgres." },
       open_source: { weight: 2, reason: "Open source and self-hostable with the rest of Supabase." },
       b2b: { weight: 0, reason: "SAML SSO is available on Pro; organizations you model yourself." },
@@ -352,6 +357,9 @@ export const tools: Tool[] = [
     selfHostable: false,
     baseline: 1,
     fit: {
+      mobile: { weight: -3, reason: "Apple requires in-app purchase for digital subscriptions inside iOS apps (Guideline 3.1.1); use Stripe only for web checkout or real-world goods." },
+      marketplace: { weight: -1, reason: "Plain Stripe can't split a payment and pay providers out; that is Stripe Connect." },
+      usage_billing: { weight: 2, reason: "Meters API for usage-based billing, up to 100M events a month included in Billing pricing." },
       b2b: { weight: 3, reason: "Invoices, seats, usage billing and a hosted customer portal." },
       low_cost: { weight: 2, reason: "Lowest base fee of the options here." },
       regulated: { weight: 2, reason: "Card data stays on Stripe, which keeps your PCI scope small." },
@@ -377,6 +385,8 @@ export const tools: Tool[] = [
     selfHostable: false,
     baseline: 2,
     fit: {
+      mobile: { weight: -3, reason: "Digital subscriptions inside iOS apps must use in-app purchase (Apple Guideline 3.1.1)." },
+      marketplace: { weight: -3, reason: "A merchant of record for your own sales; it doesn't pay out to other sellers." },
       global_tax: { weight: 3, reason: "As merchant of record, Paddle collects and files sales tax and VAT." },
       b2b: { weight: 1, reason: "Subscriptions and invoices for software sales." },
       low_cost: { weight: -1, reason: "5% + 50¢ is higher than a plain processor." },
@@ -403,6 +413,8 @@ export const tools: Tool[] = [
     selfHostable: false,
     baseline: 3,
     fit: {
+      mobile: { weight: -3, reason: "Digital subscriptions inside iOS apps must use in-app purchase (Apple Guideline 3.1.1)." },
+      marketplace: { weight: -3, reason: "A merchant of record for your own sales; it doesn't pay out to other sellers." },
       global_tax: { weight: 2, reason: "Merchant of record: it files and pays tax on your behalf." },
       low_cost: { weight: -2, reason: "Highest effective fee once surcharges apply." },
       b2b: { weight: -1, reason: "Built for digital products more than B2B invoicing." },

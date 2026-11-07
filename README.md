@@ -10,7 +10,7 @@ Honest stack picks for coding agents. Cuely is a free, remote MCP server that an
 
 | Tool | Input | Returns |
 | --- | --- | --- |
-| `recommend_stack` | `description`, `categories?`, `already_using?`, `avoid?`, `needs?` | One pick per category with a one-line reason, the free plan's limits, a watch-out, alternatives, and the source page and date |
+| `recommend_stack` | `description`, `answers?`, `assume_defaults?`, `detail?`, `categories?`, `already_using?`, `avoid?`, `needs?` | A summary first: the top picks, the monthly cost at 1,000 users and the 2-3 catches that matter. Then one pick per category the product needs, with a reason and an alternative (`detail: "full"` adds free plans, prices and sources). Returns up to 3 questions instead when a missing fact would change the picks, and `outside_coverage` for products Cuely doesn't cover |
 | `get_recipe` | `product_type` (slug or words), `include_steps?` | Stack with alternatives, ordered steps with commands and starter files, best practices, pitfalls, compliance notes |
 | `compare_tools` | `a`, `b`, `context?` | Two tools in one category side by side, where they differ, and a verdict for the context |
 | `list_categories` | `category?` | Categories and tools, or one category's tools with facts |
@@ -31,13 +31,16 @@ VS Code (`.vscode/mcp.json`): `{ "servers": { "cuely": { "type": "http", "url": 
 
 The rule that can't bend: money never touches the ranking. There are no sponsored answers and no affiliate links (a test fails if a URL in the catalog carries query parameters).
 
-1. `src/engine/needs.ts` turns plain words in the description into needs (b2b, regulated, global_tax, open_source, eu, low_cost, edge, nextjs, realtime, fewer_vendors, per_tenant_db, long_running, high_volume).
-2. Every tool in `src/catalog/tools.ts` has a published fit weight (−3 to +3) and a reason for each need it's good or bad at, plus an editorial default order in its category.
-3. `score = Σ fit[need] + 0.4 × (n − default_rank + 1) + (already_using ? 4 : 0)`. Highest score wins; the default order settles ties.
+1. `src/engine/profile.ts` reads the kind of product: web, phone or both; who pays (nobody, users pay you, users pay each other); customers or your own staff; AI, documents, realtime. It decides which categories are shown, which catches lead the answer, and when to ask instead of guess: a question is asked only when the fact is missing and would change the picks. It also flags products outside Cuely's coverage (games, hardware, crypto) and partial ones (stores, SMS, video).
+2. `src/engine/needs.ts` turns plain words in the description into needs (b2b, regulated, global_tax, open_source, eu, low_cost, edge, nextjs, realtime, fewer_vendors, per_tenant_db, long_running, high_volume, rag, usage_billing, google_workspace). The profile adds mobile, marketplace and internal. Product names are masked first, so "Google Workspace" isn't a workspace and "React Native" isn't Next.js.
+3. Every tool in `src/catalog/tools.ts` has a published fit weight (−3 to +3) and a reason for each need it's good or bad at, plus an editorial default order in its category.
+4. `score = Σ fit[need] + 0.4 × (n − default_rank + 1) + (already_using ? 4 : 0)`. Highest score wins; the default order settles ties.
+
+5. The answer leads with the cost at Cuely's published usage profile (`src/catalog/costs.ts`: 1,000 monthly active users, 10 staff for staff tools), each tool's cost with the math in its basis line, and the catches for that kind of product (`src/catalog/catches.ts`), each with its source page and date.
 
 Answers are deterministic and identical for every caller. No model is called per request, so serving cost stays near zero and the free plan can stay generous.
 
-Free-plan and price facts were read from each vendor's own pricing page on 2026-11-06. Each tool records the page (`pricingUrl`) and date (`verifiedOn`). Where a page was silent, the field is `null`.
+Free-plan and price facts were read from each vendor's own pricing page on 2026-11-06 and 2026-11-07. Each tool records the page (`pricingUrl`) and date (`verifiedOn`). Where a page was silent, the field is `null`.
 
 ## Layout
 

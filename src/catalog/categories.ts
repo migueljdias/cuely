@@ -80,4 +80,44 @@ export const categories: Category[] = [
     howToChoose: "Watch egress (download) fees; they dominate cost for public files.",
     order: 10,
   },
+  {
+    slug: "llm",
+    name: "AI model API",
+    description: "The language model that writes the answers in an AI feature.",
+    howToChoose:
+      "Tokens are usually the biggest bill. Price your real prompt sizes, send easy requests to a small model, and check whether a free tier uses your data for training.",
+    order: 11,
+  },
+  {
+    slug: "vector",
+    name: "Vector search",
+    description: "Stores embeddings of documents so an AI feature can find the passages to answer from.",
+    howToChoose:
+      "Start inside your existing Postgres (pgvector) until you have millions of chunks. Filter every query by tenant so one customer never sees another's documents.",
+    order: 12,
+  },
+  {
+    slug: "realtime",
+    name: "Realtime",
+    description: "Live updates between users: presence, shared cursors, collaborative boards and chat.",
+    howToChoose:
+      "Collaborative documents and boards want a sync engine with rooms; simple live notifications only need pub/sub. Check what the free plan counts: rooms, connections or monthly users.",
+    order: 13,
+  },
+  {
+    slug: "mobile_build",
+    name: "Mobile builds",
+    description: "Building, signing and shipping iOS and Android apps to the stores.",
+    howToChoose:
+      "A web developer usually wants React Native with Expo. Cloud builds save you a Mac for iOS. Budget for Apple's $99 a year and Google's $25 registration either way.",
+    order: 14,
+  },
+  {
+    slug: "internal_tools",
+    name: "Internal tool builders",
+    description: "No-code and low-code builders for apps your own staff use: forms, tables, inventory, approvals.",
+    howToChoose:
+      "For a small team, a builder on top of the tools you already have usually beats a custom app nobody maintains. Check the price per user and whether it works on your staff's devices.",
+    order: 15,
+  },
 ];

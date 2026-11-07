@@ -2,9 +2,10 @@ import { describe, expect, it } from "vitest";
 import { categories, recipes, tools } from "@/catalog";
 
 describe("catalog integrity", () => {
-  it("has the ten core categories, each with 2 to 5 tools", () => {
+  it("has the fifteen categories, each with 2 to 5 tools", () => {
     expect(categories.map((c) => c.slug).sort()).toEqual(
-      ["analytics", "auth", "database", "dns", "email", "hosting", "monitoring", "payments", "secrets", "storage"],
+      ["analytics", "auth", "database", "dns", "email", "hosting", "internal_tools", "llm", "mobile_build", "monitoring",
+        "payments", "realtime", "secrets", "storage", "vector"],
     );
     for (const c of categories) {
       const n = tools.filter((t) => t.category === c.slug).length;
@@ -70,6 +71,13 @@ describe("catalog integrity", () => {
       }
       expect(r.steps.length).toBeGreaterThanOrEqual(5);
       for (const s of r.steps) expect(s.check.length).toBeGreaterThan(10);
+    }
+  });
+
+  it("gives every tool a monthly cost at the published profile", () => {
+    for (const t of tools) {
+      expect(t.cost, t.slug).toBeDefined();
+      expect(t.cost!.basis.length, t.slug).toBeGreaterThan(5);
     }
   });
 });

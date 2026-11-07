@@ -6,9 +6,9 @@ export const b2bSaas: Recipe = {
   summary:
     "A multi-tenant web app sold to companies: organizations with roles, subscription billing per organization, and transactional email. Built on Next.js, Postgres, hosted auth and Stripe.",
   matches: [
-    "b2b", "saas", "subscription", "multi-tenant", "multitenant", "tenant", "workspace", "workspaces", "team plan",
-    "teams", "organizations", "seats", "dashboard for companies", "business customers", "fintech", "crm", "erp",
-    "admin portal", "client portal", "internal tool for companies",
+    "b2b", "saas", "multi-tenant", "multitenant", "tenant", "team plan", "per-seat", "per seat", "seats",
+    "dashboard for companies", "business customers", "for companies", "to companies", "fintech", "crm", "erp",
+    "client portal", "invite their team",
   ],
   fitsWhen: [
     "Customers are companies, and several people from one company share an account.",

@@ -4,25 +4,71 @@ import type { Recommendation } from "@/engine/recommend";
 
 const free = (t: { freeTier: string | null }) => t.freeTier ?? "No free plan.";
 
-export function renderRecommendation(r: Recommendation): string {
-  const lines: string[] = [];
-  lines.push(`# Recommended stack`);
-  if (r.productType.title) lines.push(`Product type: ${r.productType.title} (recipe: \`${r.productType.recipe}\`)`);
-  if (r.detectedNeeds.length) lines.push(`Detected needs: ${r.detectedNeeds.map((d) => d.label).join("; ")}`);
-  lines.push("");
-  for (const s of r.stack) {
-    lines.push(`## ${s.categoryName}${s.optional ? " (optional)" : ""}: ${s.pick.name}`);
-    lines.push(`- Why: ${s.pick.reason}`);
-    lines.push(`- Free plan: ${free(s.pick)}`);
-    if (s.pick.paidStartsAt) lines.push(`- Paid from: ${s.pick.paidStartsAt}`);
-    if (s.pick.watchOut) lines.push(`- Watch out: ${s.pick.watchOut}`);
-    for (const a of s.alternatives) lines.push(`- Alternative, ${a.name}: ${a.when}`);
-    lines.push(`- Facts read ${s.pick.verifiedOn} from ${s.pick.pricingUrl}`);
-    lines.push("");
+export function renderRecommendation(r: Recommendation, detail: "summary" | "full" = "summary"): string {
+  const L: string[] = [];
+  if (r.status === "outside_coverage") {
+    L.push(`# Outside Cuely's coverage`);
+    for (const n of r.coverage.notes) L.push(`- ${n}`);
+    L.push("", `Next: ${r.nextStep}`);
+    return L.join("\n");
   }
-  lines.push(`Next: ${r.nextStep}`);
-  lines.push(`Policy: ${r.policy} Method: ${r.method}`);
-  return lines.join("\n");
+  if (r.status === "needs_answers") {
+    L.push(`# A few questions first`, "The answers change which tools fit, so ask before recommending:");
+    r.questions.forEach((q, i) => {
+      const opts = q.options?.length ? ` (${q.options.map((o) => `${o.value}: ${o.label}`).join("; ")})` : "";
+      L.push(`${i + 1}. ${q.question}${opts}`, `   Why it matters: ${q.why}`);
+    });
+    if (r.coverage.status === "partial") for (const n of r.coverage.notes) L.push(`- Coverage: ${n}`);
+    L.push("", `Next: ${r.nextStep}`);
+    return L.join("\n");
+  }
+  const s = r.summary!;
+  L.push(`# ${s.headline}`);
+  if (r.profile.assumed.length) L.push(`Assumed: ${r.profile.assumed.join("; ")}. Ask the user if any is wrong.`);
+  if (r.coverage.status === "partial") for (const n of r.coverage.notes) L.push(`Coverage: ${n}`);
+  if (r.recipeNote) L.push(r.recipeNote);
+  L.push("");
+  if (s.cost) L.push(`## Cost`, s.cost.text, `Usage profile: ${s.cost.profile}`, "");
+  if (s.catches.length) {
+    L.push(`## Catches that matter`);
+    for (const c of s.catches) L.push(`- ${c.text} (read ${c.verifiedOn}, ${c.source})`);
+    L.push("");
+  }
+  L.push(`## Stack`);
+  const roleTag = (x: (typeof r.stack)[number]) =>
+    x.role === "optional" ? " (optional)" : x.role === "if_you_build" ? " (only if you build it yourself)" : "";
+  if (detail === "full") {
+    L.push("");
+    for (const x of r.stack) {
+      L.push(`### ${x.categoryName}${roleTag(x)}: ${x.pick.name}`);
+      L.push(`- Why: ${x.pick.reason}`);
+      if (x.pick.monthlyCost !== null) L.push(`- At the usage profile: $${x.pick.monthlyCost}/month. ${x.pick.costBasis ?? ""}`.trimEnd());
+      L.push(`- Free plan: ${free(x.pick)}`);
+      if (x.pick.paidStartsAt) L.push(`- Paid from: ${x.pick.paidStartsAt}`);
+      if (x.pick.watchOut) L.push(`- Watch out: ${x.pick.watchOut}`);
+      for (const a of x.alternatives) L.push(`- Alternative, ${a.name}: ${a.when}`);
+      L.push(`- Facts read ${x.pick.verifiedOn} from ${x.pick.pricingUrl}`, "");
+    }
+    if (s.moreCatches.length) {
+      L.push(`## More catches`);
+      for (const c of s.moreCatches) L.push(`- ${c.text} (read ${c.verifiedOn}, ${c.source})`);
+      L.push("");
+    }
+  } else {
+    for (const x of r.stack) {
+      const alt = x.alternatives[0] ? ` Or ${x.alternatives[0].name}.` : "";
+      L.push(`- ${x.categoryName}${roleTag(x)}: ${x.pick.name}. ${x.pick.reason}${alt}`);
+    }
+    L.push("");
+  }
+  if (r.leftOut.length) {
+    const byReason = new Map<string, string[]>();
+    for (const l of r.leftOut) byReason.set(l.reason, [...(byReason.get(l.reason) ?? []), l.category]);
+    L.push(`Left out: ${[...byReason].map(([why, cats]) => `${cats.join(", ")} (${why})`).join(" ")}`);
+  }
+  L.push(`Next: ${r.nextStep}`);
+  L.push(`Policy: ${r.policy} Method: ${r.method}`);
+  return L.join("\n");
 }
 
 export function renderRecipe(r: Recipe, tools: Tool[], includeSteps = true): string {

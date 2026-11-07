@@ -1,6 +1,15 @@
 import type { Category, CategorySlug, Need, Recipe, Tool } from "@/catalog";
-import { POLICY } from "@/catalog";
+import { CATCHES, COST_PROFILE, POLICY } from "@/catalog";
 import { ALL_NEEDS, detectNeeds, NEED_LABELS, NEED_SHORT, type DetectedNeed } from "./needs";
+import {
+  detectCoverage,
+  detectProfile,
+  QUESTIONS,
+  type Answers,
+  type Coverage,
+  type Profile,
+  type Question,
+} from "./profile";
 
 /** Everything the engine needs; supplied by a repository (memory or Postgres). */
 export interface CatalogSnapshot {
@@ -11,14 +20,18 @@ export interface CatalogSnapshot {
 
 export const METHOD_URL = "https://cuely.dev/#method";
 
-const DEFAULT_OPTIONAL: CategorySlug[] = ["secrets", "analytics", "storage"];
-
 export interface RecommendInput {
   description: string;
   categories?: CategorySlug[];
   alreadyUsing?: string[];
   avoid?: string[];
   needs?: Need[];
+  /** Answers to questions from an earlier call. */
+  answers?: Answers;
+  /** Skip questions and assume the most common case (the answer says what it assumed). */
+  assumeDefaults?: boolean;
+  /** "summary" (default) keeps the answer short; "full" adds every card's facts and alternatives. */
+  detail?: "summary" | "full";
 }
 
 export interface ToolCard {
@@ -29,24 +42,63 @@ export interface ToolCard {
   paidStartsAt: string | null;
   freeTierCommercialUse: boolean | null;
   watchOut: string | null;
+  monthlyCost: number | null;
+  costBasis: string | null;
   pricingUrl: string;
   verifiedOn: string;
 }
 
+export type StackRole = "core" | "optional" | "if_you_build";
+
 export interface StackPick {
   category: CategorySlug;
   categoryName: string;
+  role: StackRole;
+  /** Kept for older clients: true when role is not "core". */
   optional: boolean;
   pick: ToolCard;
   alternatives: { slug: string; name: string; when: string }[];
   score: number;
 }
 
+export interface CostLine {
+  /** Sum of the core picks' monthly cost at the profile. */
+  monthly: number;
+  scale: "1k_users" | "10_staff";
+  items: { tool: string; name: string; monthly: number; basis: string }[];
+  /** Fees that scale with revenue, quoted from the payment pick. */
+  variable: string[];
+  profile: string;
+  text: string;
+}
+
+export interface Summary {
+  headline: string;
+  picks: { category: CategorySlug; categoryName: string; tool: string; name: string; reason: string }[];
+  catches: { text: string; source: string; verifiedOn: string }[];
+  moreCatches: { text: string; source: string; verifiedOn: string }[];
+  cost: CostLine | null;
+}
+
 export interface Recommendation {
+  status: "ok" | "needs_answers" | "outside_coverage";
   description: string;
-  productType: { recipe: string | null; title: string | null };
+  productType: { recipe: string | null; title: string | null; label: string };
+  profile: {
+    platform: Profile["platform"];
+    money: Profile["money"];
+    audience: Profile["audience"];
+    ai: boolean;
+    realtime: boolean;
+    assumed: string[];
+  };
+  coverage: Coverage;
+  questions: Question[];
+  summary: Summary | null;
   detectedNeeds: { need: Need; label: string; matched: string }[];
   stack: StackPick[];
+  leftOut: { category: CategorySlug; reason: string }[];
+  recipeNote: string | null;
   nextStep: string;
   policy: string;
   method: string;
@@ -114,18 +166,244 @@ export function toCard(tool: Tool, reason: string): ToolCard {
     paidStartsAt: tool.paidStartsAt,
     freeTierCommercialUse: tool.freeTierCommercialUse,
     watchOut: tool.watchOut[0] ?? null,
+    monthlyCost: tool.cost?.monthly ?? null,
+    costBasis: tool.cost?.basis ?? null,
     pricingUrl: tool.pricingUrl,
     verifiedOn: tool.verifiedOn,
   };
 }
 
-export function recommendStack(catalog: CatalogSnapshot, input: RecommendInput): Recommendation {
-  const detected: DetectedNeed[] = detectNeeds(input.description);
-  for (const n of input.needs ?? []) {
-    if (!detected.some((d) => d.need === n)) detected.push({ need: n, matched: "(requested)" });
+const isMobile = (p: Profile) => p.platform === "mobile" || p.platform === "both";
+
+/** Which categories this kind of product needs, and why the others are left out. */
+export function categoriesFor(p: Profile): { pick: { slug: CategorySlug; role: StackRole }[]; leftOut: { category: CategorySlug; reason: string }[] } {
+  const pick: { slug: CategorySlug; role: StackRole }[] = [];
+  const leftOut: { category: CategorySlug; reason: string }[] = [];
+  const add = (slug: CategorySlug, role: StackRole = "core") => pick.push({ slug, role });
+
+  if (p.audience === "internal") {
+    add("internal_tools");
+    add("database", "if_you_build");
+    add("hosting", "if_you_build");
+    add("auth", "if_you_build");
+    if (p.ai) add("llm", "if_you_build");
+    for (const c of ["payments", "email", "analytics", "storage", "dns", "secrets", "monitoring"] as CategorySlug[]) {
+      leftOut.push({ category: c, reason: "A tool for your own staff doesn't need it." });
+    }
+    return { pick, leftOut };
   }
+
+  if (p.platform === "mobile") {
+    add("mobile_build");
+  } else {
+    add("hosting");
+    if (p.platform === "both") add("mobile_build");
+  }
+  add("database");
+  add("auth");
+  if (p.money !== "none") add("payments");
+  else leftOut.push({ category: "payments", reason: "Nothing in the description charges money. Ask for it with categories: [\"payments\"]." });
+  if (p.ai) add("llm");
+  if (p.rag) add("vector");
+  if (p.realtime) add("realtime");
+  add("email", p.platform === "mobile" ? "optional" : "core");
+  add("monitoring");
+  add("analytics", "optional");
+  add("storage", "optional");
+  if (p.platform === "mobile") {
+    for (const c of ["hosting", "dns", "secrets"] as CategorySlug[]) {
+      leftOut.push({ category: c, reason: "A phone app has no web server to host; its backend is the database's API." });
+    }
+  } else {
+    add("secrets", "optional");
+    add("dns", "optional");
+  }
+  return { pick, leftOut };
+}
+
+function productLabel(p: Profile, b2b: boolean): string {
+  if (p.audience === "internal") return "Staff tool";
+  const parts: string[] = [];
+  if (p.platform === "mobile") parts.push("Phone app");
+  else if (p.platform === "both") parts.push("Web and phone app");
+  else parts.push(b2b ? "B2B web app" : "Web app");
+  if (p.ai) parts.push(p.rag ? "with AI answers over documents" : "with AI features");
+  if (p.money === "users_pay_each_other") parts.push("where users pay each other");
+  else if (p.money === "users_pay_you" && isMobile(p)) parts.push("with in-app subscriptions");
+  if (p.realtime) parts.push("with live collaboration");
+  return parts.join(" ");
+}
+
+function headlineOrder(p: Profile, b2b: boolean): CategorySlug[] {
+  const o: CategorySlug[] = [];
+  if (p.audience === "internal") o.push("internal_tools");
+  if (isMobile(p)) o.push("mobile_build", ...(p.money !== "none" ? (["payments"] as CategorySlug[]) : []), "database");
+  if (p.money === "users_pay_each_other") o.push("payments");
+  if (p.ai) o.push("llm", "vector");
+  if (p.realtime) o.push("realtime");
+  if (b2b) o.push("auth", "payments");
+  o.push("hosting", "database", "auth", "payments", "email");
+  return [...new Set(o)];
+}
+
+function catchesFor(p: Profile, needs: Need[]): typeof CATCHES {
+  const flags: string[] = [];
+  if (p.audience === "internal") {
+    if (needs.includes("google_workspace")) flags.push("internal_workspace");
+    flags.push("internal");
+  } else {
+    if (isMobile(p) && p.money === "users_pay_you") flags.push("mobile_paid");
+    if (isMobile(p)) flags.push("mobile_social_login", "mobile");
+    if (p.money === "users_pay_each_other") flags.push("marketplace");
+    if (p.inPerson) flags.push("in_person");
+    if (p.ai) flags.push("ai");
+    if (p.rag) flags.push("rag");
+    if (needs.includes("usage_billing") && p.money !== "none") flags.push("usage_billing");
+    if (p.realtime) flags.push("realtime");
+  }
+  return flags.flatMap((f) => CATCHES.filter((c) => c.when === f));
+}
+
+const money = (n: number) => (n === 0 ? "$0" : n < 1 ? "under $1" : `$${Math.round(n).toLocaleString("en-US")}`);
+
+function costLine(stack: StackPick[], tools: Tool[], internal: boolean, ai: boolean): CostLine | null {
+  const [usersPart, aiPart] = COST_PROFILE.text.split(/(?<=\.)\s+(?=AI apps)/);
+  const profileText = internal
+    ? `Priced for ${COST_PROFILE.internalStaff} staff.`
+    : ai
+      ? `${usersPart} ${aiPart.replace(/\s*Internal tools.*$/, "")}`
+      : usersPart;
+  const core = stack.filter((s) => s.role === "core");
+  if (!core.length) return null;
+  const items: CostLine["items"] = [];
+  const variable: string[] = [];
+  for (const s of core) {
+    const t = tools.find((x) => x.slug === s.pick.slug);
+    if (!t?.cost) continue;
+    if (t.cost.monthly !== null) items.push({ tool: t.slug, name: t.name, monthly: t.cost.monthly, basis: t.cost.basis });
+    if (t.cost.variable) variable.push(`${t.name}: ${t.cost.variable}`);
+  }
+  const total = items.reduce((a, b) => a + b.monthly, 0);
+  const paid = items.filter((i) => i.monthly > 0).sort((a, b) => b.monthly - a.monthly);
+  const free = items.filter((i) => i.monthly === 0);
+  const scale = internal ? "10_staff" : "1k_users";
+  const who = internal ? `for ${COST_PROFILE.internalStaff} staff` : `at ${COST_PROFILE.users.toLocaleString("en-US")} users`;
+  let text = `About ${money(total)}/month ${who}`;
+  if (paid.length) text += `: ${paid.map((i) => `${i.name} ${money(i.monthly)}`).join(" + ")}`;
+  if (free.length) text += `${paid.length ? "; " : ": "}$0 for ${free.map((i) => i.name).join(", ")}`;
+  text += ".";
+  if (variable.length) text += ` Plus ${variable.join("; ")}.`;
+  if (internal && items.length === 1) text += ` ${items[0].basis}`;
+  return { monthly: Math.round(total * 100) / 100, scale, items, variable, profile: profileText, text };
+}
+
+const ASSUMED_TEXT: Record<"platform" | "money" | "audience", (p: Profile) => string> = {
+  platform: (p) => (p.platform === "web" ? "a website or web app, not a phone app" : `platform: ${p.platform}`),
+  money: (p) => (p.money === "none" ? "no payments between users" : `money: ${p.money}`),
+  audience: (p) => (p.audience === "customers" ? "for customers, not your own staff" : "for your own staff"),
+};
+
+export function recommendStack(catalog: CatalogSnapshot, input: RecommendInput): Recommendation {
+  const { profile, unknown, vague } = detectProfile(input.description, input.answers);
+  const coverage = detectCoverage(input.description);
+
+  // Needs: words in the description, plus what the profile implies, plus explicit ones.
+  const detected: DetectedNeed[] = detectNeeds(input.description);
+  const addNeed = (need: Need, matched: string) => {
+    if (!detected.some((d) => d.need === need)) detected.push({ need, matched });
+  };
+  const dropNeed = (need: Need) => {
+    const i = detected.findIndex((d) => d.need === need);
+    if (i >= 0) detected.splice(i, 1);
+  };
+  if (isMobile(profile)) addNeed("mobile", profile.matched.platform ?? "(answered)");
+  if (profile.platform === "mobile") dropNeed("nextjs");
+  if (profile.money === "users_pay_each_other") addNeed("marketplace", profile.matched.money ?? "(answered)");
+  if (profile.audience === "internal") {
+    addNeed("internal", profile.matched.audience ?? "(answered)");
+    dropNeed("b2b");
+  }
+  if (profile.realtime) addNeed("realtime", "live collaboration");
+  if (!profile.rag) dropNeed("rag");
+  for (const n of input.needs ?? []) addNeed(n, "(requested)");
   const needs = detected.map((d) => d.need);
-  const recipe = matchRecipe(catalog.recipes, input.description);
+  const b2b = needs.includes("b2b");
+
+  // Recipes only where they fit the profile; say why when one is held back.
+  let recipe = matchRecipe(catalog.recipes, input.description);
+  let recipeNote: string | null = null;
+  const b2bRecipe = catalog.recipes.find((r) => r.slug === "b2b-saas");
+  const blockers: string[] = [];
+  if (profile.platform === "mobile") blockers.push("it's a phone app");
+  if (profile.money === "users_pay_each_other") blockers.push(b2bRecipe?.notFor.find((x) => /marketplace/i.test(x)) ?? "it pays out to other users");
+  if (profile.audience === "internal") blockers.push("it's a tool for your own staff");
+  if (recipe && blockers.length) {
+    recipeNote = `The ${recipe.slug} recipe doesn't fit: ${blockers.join("; ")}.`;
+    recipe = null;
+  } else if (!recipe && profile.money === "users_pay_each_other" && b2bRecipe) {
+    recipeNote = `No recipe yet for marketplaces. The nearest, ${b2bRecipe.slug}, says it's not for: ${blockers[0]}`;
+  } else if (recipe && profile.ai) {
+    recipeNote = `The ${recipe.slug} recipe covers the SaaS parts (organizations, billing, email) but not the AI parts; the AI picks are in this answer.`;
+  }
+
+  const base = {
+    description: input.description,
+    productType: { recipe: recipe?.slug ?? null, title: recipe?.title ?? null, label: productLabel(profile, b2b) },
+    coverage,
+    detectedNeeds: detected.map((d) => ({ need: d.need, label: NEED_LABELS[d.need], matched: d.matched })),
+    recipeNote,
+    policy: POLICY,
+    method: METHOD_URL,
+  };
+  const profileOut = (assumed: string[]) => ({
+    platform: profile.platform,
+    money: profile.money,
+    audience: profile.audience,
+    ai: profile.ai,
+    realtime: profile.realtime,
+    assumed,
+  });
+
+  const explicit = !!input.categories?.length;
+
+  // Out of scope: say so instead of a stack, unless the agent asked for specific categories.
+  if (coverage.status === "outside" && !explicit) {
+    return {
+      ...base,
+      status: "outside_coverage",
+      profile: profileOut([]),
+      questions: [],
+      summary: null,
+      stack: [],
+      leftOut: [],
+      nextStep:
+        "Tell the user Cuely doesn't cover this kind of product. If it has ordinary web parts (sign-in, database, email), call recommend_stack again with categories for just those.",
+    };
+  }
+
+  // Ask before guessing, but only about facts that change the picks.
+  if (!input.assumeDefaults && !explicit) {
+    const qs: Question[] = [];
+    if (vague) qs.push(QUESTIONS.what);
+    for (const u of unknown) qs.push(QUESTIONS[u]);
+    if (qs.length) {
+      const ids = qs.filter((q) => q.id !== "what").map((q) => q.id);
+      return {
+        ...base,
+        status: "needs_answers",
+        profile: profileOut([]),
+        questions: qs.slice(0, 3),
+        summary: null,
+        stack: [],
+        leftOut: [],
+        nextStep: `Ask the user ${qs.length === 1 ? "this question" : "these questions"}, then call recommend_stack again with the same description${
+          ids.length ? ` and answers, e.g. answers: { ${ids.map((id) => `${id}: "${QUESTIONS[id].options![0].value}"`).join(", ")} }` : " plus their answer"
+        }. If you already know the answers from the conversation, pass them now. If you can't ask, call again with assume_defaults: true.`,
+      };
+    }
+  }
+
+  const assumed = input.assumeDefaults ? unknown.map((u) => ASSUMED_TEXT[u](profile)) : [];
 
   const using = new Set(
     (input.alreadyUsing ?? []).map((r) => resolveTool(catalog.tools, r)?.slug).filter((s): s is string => !!s),
@@ -134,12 +412,15 @@ export function recommendStack(catalog: CatalogSnapshot, input: RecommendInput):
     (input.avoid ?? []).map((r) => resolveTool(catalog.tools, r)?.slug).filter((s): s is string => !!s),
   );
 
-  const wanted = input.categories?.length
-    ? catalog.categories.filter((c) => input.categories!.includes(c.slug))
-    : catalog.categories;
+  const plan = explicit
+    ? { pick: input.categories!.map((slug) => ({ slug, role: "core" as StackRole })), leftOut: [] }
+    : categoriesFor(profile);
 
+  const full = input.detail === "full";
   const stack: StackPick[] = [];
-  for (const cat of [...wanted].sort((a, b) => a.order - b.order)) {
+  for (const { slug, role } of plan.pick) {
+    const cat = catalog.categories.find((c) => c.slug === slug);
+    if (!cat) continue;
     const inCat = catalog.tools.filter((t) => t.category === cat.slug);
     const candidates = inCat.filter((t) => !avoid.has(t.slug));
     if (!candidates.length) continue;
@@ -149,37 +430,63 @@ export function recommendStack(catalog: CatalogSnapshot, input: RecommendInput):
       .sort((a, b) => b.s - a.s || a.t.baseline - b.t.baseline);
 
     const top = ranked[0];
-    let reason: string;
-    if (using.has(top.t.slug)) {
-      reason = `You already use ${top.t.name}; nothing you described is worth the cost of switching.`;
-    } else {
-      reason = strongestReason(top.t, needs) ?? top.t.pitch;
-    }
+    const reason = using.has(top.t.slug)
+      ? `You already use ${top.t.name}; nothing you described is worth the cost of switching.`
+      : (strongestReason(top.t, needs) ?? top.t.pitch);
 
     const recipeItem = recipe?.stack.find((s) => s.category === cat.slug);
-    const optional = recipeItem ? !!recipeItem.optional : DEFAULT_OPTIONAL.includes(cat.slug);
+    const finalRole: StackRole = role === "core" && recipeItem?.optional ? "optional" : role;
 
     stack.push({
       category: cat.slug,
       categoryName: cat.name,
-      optional,
+      role: finalRole,
+      optional: finalRole !== "core",
       pick: toCard(top.t, reason),
-      alternatives: ranked.slice(1, 3).map(({ t }) => ({ slug: t.slug, name: t.name, when: alternativeWhen(t) })),
+      alternatives: ranked.slice(1, full ? 3 : 2).map(({ t }) => ({ slug: t.slug, name: t.name, when: alternativeWhen(t) })),
       score: Math.round(top.s * 10) / 10,
     });
   }
 
+  // Summary first: the picks that matter, the catches, and the monthly cost.
+  const order = headlineOrder(profile, b2b);
+  const core = stack.filter((s) => s.role === "core");
+  const picks = [...core]
+    .sort((a, b) => {
+      const ia = order.indexOf(a.category), ib = order.indexOf(b.category);
+      return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+    })
+    .slice(0, 3)
+    .map((s) => ({ category: s.category, categoryName: s.categoryName, tool: s.pick.slug, name: s.pick.name, reason: s.pick.reason }));
+
+  const fromProfile = explicit ? [] : catchesFor(profile, needs).map((c) => ({ text: c.text, source: c.source, verifiedOn: c.verifiedOn }));
+  const laneSources = new Set(fromProfile.map((c) => c.source));
+  const fromPicks = picks
+    .map((p) => stack.find((s) => s.category === p.category)!.pick)
+    .filter((c) => c.watchOut && !laneSources.has(c.pricingUrl))
+    .map((c) => ({ text: `${c.name}: ${c.watchOut}`, source: c.pricingUrl, verifiedOn: c.verifiedOn }));
+  const allCatches = [...fromProfile, ...fromPicks];
+
+  const summary: Summary = {
+    headline: `${base.productType.label}: ${picks.map((p) => `${p.name} (${/^.[^A-Z]*$/.test(p.categoryName) ? p.categoryName.toLowerCase() : p.categoryName})`).join(", ")}.`,
+    picks,
+    catches: allCatches.slice(0, 3),
+    moreCatches: allCatches.slice(3),
+    cost: costLine(stack, catalog.tools, profile.audience === "internal" && !explicit, profile.ai),
+  };
+
   const nextStep = recipe
     ? `Call get_recipe with product_type "${recipe.slug}" for the full setup steps, schema and pitfalls.`
-    : `No full recipe matches this product type yet; available: ${catalog.recipes.map((r) => r.slug).join(", ")}. The stack above comes from the general rules.`;
+    : `No full recipe for this product type yet (available: ${catalog.recipes.map((r) => r.slug).join(", ")}). Call again with detail: "full" for every pick's free plan, prices and alternatives.`;
 
   return {
-    description: input.description,
-    productType: { recipe: recipe?.slug ?? null, title: recipe?.title ?? null },
-    detectedNeeds: detected.map((d) => ({ need: d.need, label: NEED_LABELS[d.need], matched: d.matched })),
+    ...base,
+    status: "ok",
+    profile: profileOut(assumed),
+    questions: [],
+    summary,
     stack,
+    leftOut: plan.leftOut,
     nextStep,
-    policy: POLICY,
-    method: METHOD_URL,
   };
 }

@@ -29,6 +29,8 @@ create table if not exists tools (
   verified_on              date not null,
   updated_at               timestamptz not null default now()
 );
+-- Monthly cost at Cuely's published usage profile (src/catalog/costs.ts).
+alter table tools add column if not exists cost jsonb;
 create index if not exists tools_category_idx on tools (category);
 
 create table if not exists recipes (
