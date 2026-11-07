@@ -1,0 +1,117 @@
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createMcpHandler } from "@/mcp/http";
+import { createRateLimiter } from "@/mcp/rate-limit";
+import { memoryRepository } from "@/repo";
+import { serve } from "./helpers";
+
+const text = (r: any) => (r.content as { type: string; text: string }[]).map((c) => c.text).join("\n");
+
+describe("MCP over Streamable HTTP", () => {
+  const repo = memoryRepository();
+  let srv: Awaited<ReturnType<typeof serve>>;
+  let client: Client;
+
+  beforeAll(async () => {
+    srv = await serve(createMcpHandler({ repo, limiter: createRateLimiter(1000) }));
+    client = new Client({ name: "cuely-test", version: "1.0.0" });
+    await client.connect(new StreamableHTTPClientTransport(srv.url));
+  });
+  afterAll(async () => {
+    await client.close();
+    await srv.close();
+  });
+
+  it("advertises the four tools, all read-only, with instructions", async () => {
+    const { tools } = await client.listTools();
+    expect(tools.map((t) => t.name).sort()).toEqual(["compare_tools", "get_recipe", "list_categories", "recommend_stack"]);
+    for (const t of tools) expect(t.annotations?.readOnlyHint).toBe(true);
+    expect(client.getInstructions()).toMatch(/recommend_stack first/);
+  });
+
+  it("recommend_stack returns a stack and points to the recipe", async () => {
+    const r: any = await client.callTool({
+      name: "recommend_stack",
+      arguments: { description: "I'm building a SaaS for a fintech startup" },
+    });
+    expect(r.isError).toBeFalsy();
+    expect(r.structuredContent.productType.recipe).toBe("b2b-saas");
+    expect(r.structuredContent.stack).toHaveLength(10);
+    expect(text(r)).toMatch(/## Auth: WorkOS AuthKit/);
+    expect(text(r)).toMatch(/get_recipe/);
+  });
+
+  it("get_recipe returns the full B2B SaaS recipe by slug or by description", async () => {
+    const bySlug: any = await client.callTool({ name: "get_recipe", arguments: { product_type: "b2b-saas" } });
+    expect(bySlug.structuredContent.found).toBe(true);
+    expect(text(bySlug)).toMatch(/### 4\. Add subscription billing per organization/);
+    expect(text(bySlug)).toMatch(/constructEvent/);
+    const byWords: any = await client.callTool({ name: "get_recipe", arguments: { product_type: "multi-tenant CRM", include_steps: false } });
+    expect(byWords.structuredContent.recipe.slug).toBe("b2b-saas");
+    expect(text(byWords)).not.toMatch(/## Steps/);
+    const missing: any = await client.callTool({ name: "get_recipe", arguments: { product_type: "mobile game" } });
+    expect(missing.structuredContent.found).toBe(false);
+  });
+
+  it("compare_tools compares within a category and errors across categories", async () => {
+    const ok: any = await client.callTool({
+      name: "compare_tools",
+      arguments: { a: "stripe", b: "paddle", context: "selling worldwide, want VAT handled" },
+    });
+    expect(ok.isError).toBeFalsy();
+    expect(text(ok)).toMatch(/Paddle fits better/);
+    const bad: any = await client.callTool({ name: "compare_tools", arguments: { a: "stripe", b: "neon" } });
+    expect(bad.isError).toBe(true);
+  });
+
+  it("list_categories lists all and expands one", async () => {
+    const all: any = await client.callTool({ name: "list_categories", arguments: {} });
+    expect(all.structuredContent.categories).toHaveLength(10);
+    const one: any = await client.callTool({ name: "list_categories", arguments: { category: "email" } });
+    expect(text(one)).toMatch(/Resend/);
+    expect(text(one)).toMatch(/3,000 emails per month/);
+  });
+
+  it("rejects invalid input", async () => {
+    const r: any = await client.callTool({ name: "recommend_stack", arguments: { description: "x" } });
+    expect(r.isError).toBe(true);
+  });
+
+  it("logs usage per call without the description", async () => {
+    await new Promise((r) => setTimeout(r, 10));
+    expect(repo.events.length).toBeGreaterThan(0);
+    expect(repo.events.some((e) => e.tool === "recommend_stack" && e.recipe === "b2b-saas")).toBe(true);
+    expect(JSON.stringify(repo.events)).not.toMatch(/fintech startup/);
+  });
+});
+
+describe("HTTP behavior", () => {
+  it("answers a plain GET with server info and handles CORS preflight", async () => {
+    const srv = await serve(createMcpHandler({ repo: memoryRepository() }));
+    const info = await fetch(srv.url).then((r) => r.json());
+    expect(info.tools).toHaveLength(4);
+    const pre = await fetch(srv.url, { method: "OPTIONS" });
+    expect(pre.status).toBe(204);
+    expect(pre.headers.get("access-control-allow-origin")).toBe("*");
+    await srv.close();
+  });
+
+  it("rate-limits by IP with 429 and Retry-After", async () => {
+    const srv = await serve(createMcpHandler({ repo: memoryRepository(), limiter: createRateLimiter(2) }));
+    const body = JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list", params: {} });
+    const send = (ip: string) =>
+      fetch(srv.url, {
+        method: "POST",
+        headers: { "content-type": "application/json", accept: "application/json, text/event-stream", "x-forwarded-for": ip },
+        body,
+      });
+    expect((await send("1.1.1.1")).status).toBe(200);
+    expect((await send("1.1.1.1")).status).toBe(200);
+    const third = await send("1.1.1.1");
+    expect(third.status).toBe(429);
+    expect(Number(third.headers.get("retry-after"))).toBeGreaterThan(0);
+    expect((await send("2.2.2.2")).status).toBe(200);
+    await srv.close();
+  });
+});
