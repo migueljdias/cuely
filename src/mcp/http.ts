@@ -6,7 +6,7 @@ import { PLANS, type PlanId } from "@/plans";
 import { getRepository, type Repository } from "@/repo";
 import { APP_URL } from "@/site";
 import { clientIp, createRateLimiter, type RateLimiter } from "./rate-limit";
-import { RESOURCE_METADATA_URL, verifyOAuthToken } from "./oauth";
+import { OAUTH_SCOPES, RESOURCE_METADATA_URL, verifyOAuthToken } from "./oauth";
 import { createCuelyServer } from "./server";
 
 export const KEY_URL = `${APP_URL}/account`;
@@ -165,15 +165,11 @@ export function createMcpHandler(opts: HandlerOptions = {}) {
   const error = (status: number, code: number, message: string, id: string | number | null, headers: Record<string, string> = {}, data?: object) =>
     Response.json({ jsonrpc: "2.0", error: { code, message, ...(data ? { data } : {}) }, id }, { status, headers: { ...CORS, ...headers } });
 
+  const challenge = (invalidToken = false) =>
+    `Bearer ${invalidToken ? 'error="invalid_token", ' : ""}resource_metadata="${RESOURCE_METADATA_URL}", scope="${OAUTH_SCOPES.join(" ")}"`;
+
   const unauthorized = (message: string, id: string | number | null, invalidToken = false) =>
-    error(
-      401,
-      -32001,
-      message,
-      id,
-      { "www-authenticate": `Bearer ${invalidToken ? 'error="invalid_token", ' : ""}resource_metadata="${RESOURCE_METADATA_URL}"` },
-      { sign_in: RESOURCE_METADATA_URL, get_a_key: KEY_URL },
-    );
+    error(401, -32001, message, id, { "www-authenticate": challenge(invalidToken) }, { sign_in: RESOURCE_METADATA_URL, get_a_key: KEY_URL });
 
   return async function handle(req: Request): Promise<Response> {
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
@@ -195,7 +191,11 @@ export function createMcpHandler(opts: HandlerOptions = {}) {
           },
           docs: "https://cuely.dev",
         },
-        { headers: CORS },
+        // Without a credential the info still comes back, as a 401 with the OAuth challenge, so
+        // clients and checkers that probe with GET find the sign-in too.
+        !req.headers.get("authorization") && (injected || !devOpen())
+          ? { status: 401, headers: { ...CORS, "www-authenticate": challenge() } }
+          : { headers: CORS },
       );
     }
 

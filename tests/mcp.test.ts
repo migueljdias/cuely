@@ -114,8 +114,12 @@ describe("HTTP behavior", () => {
     });
     expect(res.status).toBe(401);
     expect(res.headers.get("www-authenticate")).toBe(
-      'Bearer resource_metadata="https://cuely.dev/.well-known/oauth-protected-resource/api/mcp"',
+      'Bearer resource_metadata="https://cuely.dev/.well-known/oauth-protected-resource/api/mcp", scope="profile email"',
     );
+    const get = await fetch(srv.url);
+    expect(get.status).toBe(401);
+    expect(get.headers.get("www-authenticate")).toMatch(/resource_metadata=/);
+    expect((await get.json()).tools).toHaveLength(4);
     const body = await res.json();
     expect(body.id).toBe(7);
     expect(body.error.message).toMatch(/app\.cuely\.dev\/account/);
