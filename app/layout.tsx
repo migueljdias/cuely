@@ -46,7 +46,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   );
   // Clerk wraps the page only once its keys are set, so the site runs without them.
   return clerkOn ? (
-    <ClerkProvider signInUrl="/auth/sign-in" signUpUrl="/auth/sign-up">
+    <ClerkProvider
+      signInUrl="/auth/sign-in"
+      signUpUrl="/auth/sign-up"
+      signInForceRedirectUrl="/account"
+      signUpForceRedirectUrl="/account"
+      afterSignOutUrl="/"
+    >
       {page}
     </ClerkProvider>
   ) : (

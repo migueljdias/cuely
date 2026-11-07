@@ -1,3 +1,6 @@
+import { authConfigured } from "@/auth/server";
+import { HeaderAccount } from "./header-account";
+
 function Logo({ small = false }: { small?: boolean }) {
   const h = small ? 22 : 28;
   return (
@@ -26,7 +29,7 @@ export function SiteHeader() {
             Connect
           </a>
           <a href="/pricing">Pricing</a>
-          <a href="/account">Sign in</a>
+          {authConfigured() ? <HeaderAccount /> : <a href="/account">Sign in</a>}
         </nav>
       </header>
     </>

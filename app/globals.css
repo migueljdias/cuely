@@ -150,6 +150,22 @@ pre {
 .nav nav a:hover {
   color: var(--text);
 }
+.nav nav {
+  align-items: center;
+}
+.nav-button {
+  font: inherit;
+  font-size: 15px;
+  color: var(--text-2);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  transition: color var(--fast) var(--ease);
+}
+.nav-button:hover {
+  color: var(--text);
+}
 
 .wordmark {
   display: inline-flex;
@@ -786,6 +802,16 @@ section {
   max-width: 860px;
   padding-bottom: 64px;
 }
+.account .page-lede {
+  overflow-wrap: anywhere;
+}
+.panel-head h2 .tag {
+  vertical-align: middle;
+}
+.key-list li > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 .account-head {
   display: flex;
   align-items: flex-end;
@@ -839,6 +865,7 @@ section {
 .field-inline {
   flex: 1;
   min-width: 200px;
+  padding-bottom: 0;
 }
 .key-reveal {
   margin-top: 16px;
@@ -1167,10 +1194,51 @@ section {
     grid-column: 2;
     grid-row: 1 / span 2;
   }
+  .nav nav a,
+  .nav-button {
+    white-space: nowrap;
+  }
+  .nav-button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 4px;
+  }
   .account-head {
     align-items: flex-start;
     flex-direction: column;
     gap: 0;
+  }
+  .account .page-lede {
+    font-size: 16px;
+    margin-bottom: 24px;
+  }
+  .panel {
+    padding: 24px 0;
+  }
+  .panel-head h2 {
+    font-size: 22px;
+  }
+  .panel > form .btn {
+    width: 100%;
+  }
+  .key-list li code {
+    display: block;
+  }
+  .key-name {
+    display: block;
+    margin-left: 0;
+  }
+  .inline-form .btn {
+    width: 100%;
+  }
+  .field-inline {
+    min-width: 0;
+    flex-basis: 100%;
+  }
+  .snippet {
+    font-size: 13px;
+    padding: 12px;
   }
   .footer-links a {
     display: inline-flex;

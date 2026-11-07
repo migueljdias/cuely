@@ -28,6 +28,7 @@ export function CuelySignIn() {
       routing="path"
       path="/auth/sign-in"
       signUpUrl="/auth/sign-up"
+      forceRedirectUrl="/account"
       fallbackRedirectUrl="/account"
       appearance={clerkAppearance(dark)}
     />
@@ -41,6 +42,7 @@ export function CuelySignUp() {
       routing="path"
       path="/auth/sign-up"
       signInUrl="/auth/sign-in"
+      forceRedirectUrl="/account"
       fallbackRedirectUrl="/account"
       appearance={clerkAppearance(dark)}
     />
