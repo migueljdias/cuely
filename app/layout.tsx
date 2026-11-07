@@ -2,9 +2,11 @@ import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { ClerkProvider } from "@clerk/nextjs";
+import { authConfigured } from "@/auth/server";
 import "./globals.css";
 
-const clerkOn = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+// Only when both Clerk keys are set, matching proxy.ts and the account page.
+const clerkOn = authConfigured();
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://cuely.dev"),
