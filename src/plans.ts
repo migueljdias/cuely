@@ -9,8 +9,9 @@ export interface Plan {
   name: string;
   /** MCP requests per minute. Anonymous is counted per IP, keyed plans per key. */
   perMinute: number;
-  /** Placeholder until real usage shows who outgrows free. */
   priceLabel: string;
+  /** Monthly price in US cents. Checkout refuses a Stripe price that doesn't match. */
+  priceCents: number;
   summary: string;
   features: string[];
 }
@@ -21,6 +22,7 @@ export const PLANS: Record<PlanId, Plan> = {
     name: "No account",
     perMinute: Number(process.env.CUELY_RATE_LIMIT_PER_MINUTE) || 60,
     priceLabel: "$0",
+    priceCents: 0,
     summary: "Connect the endpoint and go.",
     features: ["Every tool, recipe and recommendation", "60 requests a minute per IP"],
   },
@@ -29,6 +31,7 @@ export const PLANS: Record<PlanId, Plan> = {
     name: "Free",
     perMinute: 120,
     priceLabel: "$0",
+    priceCents: 0,
     summary: "Everything a solo builder needs. Most people never need more.",
     features: [
       "Every tool, recipe and recommendation",
@@ -41,7 +44,8 @@ export const PLANS: Record<PlanId, Plan> = {
     id: "pro",
     name: "Pro",
     perMinute: 1200,
-    priceLabel: "$15 a month",
+    priceLabel: "$10 a month",
+    priceCents: 1000,
     summary: "For teams and heavy automated use.",
     features: [
       "Everything in Free, with the same answers",

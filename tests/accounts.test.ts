@@ -4,10 +4,11 @@ import { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
 import { generateApiKey, hashApiKey, looksLikeApiKey, readApiKey } from "@/accounts/keys";
 import { accountStore } from "@/accounts/store";
-import { formEncode, paymentsConfig, signStripePayload, verifyStripeSignature } from "@/billing/stripe";
+import { formEncode, paymentsConfig, priceMatches, signStripePayload, verifyStripeSignature } from "@/billing/stripe";
 import { handleStripeWebhook } from "@/billing/webhook";
 import { createMcpHandler } from "@/mcp/http";
 import { createRateLimiter } from "@/mcp/rate-limit";
+import { PLANS } from "@/plans";
 import { memoryRepository } from "@/repo";
 import { serve } from "./helpers";
 
@@ -45,6 +46,16 @@ describe("Payments switch", () => {
   it("encodes nested params the way Stripe expects", () => {
     const body = formEncode({ mode: "subscription", line_items: [{ price: "price_1", quantity: 1 }], metadata: { a: "b c" } }).join("&");
     expect(body).toBe("mode=subscription&line_items%5B0%5D%5Bprice%5D=price_1&line_items%5B0%5D%5Bquantity%5D=1&metadata%5Ba%5D=b%20c");
+  });
+
+  it("only accepts a Stripe price that matches the advertised $10 a month", () => {
+    const ok = { active: true, currency: "usd", unit_amount: 1000, recurring: { interval: "month", interval_count: 1 } };
+    expect(PLANS.pro.priceCents).toBe(1000);
+    expect(priceMatches(ok, PLANS.pro.priceCents)).toBe(true);
+    expect(priceMatches({ ...ok, unit_amount: 1500 }, 1000)).toBe(false);
+    expect(priceMatches({ ...ok, currency: "eur" }, 1000)).toBe(false);
+    expect(priceMatches({ ...ok, recurring: { interval: "year", interval_count: 1 } }, 1000)).toBe(false);
+    expect(priceMatches({ ...ok, active: false }, 1000)).toBe(false);
   });
 
   it("verifies webhook signatures and rejects stale or forged ones", () => {

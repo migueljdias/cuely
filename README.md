@@ -108,7 +108,7 @@ Stripe holds all card data. The database stores only the Stripe customer ID, sub
 
 Payments are **off** unless `PAYMENTS_MODE` and a matching key are set. To go live:
 
-1. Create a Stripe account and a "Cuely Pro" product with a monthly price.
+1. Create a Stripe account and a "Cuely Pro" product with a $10 (USD) monthly price. Checkout refuses any other amount, so the price in `src/plans.ts` and in Stripe must match.
 2. In test mode, add a webhook endpoint at `https://cuely.dev/api/stripe/webhook` for `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated` and `customer.subscription.deleted`, and turn on the customer portal.
 3. Set `STRIPE_SECRET_KEY` (`sk_test_...`), `STRIPE_PRICE_PRO`, `STRIPE_WEBHOOK_SECRET` and `PAYMENTS_MODE=test` in Vercel, redeploy, and buy Pro with a Stripe test card.
 4. Move the Vercel project to Pro (Hobby is non-commercial).

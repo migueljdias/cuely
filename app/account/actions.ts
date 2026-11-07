@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getAccountStore } from "@/accounts/store";
 import { currentUser } from "@/auth/server";
-import { paymentsConfig, stripePost } from "@/billing/stripe";
+import { paymentsConfig, priceMatches, stripeGet, stripePost, type StripePrice } from "@/billing/stripe";
+import { PLANS } from "@/plans";
 
 const SITE = process.env.CUELY_SITE_URL ?? "https://cuely.dev";
 
@@ -41,6 +42,10 @@ export async function checkoutAction(): Promise<void> {
   const cfg = paymentsConfig();
   if (cfg.mode === "off") redirect("/pricing?payments=off");
   if (account.plan === "pro") redirect("/account");
+
+  // Never charge a different amount from the one the pricing page shows.
+  const price = await stripeGet<StripePrice>(cfg, `prices/${cfg.priceId}`);
+  if (!priceMatches(price, PLANS.pro.priceCents)) redirect("/pricing?payments=mismatch");
 
   let customerId = account.stripeCustomerId;
   if (!customerId) {

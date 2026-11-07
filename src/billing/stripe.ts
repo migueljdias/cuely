@@ -56,6 +56,34 @@ export function formEncode(params: Record<string, unknown>, prefix = ""): string
   return out;
 }
 
+export async function stripeGet<T = any>(cfg: PaymentsConfig, path: string, fetchImpl: typeof fetch = fetch): Promise<T> {
+  if (cfg.mode === "off" || !cfg.secretKey) throw new Error("Payments are off.");
+  const res = await fetchImpl(`https://api.stripe.com/v1/${path}`, {
+    headers: { authorization: `Bearer ${cfg.secretKey}` },
+  });
+  const body = await res.json();
+  if (!res.ok) throw new Error(body?.error?.message ?? `Stripe returned ${res.status}`);
+  return body as T;
+}
+
+export interface StripePrice {
+  unit_amount: number | null;
+  currency: string;
+  active: boolean;
+  recurring: { interval: string; interval_count: number } | null;
+}
+
+/** True only for an active US dollar price billed once a month at exactly `cents`. */
+export function priceMatches(price: StripePrice, cents: number): boolean {
+  return (
+    price.active &&
+    price.currency === "usd" &&
+    price.unit_amount === cents &&
+    price.recurring?.interval === "month" &&
+    price.recurring.interval_count === 1
+  );
+}
+
 export async function stripePost<T = any>(
   cfg: PaymentsConfig,
   path: string,
