@@ -20,6 +20,9 @@ export interface CatalogSnapshot {
 
 export const METHOD_URL = "https://cuely.dev/#method";
 
+/** Read 2026-11-07 from developer.apple.com/programs and Google Play Console help (answer 6112435). */
+const STORE_ACCOUNTS = "Apple Developer Program $99 a year, Google Play $25 once";
+
 export interface RecommendInput {
   description: string;
   categories?: CategorySlug[];
@@ -133,6 +136,53 @@ export function matchRecipe(recipes: Recipe[], text: string): Recipe | null {
  * plus a small editorial default (baseline) that only decides close calls.
  * Tools the builder already uses get a fixed switching-cost bonus.
  */
+/**
+ * A recipe is a tested combination for one product type. When a product matches a
+ * recipe, the recipe's pick in a category gets this bonus, so recommend_stack and
+ * get_recipe agree. It's small: a need you described that favors another tool by more
+ * than a point still wins, and so does a tool you already use (+4).
+ */
+export const RECIPE_BONUS = 1;
+
+/** Which recipe a product profile routes to, before any keyword match. */
+export const RECIPE_FOR = {
+  internal: "internal-tool",
+  marketplace: "marketplace",
+  mobile: "mobile-subscription-app",
+  ai: "ai-docs-app",
+} as const;
+
+/**
+ * Picks the recipe for a product: staff tools, then marketplaces, then phone apps,
+ * then AI apps, from the profile; otherwise the best keyword match among the rest.
+ * Returns a note when the recipe covers only part of the product.
+ */
+export function routeRecipe(recipes: Recipe[], profile: Profile, description: string, b2b: boolean): { recipe: Recipe | null; note: string | null } {
+  const by = (slug: string) => recipes.find((r) => r.slug === slug) ?? null;
+  const notes: string[] = [];
+  let recipe: Recipe | null = null;
+  if (profile.audience === "internal") {
+    recipe = by(RECIPE_FOR.internal);
+  } else if (profile.money === "users_pay_each_other") {
+    recipe = by(RECIPE_FOR.marketplace);
+    if (isMobile(profile)) notes.push("It's also a phone app: payments for real-world services stay outside in-app purchase, and the mobile-subscription-app recipe's build, sign-in and store steps still apply.");
+  } else if (isMobile(profile)) {
+    recipe = by(RECIPE_FOR.mobile);
+    if (profile.money === "none") notes.push("Nothing here is paid, so skip the recipe's purchase, paywall and webhook steps.");
+    if (profile.ai) notes.push("The AI parts aren't in this recipe: call the model API from a backend function, never from the app, and see the ai-docs-app recipe for retrieval and usage caps.");
+  } else if (profile.ai && (profile.rag || !b2b)) {
+    recipe = by(RECIPE_FOR.ai);
+    if (b2b) notes.push("Its first step points to the b2b-saas recipe for organizations, roles and invites.");
+    if (!profile.rag) notes.push("Skip the recipe's document steps (parsing, embeddings, retrieval) if the product doesn't answer from documents.");
+  }
+  if (!recipe) {
+    const routed = new Set<string>(Object.values(RECIPE_FOR));
+    recipe = matchRecipe(recipes.filter((r) => !routed.has(r.slug)), description);
+    if (recipe && profile.ai) notes.push(`The ${recipe.slug} recipe covers the SaaS parts (organizations, billing, email) but not the AI parts; the AI picks are in this answer, and the ai-docs-app recipe has the steps.`);
+  }
+  return { recipe, note: notes.length ? notes.join(" ") : null };
+}
+
 export function scoreTool(tool: Tool, needs: Need[], categorySize: number, alreadyUsing: boolean): number {
   const needScore = needs.reduce((sum, n) => sum + (tool.fit[n]?.weight ?? 0), 0);
   const baseline = (categorySize - tool.baseline + 1) * 0.4;
@@ -329,22 +379,8 @@ export function recommendStack(catalog: CatalogSnapshot, input: RecommendInput):
   const needs = detected.map((d) => d.need);
   const b2b = needs.includes("b2b");
 
-  // Recipes only where they fit the profile; say why when one is held back.
-  let recipe = matchRecipe(catalog.recipes, input.description);
-  let recipeNote: string | null = null;
-  const b2bRecipe = catalog.recipes.find((r) => r.slug === "b2b-saas");
-  const blockers: string[] = [];
-  if (profile.platform === "mobile") blockers.push("it's a phone app");
-  if (profile.money === "users_pay_each_other") blockers.push(b2bRecipe?.notFor.find((x) => /marketplace/i.test(x)) ?? "it pays out to other users");
-  if (profile.audience === "internal") blockers.push("it's a tool for your own staff");
-  if (recipe && blockers.length) {
-    recipeNote = `The ${recipe.slug} recipe doesn't fit: ${blockers.join("; ")}.`;
-    recipe = null;
-  } else if (!recipe && profile.money === "users_pay_each_other" && b2bRecipe) {
-    recipeNote = `No recipe yet for marketplaces. The nearest, ${b2bRecipe.slug}, says it's not for: ${blockers[0]}`;
-  } else if (recipe && profile.ai) {
-    recipeNote = `The ${recipe.slug} recipe covers the SaaS parts (organizations, billing, email) but not the AI parts; the AI picks are in this answer.`;
-  }
+  // The recipe follows the profile first (what kind of product it is), then plain words.
+  const { recipe, note: recipeNote } = routeRecipe(catalog.recipes, profile, input.description, b2b);
 
   const base = {
     description: input.description,
@@ -425,17 +461,18 @@ export function recommendStack(catalog: CatalogSnapshot, input: RecommendInput):
     const candidates = inCat.filter((t) => !avoid.has(t.slug));
     if (!candidates.length) continue;
 
+    const recipeItem = recipe?.stack.find((s) => s.category === cat.slug);
     const ranked = candidates
-      .map((t) => ({ t, s: scoreTool(t, needs, inCat.length, using.has(t.slug)) }))
+      .map((t) => ({ t, s: scoreTool(t, needs, inCat.length, using.has(t.slug)) + (t.slug === recipeItem?.tool ? RECIPE_BONUS : 0) }))
       .sort((a, b) => b.s - a.s || a.t.baseline - b.t.baseline);
 
     const top = ranked[0];
     const reason = using.has(top.t.slug)
       ? `You already use ${top.t.name}; nothing you described is worth the cost of switching.`
-      : (strongestReason(top.t, needs) ?? top.t.pitch);
+      : (strongestReason(top.t, needs) ?? (top.t.slug === recipeItem?.tool ? recipeItem.why : top.t.pitch));
 
-    const recipeItem = recipe?.stack.find((s) => s.category === cat.slug);
-    const finalRole: StackRole = role === "core" && recipeItem?.optional ? "optional" : role;
+    // The recipe says which parts are core for this product type; "only if you build it" stays.
+    const finalRole: StackRole = recipeItem && role !== "if_you_build" ? (recipeItem.optional ? "optional" : "core") : role;
 
     stack.push({
       category: cat.slug,
@@ -474,6 +511,9 @@ export function recommendStack(catalog: CatalogSnapshot, input: RecommendInput):
     moreCatches: allCatches.slice(3),
     cost: costLine(stack, catalog.tools, profile.audience === "internal" && !explicit, profile.ai),
   };
+  if (summary.cost && isMobile(profile) && !explicit) {
+    summary.cost.text += ` Plus store accounts: ${STORE_ACCOUNTS}.`;
+  }
 
   const nextStep = recipe
     ? `Call get_recipe with product_type "${recipe.slug}" for the full setup steps, schema and pitfalls.`

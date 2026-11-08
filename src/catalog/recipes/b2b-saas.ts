@@ -279,5 +279,25 @@ export const b2bSaas: Recipe = {
     "If you sell to EU customers, you need a data processing agreement with each vendor that handles personal data, and a privacy policy that lists them.",
     "Fintech products that hold, move or lend money may need licenses or a regulated partner. This recipe covers SaaS billing only, not money movement.",
   ],
+  catches: [
+    {
+      text: "Vercel's Hobby plan is for personal, non-commercial use; move to Pro ($20 a month per developer seat) before the first paying customer.",
+      source: "https://vercel.com/pricing",
+      verifiedOn: "2026-11-07",
+    },
+    {
+      text: "Enterprise SSO and directory sync are priced per connection in WorkOS ($125 each for the first 1 to 15); turn them on only when a customer asks.",
+      source: "https://workos.com/pricing",
+      verifiedOn: "2026-11-06",
+    },
+    {
+      text: "Stripe isn't a merchant of record by default: registering for and filing sales tax and VAT is yours. Paddle is the alternative that files it for you.",
+      source: "https://stripe.com/pricing",
+      verifiedOn: "2026-11-06",
+    },
+  ],
+  costNotes: [
+    "Card fees: 2.9% + 30¢ per domestic card charge, plus 0.7% of billing volume for Stripe Billing subscriptions. At $2,000 a month in subscriptions from 40 invoices: $58 + $12 + $14 = about $84.",
+  ],
   verifiedOn: "2026-11-06",
 };

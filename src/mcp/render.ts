@@ -1,4 +1,5 @@
 import type { Category, Recipe, Tool } from "@/catalog";
+import { COST_PROFILE } from "@/catalog";
 import type { CompareResult } from "@/engine/compare";
 import type { Recommendation } from "@/engine/recommend";
 
@@ -71,9 +72,40 @@ export function renderRecommendation(r: Recommendation, detail: "summary" | "ful
   return L.join("\n");
 }
 
+/**
+ * The monthly tool bill for a recipe's core stack at Cuely's published profile,
+ * summed from the catalog's cost facts, so it always matches recommend_stack.
+ */
+export function recipeCost(r: Recipe, tools: Tool[]): string | null {
+  const items = r.stack
+    .filter((s) => !s.optional)
+    .map((s) => tools.find((t) => t.slug === s.tool))
+    .filter((t): t is Tool => !!t?.cost && t.cost.monthly !== null);
+  if (!items.length) return null;
+  const staff = items.some((t) => t.cost!.scale === "10_staff");
+  const total = items.reduce((a, t) => a + t.cost!.monthly!, 0);
+  const fmt = (n: number) => `$${Number.isInteger(n) ? n : n.toFixed(2)}`;
+  const paid = items.filter((t) => t.cost!.monthly! > 0).sort((a, b) => b.cost!.monthly! - a.cost!.monthly!);
+  const free = items.filter((t) => t.cost!.monthly === 0);
+  let text = `About ${fmt(total)}/month ${staff ? `for ${COST_PROFILE.internalStaff} staff` : `at ${COST_PROFILE.users.toLocaleString("en-US")} users`} in tool bills`;
+  if (paid.length) text += `: ${paid.map((t) => `${t.name} ${fmt(t.cost!.monthly!)}`).join(" + ")}`;
+  if (free.length) text += `${paid.length ? "; " : ": "}$0 for ${free.map((t) => t.name).join(", ")}`;
+  return `${text}.`;
+}
+
 export function renderRecipe(r: Recipe, tools: Tool[], includeSteps = true): string {
   const name = (slug: string) => tools.find((t) => t.slug === slug)?.name ?? slug;
   const L: string[] = [`# Recipe: ${r.title}`, r.summary, ""];
+  const cost = recipeCost(r, tools);
+  if (cost || r.costNotes?.length) {
+    L.push("## Cost");
+    if (cost) L.push(cost);
+    for (const n of r.costNotes ?? []) L.push(`- ${n}`);
+    L.push(`Usage profile: ${COST_PROFILE.text}`, "");
+  }
+  if (r.catches?.length) {
+    L.push("## Catches that matter", ...r.catches.map((c) => `- ${c.text} (read ${c.verifiedOn}, ${c.source})`), "");
+  }
   L.push("## Fits when", ...r.fitsWhen.map((x) => `- ${x}`), "");
   L.push("## Not for", ...r.notFor.map((x) => `- ${x}`), "");
   L.push("## Stack");

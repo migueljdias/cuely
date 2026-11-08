@@ -60,7 +60,7 @@ export const CATCHES: Catch[] = [
   {
     id: "token-cost",
     when: "ai",
-    text: "Tokens are the bill that grows with users. At 50 questions per user a month, a mid-size model costs about $525 to $650 a month at 1,000 users and a small one (Haiku 5.5, gpt-6-luna) about $33. Send easy questions to the small model and cap usage per account.",
+    text: "Tokens are the bill that grows with users. At 50 questions per user a month, a mid-size model costs about $488 to $650 a month at 1,000 users and a small one (Haiku 5.5, gpt-6-luna) about $33. Send easy questions to the small model and cap usage per account.",
     source: "https://platform.claude.com/docs/en/about-claude/pricing",
     verifiedOn: V,
   },

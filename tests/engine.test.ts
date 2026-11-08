@@ -136,7 +136,7 @@ describe("the five eval cases", () => {
     expect(pick(r, "hosting")).toBeUndefined();
     expect(pick(r, "database")).toBe("supabase");
     expect(r.summary!.catches[0].text).toMatch(/in-app purchase/);
-    expect(r.productType.recipe).toBeNull();
+    expect(r.productType.recipe).toBe("mobile-subscription-app");
   });
 
   it("dog-walking marketplace: Stripe Connect, payouts and background checks", () => {
@@ -146,7 +146,7 @@ describe("the five eval cases", () => {
     expect(pick(r, "payments")).toBe("stripe-connect");
     expect(catchIds(r)).toMatch(/Stripe Connect/);
     expect(catchIds(r)).toMatch(/background checks/);
-    expect(r.recipeNote).toMatch(/Marketplaces/);
+    expect(r.productType.recipe).toBe("marketplace");
   });
 
   it("bakery staff tool: a builder, AppSheet on Workspace, no payments", () => {
@@ -154,7 +154,7 @@ describe("the five eval cases", () => {
     expect(r.profile.audience).toBe("internal");
     expect(pick(r, "internal_tools")).toBe("appsheet");
     expect(pick(r, "payments")).toBeUndefined();
-    expect(r.productType.recipe).toBeNull();
+    expect(r.productType.recipe).toBe("internal-tool");
     expect(r.summary!.cost!.scale).toBe("10_staff");
     expect(catchIds(r)).toMatch(/AppSheet Core/);
   });
@@ -224,5 +224,57 @@ describe("questions, coverage and misroutes", () => {
   it("compare_tools names a better third option for the context", () => {
     const c = compareTools(snap, { a: "Stripe", b: "Paddle", context: EVAL.dogs });
     expect(c.ok && c.betterOption?.slug).toBe("stripe-connect");
+  });
+});
+
+describe("recipes beyond B2B SaaS", () => {
+  const AGREE: [string, string][] = [
+    ["mobile-subscription-app", EVAL.habit],
+    ["marketplace", EVAL.dogs],
+    ["internal-tool", EVAL.bakery],
+    ["ai-docs-app", EVAL.pdfs],
+  ];
+
+  for (const [slug, description] of AGREE) {
+    it(`${slug}: recommend_stack routes to it and picks its stack`, () => {
+      const r = recommendStack(snap, { description });
+      expect(r.productType.recipe).toBe(slug);
+      expect(r.nextStep).toMatch(new RegExp(`get_recipe with product_type "${slug}"`));
+      const recipe = recipes.find((x) => x.slug === slug)!;
+      for (const item of recipe.stack) expect(pick(r, item.category), `${slug}:${item.category}`).toBe(item.tool);
+    });
+  }
+
+  it("routes by what the product is before matching words", () => {
+    const route = (d: string) => recommendStack(snap, { description: d, assumeDefaults: true }).productType.recipe;
+    expect(route("An iPhone and Android app for language flashcards with a $4.99 monthly subscription")).toBe("mobile-subscription-app");
+    expect(route("A marketplace where tutors list lessons and students book and pay; we take a 10% commission. Web app.")).toBe("marketplace");
+    expect(route("An internal tool for our 12 warehouse staff to log shipments")).toBe("internal-tool");
+    expect(route("A web app where users chat with their own PDFs, paid monthly")).toBe("ai-docs-app");
+    expect(route("B2B SaaS for agencies with per-seat billing")).toBe("b2b-saas");
+  });
+
+  it("a mobile marketplace gets the marketplace recipe with a note on the phone parts", () => {
+    const r = recommendStack(snap, { description: "An iOS and Android app where owners book and pay dog walkers; we keep 15%", assumeDefaults: true });
+    expect(r.productType.recipe).toBe("marketplace");
+    expect(r.recipeNote).toMatch(/phone app/);
+  });
+
+  it("a B2B AI product without documents keeps the SaaS recipe and points to the AI one", () => {
+    const r = recommendStack(snap, { description: "B2B SaaS for sales teams with an AI assistant that drafts follow-up emails, per-seat billing", assumeDefaults: true });
+    expect(r.productType.recipe).toBe("b2b-saas");
+    expect(r.recipeNote).toMatch(/ai-docs-app/);
+  });
+
+  it("a tool you already use still beats the recipe's pick", () => {
+    const r = recommendStack(snap, { description: EVAL.habit, alreadyUsing: ["Firebase"] });
+    expect(pick(r, "database")).toBe("firebase");
+  });
+
+  it("get_recipe finds each recipe by plain words", () => {
+    expect(matchRecipe(recipes, "react native app with in-app purchases")?.slug).toBe("mobile-subscription-app");
+    expect(matchRecipe(recipes, "two-sided marketplace with payouts")?.slug).toBe("marketplace");
+    expect(matchRecipe(recipes, "chatbot over pdfs")?.slug).toBe("ai-docs-app");
+    expect(matchRecipe(recipes, "internal tool for inventory")?.slug).toBe("internal-tool");
   });
 });

@@ -135,6 +135,14 @@ export interface RecipeStep {
   docs?: string[];
 }
 
+/** A fact that changes the plan for this product type, with the page it was read from. */
+export interface RecipeCatch {
+  text: string;
+  source: string;
+  /** Date the fact was read from the source (YYYY-MM-DD). */
+  verifiedOn: string;
+}
+
 export interface Recipe {
   slug: string;
   title: string;
@@ -149,5 +157,15 @@ export interface Recipe {
   pitfalls: string[];
   /** Points to obligations; never promises compliance. */
   complianceNotes: string[];
+  /**
+   * The facts that change the plan most, shown before the steps. Each names its
+   * source page and the date it was read.
+   */
+  catches?: RecipeCatch[];
+  /**
+   * Costs outside the stack's monthly tool bills (store fees, tokens, payout fees),
+   * each with its arithmetic. The tool bills themselves are summed from the catalog.
+   */
+  costNotes?: string[];
   verifiedOn: string;
 }

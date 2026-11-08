@@ -11,7 +11,7 @@ Honest stack picks for coding agents. Cuely is a free, remote MCP server that an
 | Tool | Input | Returns |
 | --- | --- | --- |
 | `recommend_stack` | `description`, `answers?`, `assume_defaults?`, `detail?`, `categories?`, `already_using?`, `avoid?`, `needs?` | A summary first: the top picks, the monthly cost at 1,000 users and the 2-3 catches that matter. Then one pick per category the product needs, with a reason and an alternative (`detail: "full"` adds free plans, prices and sources). Returns up to 3 questions instead when a missing fact would change the picks, and `outside_coverage` for products Cuely doesn't cover |
-| `get_recipe` | `product_type` (slug or words), `include_steps?` | Stack with alternatives, ordered steps with commands and starter files, best practices, pitfalls, compliance notes |
+| `get_recipe` | `product_type` (slug or words), `include_steps?` | Stack with alternatives, cost at 1,000 users, dated catches, ordered steps with commands and starter files, best practices, pitfalls, compliance notes |
 | `compare_tools` | `a`, `b`, `context?` | Two tools in one category side by side, where they differ, and a verdict for the context |
 | `list_categories` | `category?` | Categories and tools, or one category's tools with facts |
 
@@ -34,7 +34,7 @@ The rule that can't bend: money never touches the ranking. There are no sponsore
 1. `src/engine/profile.ts` reads the kind of product: web, phone or both; who pays (nobody, users pay you, users pay each other); customers or your own staff; AI, documents, realtime. It decides which categories are shown, which catches lead the answer, and when to ask instead of guess: a question is asked only when the fact is missing and would change the picks. It also flags products outside Cuely's coverage (games, hardware, crypto) and partial ones (stores, SMS, video).
 2. `src/engine/needs.ts` turns plain words in the description into needs (b2b, regulated, global_tax, open_source, eu, low_cost, edge, nextjs, realtime, fewer_vendors, per_tenant_db, long_running, high_volume, rag, usage_billing, google_workspace). The profile adds mobile, marketplace and internal. Product names are masked first, so "Google Workspace" isn't a workspace and "React Native" isn't Next.js.
 3. Every tool in `src/catalog/tools.ts` has a published fit weight (−3 to +3) and a reason for each need it's good or bad at, plus an editorial default order in its category.
-4. `score = Σ fit[need] + 0.4 × (n − default_rank + 1) + (already_using ? 4 : 0)`. Highest score wins; the default order settles ties.
+4. `score = Σ fit[need] + 0.4 × (n − default_rank + 1) + (already_using ? 4 : 0) + (in_recipe ? 1 : 0)`, where `in_recipe` means the recipe Cuely routed to names that tool. Highest score wins; the default order settles ties.
 
 5. The answer leads with the cost at Cuely's published usage profile (`src/catalog/costs.ts`: 1,000 monthly active users, 10 staff for staff tools), each tool's cost with the math in its basis line, and the catches for that kind of product (`src/catalog/catches.ts`), each with its source page and date.
 
@@ -157,7 +157,7 @@ All colour, type, radius and motion values are tokens at the top of `app/globals
 ## Adding to the catalog
 
 - A tool: add an entry to `src/catalog/tools.ts` with facts from the vendor's own site, the page you read, and today's date. Give it a unique `baseline` in its category and fit weights with reasons.
-- A recipe: add a file under `src/catalog/recipes/`, register it in `src/catalog/index.ts`. Tests check that every tool it names exists in the right category.
+- A recipe: add a file under `src/catalog/recipes/`, register it in `src/catalog/index.ts`. Tests check that every tool it names exists in the right category, that it has at least 3 dated catches with https sources and a cost note, and that recommend_stack routes its eval case to it.
 - Then run `npm test` and `npm run db:sql`.
 
 ### Tool marks and motion

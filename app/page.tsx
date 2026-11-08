@@ -169,8 +169,8 @@ export default function Home() {
               The catalog
             </h2>
             <p>
-              {tools.length} tools across {categories.length} categories, plus the {recipes[0].title.toLowerCase()}{" "}
-              recipe. Every free plan and price was read from the vendor&apos;s own site on {verified}.
+              {tools.length} tools across {categories.length} categories, plus {recipes.length} setup recipes:{" "}
+              {recipes.map((r) => r.title.toLowerCase()).join(", ")}. Every free plan and price was read from the vendor&apos;s own site on {verified}.
             </p>
           </div>
           <table className="ledger" data-reveal>
@@ -244,9 +244,13 @@ export default function Home() {
                   <b>What you already use counts.</b> If a tool you have still fits, Cuely keeps it and tells you
                   switching isn&apos;t worth it.
                 </li>
+                <li>
+                  <b>Recipes and picks agree.</b> Cuely matches what you&apos;re building to one recipe, and a tool that
+                  recipe names gets one extra point, so the stack and the setup steps never point different ways.
+                </li>
               </ul>
               <pre className="formula" aria-label="Scoring formula">
-                <code>score = Σ fit[need] + 0.4 × (n − default_rank + 1) + (already_using ? 4 : 0)</code>
+                <code>score = Σ fit[need] + 0.4 × (n − default_rank + 1) + (already_using ? 4 : 0) + (in_recipe ? 1 : 0)</code>
               </pre>
             </div>
           </div>

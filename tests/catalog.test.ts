@@ -47,7 +47,7 @@ describe("catalog integrity", () => {
   });
 
   it("carries no affiliate, referral or tracking parameters (money never touches answers)", () => {
-    const urls = [...tools.flatMap((t) => [t.website, t.pricingUrl]), ...recipes.flatMap((r) => r.steps.flatMap((s) => s.docs ?? []))];
+    const urls = [...tools.flatMap((t) => [t.website, t.pricingUrl]), ...recipes.flatMap((r) => [...r.steps.flatMap((s) => s.docs ?? []), ...(r.catches ?? []).map((c) => c.source)])];
     for (const u of urls) {
       expect(new URL(u).search, u).toBe("");
     }
@@ -71,6 +71,13 @@ describe("catalog integrity", () => {
       }
       expect(r.steps.length).toBeGreaterThanOrEqual(5);
       for (const s of r.steps) expect(s.check.length).toBeGreaterThan(10);
+      // Every recipe leads with dated, sourced catches and says what it costs.
+      expect(r.catches?.length, r.slug).toBeGreaterThanOrEqual(3);
+      for (const c of r.catches ?? []) {
+        expect(c.source, r.slug).toMatch(/^https:\/\//);
+        expect(c.verifiedOn, r.slug).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      }
+      expect(r.costNotes?.length, r.slug).toBeGreaterThanOrEqual(1);
     }
   });
 

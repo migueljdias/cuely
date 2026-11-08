@@ -58,7 +58,7 @@ export const COSTS: Record<string, ToolCost> = {
   "vercel-blob": { monthly: 0.12, basis: "5 GB at $0.023/GB on Pro, plus transfer." },
   "amazon-s3": { monthly: 0.12, basis: "5 GB at about $0.023/GB, plus transfer above 100 GB a month." },
   // AI model APIs: 200M input + 25M output tokens a month
-  "gemini-api": { monthly: 525, basis: "Gemini 3.5 Flash: 200M input × $1.50 + 25M output × $9.00 per million = $525. Use the paid tier for customer data." },
+  "gemini-api": { monthly: 487.5, basis: "Gemini 3.8 Flash from January 1, 2027: 200M input × $1.50 + 25M output × $7.50 per million = $487.50 ($243.75 at the price through December 31, 2026). Use the paid tier for customer data." },
   "claude-api": { monthly: 650, basis: "Sonnet 5.5: 200M input × $2 + 25M output × $10 per million = $650. Haiku 5.5 for the same traffic: $20 + $12.50 = about $33." },
   "openai-api": { monthly: 650, basis: "gpt-6.1-sol: 200M input × $2 + 25M output × $10 per million = $650. gpt-6-luna: about $33." },
   // Vector search

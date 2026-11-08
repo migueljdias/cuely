@@ -3,6 +3,10 @@ import { tools as coreTools } from "./tools";
 import { moreTools } from "./tools-more";
 import { COSTS, COST_PROFILE } from "./costs";
 import { b2bSaas } from "./recipes/b2b-saas";
+import { mobileSubscriptionApp } from "./recipes/mobile-subscription-app";
+import { marketplace } from "./recipes/marketplace";
+import { aiDocsApp } from "./recipes/ai-docs-app";
+import { internalTool } from "./recipes/internal-tool";
 import type { Recipe, Tool } from "./types";
 
 export * from "./types";
@@ -13,7 +17,8 @@ export { CATCHES, type Catch } from "./catches";
 export const tools: Tool[] = [...coreTools, ...moreTools].map((t) => ({ ...t, cost: t.cost ?? COSTS[t.slug] }));
 export { categories };
 
-export const recipes: Recipe[] = [b2bSaas];
+/** Sorted by slug, the same order the Postgres repository returns. */
+export const recipes: Recipe[] = [b2bSaas, mobileSubscriptionApp, marketplace, aiDocsApp, internalTool].sort((a, b) => a.slug.localeCompare(b.slug));
 
 /** One statement every answer carries, so agents can repeat it to users. */
 export const POLICY =
