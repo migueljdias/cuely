@@ -1,15 +1,26 @@
 import { categories, recipes, tools, POLICY } from "@/catalog";
 import { recommendStack } from "@/engine/recommend";
 import { ENDPOINT, KEY_PAGE, connectOptions } from "@/connect";
+import { paymentsConfig } from "@/billing/stripe";
 import { PLANS } from "@/plans";
+import { authConfigured } from "@/auth/server";
+import { APP_URL, SITE_URL, SUPPORT_EMAIL } from "@/site";
 import { ConnectTabs } from "./_components/connect-tabs";
-import { SiteFooter, SiteHeader } from "./_components/chrome";
 import { CopyButton } from "./_components/copy";
-import { RevealObserver } from "./_components/reveal";
-import { ToolLogo } from "./_components/tool-logo";
-import { Transcript } from "./_components/transcript";
+import { HeaderAccount } from "./_components/header-account";
+import { PixelLogo, PixelSprite, StackFigure } from "./_components/blueprint/pixels";
+import "./landing.css";
+
+/*
+  The landing page, drawn as a drafting sheet: a graph-paper grid behind everything, each
+  section a plate with crop marks, mono figure labels, and a title block for the footer.
+  Every fact on it comes from the catalog, the engine and the plans, so it can't drift.
+  Its styles live in landing.css, scoped under .bp, so no other page changes.
+*/
 
 const DEMO_PROMPT = "I'm building a SaaS for a fintech startup";
+const DEMO_QUERY = "SaaS for a fintech startup";
+const FIGURE_CATEGORIES = ["hosting", "database", "auth", "payments", "email", "storage"];
 const connect = connectOptions();
 
 const mcpTools = [
@@ -35,74 +46,154 @@ const mcpTools = [
   },
 ];
 
+const rules = [
+  {
+    title: "Published rules",
+    text: "Each tool has a score from −3 to +3 for each need, with the reason written next to it. A pick is the sum of the needs you described, plus a small editorial default that only settles close calls.",
+  },
+  {
+    title: "Same answer for everyone",
+    text: "Free or Pro, no personalization, no live model call deciding your stack. The same description returns the same stack.",
+  },
+  {
+    title: "Facts from the source",
+    text: "Free plans and prices come from each vendor's own pricing page, with the date and the page in every answer. When a page is silent, Cuely says so instead of guessing.",
+  },
+  {
+    title: "What you already use counts",
+    text: "If a tool you have still fits, Cuely keeps it and tells you switching isn't worth it.",
+  },
+  {
+    title: "Recipes and picks agree",
+    text: "Cuely matches what you're building to one recipe, and a tool that recipe names gets one extra point, so the stack and the setup steps never point different ways.",
+  },
+];
+
 function formatDate(iso: string) {
   return new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
+function Wordmark({ height = 28 }: { height?: number }) {
+  return (
+    <picture>
+      <source srcSet="/brand/cuely-logo-dark.svg" media="(prefers-color-scheme: dark)" />
+      <img src="/brand/cuely-logo-light.svg" alt="Cuely" width={Math.round((height * 712.5) / 224)} height={height} />
+    </picture>
+  );
+}
+
+function PixelArrow() {
+  return <i className="bp-arrow" aria-hidden="true" />;
+}
+
 export default function Home() {
   const demo = recommendStack({ categories, tools, recipes }, { description: DEMO_PROMPT });
-  const demoRows = demo.stack.filter((s) => ["hosting", "database", "auth", "payments", "email", "storage"].includes(s.category));
+  const figureRows = FIGURE_CATEGORIES.map((slug) => demo.stack.find((s) => s.category === slug))
+    .filter((s): s is NonNullable<typeof s> => Boolean(s))
+    .map((s) => ({ category: s.categoryName.toLowerCase(), name: s.pick.name, reason: s.pick.reason }));
+  const monthly = demo.summary?.cost?.monthly;
+  const costLine = monthly != null ? `About $${Math.round(monthly)}/month at 1,000 users` : "Cost at 1,000 users in every answer";
   const verified = formatDate(tools[0].verifiedOn);
-  const alphabetical = [...tools].sort((a, b) => a.name.localeCompare(b.name));
+  const payments = paymentsConfig();
+  const free = PLANS.free;
+  const pro = PLANS.pro;
 
   return (
-    <>
-      <SiteHeader />
+    <div className="bp">
+      <a className="skip" href="#main">
+        Skip to content
+      </a>
+      <header className="bp-nav">
+        <div className="bp-wrap">
+          <a href={`${SITE_URL}/`} className="bp-home" aria-label="Cuely home">
+            <Wordmark />
+          </a>
+          <nav aria-label="Primary">
+            <a className="bp-wide" href="#how">
+              How it works
+            </a>
+            <a className="bp-wide" href="#connect">
+              Connect
+            </a>
+            <a href={`${SITE_URL}/pricing`}>Pricing</a>
+            {authConfigured() ? (
+              <HeaderAccount />
+            ) : (
+              <a className="bp-btn bp-btn-ink bp-btn-sm" href={`${APP_URL}/sign-in`}>
+                Sign in
+              </a>
+            )}
+          </nav>
+        </div>
+      </header>
 
       <main id="main">
-        <section className="hero wrap">
-          <div className="hero-copy">
-            <p className="eyebrow">MCP server for coding agents</p>
-            <h1>The honest second opinion your agent asks before it builds</h1>
-            <p className="lede">
+        <div className="bp-wrap bp-hero">
+          <div className="bp-hero-copy">
+            <p className="bp-label">MCP server for coding agents</p>
+            <h1>
+              The honest second opinion your agent asks <span className="bp-dim">before it builds</span>
+            </h1>
+            <p className="bp-lede">
               Tell your agent what you&apos;re making. It asks Cuely which tools to use and how to set them up, and gets
               a stack with reasons, real free-plan limits and step-by-step recipes. Free with a quick sign-in, and no
               vendor can pay to be the answer.
             </p>
-            <div className="endpoint">
-              <span className="endpoint-label">Endpoint</span>
+            <div className="bp-endpoint">
+              <span>Endpoint</span>
               <code>{ENDPOINT}</code>
               <CopyButton value={ENDPOINT} />
             </div>
-            <a className="cta" href="#connect">
-              Connect your agent <span aria-hidden="true">→</span>
-            </a>
+            <div className="bp-ctas">
+              <a className="bp-cta" href="#connect">
+                Connect your agent <PixelArrow />
+              </a>
+              <a className="bp-link" href={KEY_PAGE}>
+                Get a free key
+              </a>
+            </div>
           </div>
+          <StackFigure rows={figureRows} cost={costLine} call={`recommend_stack("${DEMO_QUERY}")`} />
+        </div>
 
-          <Transcript
-            prompt={`${DEMO_PROMPT}. Use Cuely for the stack.`}
-            query="SaaS for a fintech startup"
-            recipe={demo.productType.recipe}
-            rows={demoRows.map((r) => ({
-              category: r.categoryName.toLowerCase(),
-              name: r.pick.name,
-              reason: r.pick.reason,
-              logo: <ToolLogo slug={r.pick.slug} name={r.pick.name} />,
-            }))}
-          />
+        <section className="bp-wrap bp-section" aria-labelledby="parts-title">
+          <div className="bp-head">
+            <p className="bp-label">Parts list</p>
+            <h2 id="parts-title">{tools.length} tools Cuely weighs. None of them pays to be here.</h2>
+          </div>
+          <div className="bp-parts">
+            {categories.map((c) => {
+              const inCat = tools.filter((t) => t.category === c.slug).sort((a, b) => a.baseline - b.baseline);
+              return (
+                <div key={c.slug}>
+                  <h3>
+                    <span>{c.name}</span>
+                    <span aria-hidden="true">{String(inCat.length).padStart(2, "0")}</span>
+                  </h3>
+                  <ul>
+                    {inCat.map((t) => (
+                      <li key={t.slug}>{t.name}</li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+          <p className="bp-note">
+            Every free plan and price was read from the vendor&apos;s own site on {verified}. Each answer carries the date
+            and the page. {recipes.length} full setup recipes: {recipes.map((r) => r.title.toLowerCase()).join("; ")}.
+          </p>
         </section>
 
-        <section className="field wrap" aria-labelledby="field-title" data-reveal>
-          <h2 id="field-title" className="field-title">
-            The {tools.length} tools Cuely weighs, A to Z. None of them pays to be here.
-          </h2>
-          <ul className="field-list">
-            {alphabetical.map((t, i) => (
-              <li key={t.slug} style={{ "--i": i } as React.CSSProperties}>
-                <ToolLogo slug={t.slug} name={t.name} size={20} />
-                <span>{t.name}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section id="how" className="how wrap" aria-labelledby="how-title">
-          <h2 id="how-title" className="section-title" data-reveal>
-            How it works
-          </h2>
-          <ol className="steps" data-reveal>
+        <section id="how" className="bp-wrap bp-section" aria-labelledby="how-title">
+          <div className="bp-head">
+            <p className="bp-label">Procedure</p>
+            <h2 id="how-title">How it works</h2>
+          </div>
+          <ol className="bp-steps">
             <li>
-              <span className="num">01</span>
+              <PixelSprite name="chat" />
+              <span className="bp-label">Step 1</span>
               <h3>Your agent describes the build</h3>
               <p>
                 One or two plain sentences: who it&apos;s for, what it does, and any constraints like budget, region,
@@ -110,7 +201,8 @@ export default function Home() {
               </p>
             </li>
             <li>
-              <span className="num">02</span>
+              <PixelSprite name="rules" />
+              <span className="bp-label">Step 2</span>
               <h3>Cuely matches needs to published rules</h3>
               <p>
                 Words like B2B, fintech, EU or self-host become needs. Each tool has a published score for each need.
@@ -118,7 +210,8 @@ export default function Home() {
               </p>
             </li>
             <li>
-              <span className="num">03</span>
+              <PixelSprite name="plan" />
+              <span className="bp-label">Step 3</span>
               <h3>The agent gets a plan it can follow</h3>
               <p>
                 A pick per category with the reason, the free plan&apos;s actual limits, what to watch out for, and a
@@ -128,11 +221,10 @@ export default function Home() {
           </ol>
         </section>
 
-        <section id="connect" className="connect wrap" aria-labelledby="connect-title">
-          <div className="connect-intro" data-reveal>
-            <h2 id="connect-title" className="section-title">
-              Connect in one step
-            </h2>
+        <section id="connect" className="bp-wrap bp-section bp-connect" aria-labelledby="connect-title">
+          <div className="bp-head">
+            <p className="bp-label">Assembly</p>
+            <h2 id="connect-title">Connect in one step</h2>
             <p>
               Cuely speaks MCP over Streamable HTTP. Add it once and any session can use it. Then just ask:{" "}
               <q>Use Cuely to choose the stack for this.</q>
@@ -140,22 +232,31 @@ export default function Home() {
             <p>
               It needs a free account: Claude signs you in when you connect. For other tools,{" "}
               <a href={KEY_PAGE}>get a free key</a> with Google or GitHub. Free includes{" "}
-              {PLANS.free.perDay.toLocaleString("en-US")} tool calls a day.
+              {free.perDay.toLocaleString("en-US")} tool calls a day.
             </p>
           </div>
-          <ConnectTabs options={connect} />
+          <div className="bp-plate bp-connect-plate">
+            <div className="bp-fig">
+              <span>Fig. 2 · Client setup</span>
+              <span aria-hidden="true">MCP</span>
+            </div>
+            <ConnectTabs options={connect} />
+          </div>
         </section>
 
-        <section className="tools wrap" aria-labelledby="tools-title">
-          <h2 id="tools-title" className="section-title" data-reveal>
-            Four tools, all read-only
-          </h2>
-          <dl className="tool-list">
+        <section className="bp-wrap bp-section" aria-labelledby="tools-title">
+          <div className="bp-head">
+            <p className="bp-label">Specification</p>
+            <h2 id="tools-title">Four tools, all read-only</h2>
+          </div>
+          <dl className="bp-spec">
             {mcpTools.map((t) => (
-              <div key={t.name} className="tool-row" data-reveal>
+              <div key={t.name} className="bp-spec-row">
                 <dt>
-                  <code className="tool-name">{t.name}</code>
-                  <code className="tool-sig">({t.sig})</code>
+                  <code>
+                    {t.name}
+                    <span>({t.sig})</span>
+                  </code>
                 </dt>
                 <dd>{t.what}</dd>
               </div>
@@ -163,102 +264,137 @@ export default function Home() {
           </dl>
         </section>
 
-        <section className="catalog wrap" aria-labelledby="catalog-title">
-          <div className="catalog-head" data-reveal>
-            <h2 id="catalog-title" className="section-title">
-              The catalog
-            </h2>
-            <p>
-              {tools.length} tools across {categories.length} categories, plus {recipes.length} setup recipes:{" "}
-              {recipes.map((r) => r.title.toLowerCase()).join(", ")}. Every free plan and price was read from the vendor&apos;s own site on {verified}.
-            </p>
+        <section id="method" className="bp-method" aria-labelledby="method-title">
+          <div className="bp-wrap">
+            <div>
+              <p className="bp-label">Method</p>
+              <h2 id="method-title">Money never touches the ranking</h2>
+              <p className="bp-method-lede">{POLICY}</p>
+            </div>
+            <ul className="bp-rules">
+              {rules.map((r) => (
+                <li key={r.title}>
+                  <b>{r.title}</b>
+                  {r.text}
+                </li>
+              ))}
+            </ul>
+            <pre className="bp-formula" aria-label="Scoring formula">
+              <span aria-hidden="true">Scoring formula</span>
+              <code>score = Σ fit[need] + 0.4 × (n − default_rank + 1) + (already_using ? 4 : 0) + (in_recipe ? 1 : 0)</code>
+            </pre>
           </div>
-          <table className="ledger" data-reveal>
-            <caption className="sr-only">Categories, the default pick in each, and the other tools Cuely weighs</caption>
-            <thead>
-              <tr>
-                <th scope="col">Category</th>
-                <th scope="col">Default pick</th>
-                <th scope="col">Also weighed</th>
-              </tr>
-            </thead>
-            <tbody>
-              {categories.map((c, ci) => {
-                const inCat = tools.filter((t) => t.category === c.slug).sort((a, b) => a.baseline - b.baseline);
-                const [first, ...rest] = inCat;
-                return (
-                  <tr key={c.slug} style={{ "--i": ci } as React.CSSProperties}>
-                    <th scope="row">
-                      <span className="l-cat">{c.name}</span>
-                      <span className="l-desc">{c.description}</span>
-                    </th>
-                    <td className="l-pick">
-                      {first && (
-                        <span className="l-tool">
-                          <ToolLogo slug={first.slug} name={first.name} />
-                          {first.name}
-                          <span className="cue" aria-hidden="true" />
-                        </span>
-                      )}
-                    </td>
-                    <td className="l-rest">
-                      <span className="sr-only">Also weighed: </span>
-                      {rest.map((t, i) => (
-                        <span key={t.slug} className="l-tool">
-                          <ToolLogo slug={t.slug} name={t.name} />
-                          {t.name}
-                          {i < rest.length - 1 && <span className="sr-only">,</span>}
-                        </span>
-                      ))}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          <p className="ledger-note">
-            The default pick is where the rules land with no needs given. Describe your build and it can change.
+        </section>
+
+        <section id="pricing" className="bp-wrap bp-section" aria-labelledby="price-title">
+          <div className="bp-head">
+            <p className="bp-label">Schedule of rates</p>
+            <h2 id="price-title">Free for builders. Pro for teams</h2>
+            <p>Every plan gets the same recommendations, recipes and reasons. Paying changes your limits, never the answer.</p>
+          </div>
+          <div className="bp-plans">
+            <div className="bp-plate bp-plan">
+              <h3 className="bp-label">{free.name}</h3>
+              <p className="bp-price">{free.priceLabel}</p>
+              <p className="bp-summary">{free.summary}</p>
+              <ul>
+                {free.features.map((f) => (
+                  <li key={f}>{f}</li>
+                ))}
+              </ul>
+              <a className="bp-btn bp-btn-line" href={`${APP_URL}/sign-up`}>
+                Create a free account
+              </a>
+            </div>
+            <div className="bp-plate bp-plan">
+              <h3 className="bp-label">
+                {pro.name}
+                {payments.mode !== "live" && (
+                  <span className="bp-tag">{payments.mode === "test" ? "Test mode" : "Not on sale yet"}</span>
+                )}
+              </h3>
+              <p className="bp-price">
+                ${pro.priceCents / 100} <small>a month</small>
+              </p>
+              <p className="bp-summary">{pro.summary}</p>
+              <ul>
+                {pro.features.map((f) => (
+                  <li key={f}>{f}</li>
+                ))}
+              </ul>
+              {payments.mode === "off" ? (
+                <p className="bp-summary">Pro opens once teams need it. Free has no catch in the meantime.</p>
+              ) : (
+                <a className="bp-btn bp-btn-ink" href={`${APP_URL}/account`}>
+                  Upgrade from your account
+                </a>
+              )}
+            </div>
+          </div>
+          <p className="bp-note bp-note-sans">
+            Limits are per account, across all its keys. A tool call is one question your agent asks Cuely; connecting
+            and listing tools don&apos;t count. Stripe handles every payment. <a href={`${SITE_URL}/pricing`}>Full pricing</a>
           </p>
         </section>
 
-        <section id="method" className="method" aria-labelledby="method-title">
-          <div className="wrap method-inner" data-reveal>
-            <h2 id="method-title">Money never touches the ranking</h2>
-            <div className="method-body">
-              <p className="method-lede">{POLICY}</p>
-              <ul className="rules">
-                <li>
-                  <b>Published rules.</b> Each tool has a score from −3 to +3 for each need, with the reason written
-                  next to it. A pick is the sum of the needs you described, plus a small editorial default that only
-                  settles close calls.
-                </li>
-                <li>
-                  <b>Same answer for everyone.</b> Free or Pro, no personalization, no live model call deciding your
-                  stack. The same description returns the same stack.
-                </li>
-                <li>
-                  <b>Facts from the source.</b> Free plans and prices come from each vendor&apos;s own pricing page,
-                  with the date and the page in every answer. When a page is silent, Cuely says so instead of guessing.
-                </li>
-                <li>
-                  <b>What you already use counts.</b> If a tool you have still fits, Cuely keeps it and tells you
-                  switching isn&apos;t worth it.
-                </li>
-                <li>
-                  <b>Recipes and picks agree.</b> Cuely matches what you&apos;re building to one recipe, and a tool that
-                  recipe names gets one extra point, so the stack and the setup steps never point different ways.
-                </li>
-              </ul>
-              <pre className="formula" aria-label="Scoring formula">
-                <code>score = Σ fit[need] + 0.4 × (n − default_rank + 1) + (already_using ? 4 : 0) + (in_recipe ? 1 : 0)</code>
-              </pre>
+        <section className="bp-wrap bp-section bp-final" aria-labelledby="final-title">
+          <div className="bp-plate">
+            <p className="bp-label">Ready to build</p>
+            <h2 id="final-title">Give your agent a plan before it writes a line</h2>
+            <p>
+              {recipes.length} setup recipes, {tools.length} tools across {categories.length} categories, and the same
+              answer for everyone. Free with a quick sign-in.
+            </p>
+            <div className="bp-ctas">
+              <a className="bp-cta" href="#connect">
+                Connect your agent <PixelArrow />
+              </a>
+              <a className="bp-link" href={KEY_PAGE}>
+                Get a free key
+              </a>
             </div>
+            <PixelLogo />
           </div>
         </section>
       </main>
-      <RevealObserver />
 
-      <SiteFooter />
-    </>
+      <footer className="bp-wrap bp-footer">
+        <div className="bp-titleblock">
+          <div className="bp-tb">
+            <Wordmark height={24} />
+            <p>Stacks and setup steps for what you&apos;re building, from published rules. No vendor pays for placement.</p>
+          </div>
+          <div className="bp-tb">
+            <span className="bp-label">Product</span>
+            <nav aria-label="Product">
+              <a href="#how">How it works</a>
+              <a href="#connect">Connect</a>
+              <a href={`${SITE_URL}/pricing`}>Pricing</a>
+              <a href="#method">Method</a>
+            </nav>
+          </div>
+          <div className="bp-tb">
+            <span className="bp-label">Resources</span>
+            <nav aria-label="Resources">
+              <a href={`${SITE_URL}/llms.txt`}>llms.txt</a>
+              <a href={`${SITE_URL}/privacy`}>Privacy</a>
+              <a href={`${SITE_URL}/terms`}>Terms</a>
+            </nav>
+          </div>
+          <div className="bp-tb">
+            <span className="bp-label">Support</span>
+            <a className="bp-addr" href={`mailto:${SUPPORT_EMAIL}`}>
+              {SUPPORT_EMAIL}
+            </a>
+          </div>
+          <div className="bp-strip">
+            <span>Project: Cuely</span>
+            <span>Sheet: landing, 1 of 1</span>
+            <span>Catalog checked: {verified}</span>
+            <span>© 2026 Cuely</span>
+          </div>
+        </div>
+      </footer>
+    </div>
   );
 }
