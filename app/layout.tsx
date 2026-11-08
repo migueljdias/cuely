@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { authConfigured } from "@/auth/server";
 import { APP_URL, SITE_URL } from "@/site";
 import "./globals.css";
@@ -42,7 +44,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@500;700&family=Funnel+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        {/* Cookieless page views and Core Web Vitals, collected by Vercel. Both do nothing off Vercel. */}
+        <Analytics />
+        <SpeedInsights />
+      </body>
     </html>
   );
   // Clerk wraps the page only once its keys are set, so the site runs without them.

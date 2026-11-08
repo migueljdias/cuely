@@ -22,7 +22,7 @@ export default function Privacy() {
 
       <h2>Browsing the website</h2>
       <p>
-        You can read cuely.dev without an account. The site doesn&apos;t use advertising or tracking cookies.
+        You can read cuely.dev without an account. The site doesn&apos;t use advertising or tracking cookies. Vercel Web Analytics counts page views and Vercel Speed Insights measures page load times. Both are cookieless, report only totals, and don&apos;t identify you or follow you to other sites.
       </p>
 
       <h2>Using the MCP server</h2>
@@ -65,7 +65,7 @@ export default function Privacy() {
       <h2>Who handles your data</h2>
       <ul>
         <li>
-          <strong>Vercel</strong> hosts the site and the MCP server.
+          <strong>Vercel</strong> hosts the site and the MCP server, runs its firewall, and provides the page view and speed counts.
         </li>
         <li>
           <strong>Neon</strong> hosts the Postgres database that holds the records above.
