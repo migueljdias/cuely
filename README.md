@@ -95,7 +95,7 @@ On Vercel, `vercel-build` runs `scripts/seed.ts --production-only` before `next 
 | `STRIPE_MANAGED_PAYMENTS` | `on` | Stripe Managed Payments at checkout (Stripe is merchant of record and handles tax). Set `off` to sell as yourself. The product needs an eligible tax code. |
 | `CUELY_SITE_URL` | `https://cuely.dev` | Base for Stripe return links. |
 
-Plan limits are counted in Postgres (`api_usage`, one row per account per UTC day), so they hold across function instances. Requests without a valid credential are capped per IP in memory before any database work.
+Plan limits are counted in Postgres (`api_usage`, one row per account per UTC day), so they hold across function instances. Requests without a valid credential are capped per IP in memory after the credential lookup; the Vercel firewall rate limit caps requests per IP before that.
 
 ## Accounts and API keys
 

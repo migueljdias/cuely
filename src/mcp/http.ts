@@ -212,7 +212,7 @@ export function createMcpHandler(opts: HandlerOptions = {}) {
     const ip = clientIp(req);
     const t = now();
 
-    // Who is calling. Requests without a valid key are capped per IP before any database work.
+    // Who is calling. Requests without a valid key are capped per IP after the lookup; the Vercel firewall caps per IP before it.
     let owner: KeyOwner | null = null;
     let count: UsageCounter = countUsage;
     const presented = readApiKey(req);

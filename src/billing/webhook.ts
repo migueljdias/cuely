@@ -1,5 +1,5 @@
 import type { AccountStore } from "@/accounts/store";
-import { verifyStripeSignature, type PaymentsConfig } from "./stripe";
+import { stripeGet, verifyStripeSignature, type PaymentsConfig } from "./stripe";
 
 /** Handles one Stripe webhook delivery. Returns the HTTP status to answer with. */
 export async function handleStripeWebhook(
@@ -7,6 +7,7 @@ export async function handleStripeWebhook(
   signature: string | null,
   cfg: PaymentsConfig,
   store: AccountStore | null,
+  fetchImpl: typeof fetch = fetch,
 ): Promise<{ status: number; message: string }> {
   if (cfg.mode === "off" || !cfg.webhookSecret) return { status: 503, message: "Payments are off." };
   if (!verifyStripeSignature(rawBody, signature, cfg.webhookSecret)) return { status: 400, message: "Bad signature." };
@@ -31,11 +32,22 @@ export async function handleStripeWebhook(
     case "customer.subscription.created":
     case "customer.subscription.updated":
     case "customer.subscription.deleted": {
-      const periodEnd = obj.current_period_end ?? obj.items?.data?.[0]?.current_period_end ?? null;
+      // Stripe can deliver events late or out of order, so the event only says which
+      // subscription changed. Its current state comes from Stripe itself.
+      if (typeof obj.id !== "string" || !obj.id.startsWith("sub_")) break;
+      let current: any;
+      try {
+        current = await stripeGet(cfg, `subscriptions/${encodeURIComponent(obj.id)}`, fetchImpl);
+      } catch (err) {
+        console.error("stripe subscription read failed", err);
+        // Stripe retries a failed delivery, so the plan catches up once Stripe answers.
+        return { status: 503, message: "Couldn't read the subscription from Stripe." };
+      }
+      const periodEnd = current.current_period_end ?? current.items?.data?.[0]?.current_period_end ?? null;
       await store.applySubscription({
-        customerId: obj.customer,
-        subscriptionId: obj.id,
-        status: event.type === "customer.subscription.deleted" ? "canceled" : obj.status,
+        customerId: typeof current.customer === "string" ? current.customer : current.customer?.id,
+        subscriptionId: current.id,
+        status: current.status,
         currentPeriodEnd: periodEnd,
       });
       break;
@@ -43,7 +55,7 @@ export async function handleStripeWebhook(
     default:
       break;
   }
-  // Recorded after the update: every update above is idempotent, so a retry is harmless.
+  // Recorded after the update. Each update applies Stripe's current state, so a retry or a late event is harmless.
   await store.markEvent(event.id, event.type);
   return { status: 200, message: "ok" };
 }

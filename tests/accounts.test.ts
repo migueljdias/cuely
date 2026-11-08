@@ -85,9 +85,18 @@ describe("Accounts and the Stripe webhook", () => {
     STRIPE_PRICE_PRO: "price_1",
     STRIPE_WEBHOOK_SECRET: "whsec_test",
   });
+  // What Stripe says the subscription looks like right now.
+  let stripeNow: Record<string, any> = {};
+  const fakeStripe = (async (url: string) => {
+    const id = decodeURIComponent(String(url).split("/subscriptions/")[1] ?? "");
+    const sub = stripeNow[id];
+    return sub
+      ? new Response(JSON.stringify(sub), { status: 200 })
+      : new Response(JSON.stringify({ error: { message: "No such subscription" } }), { status: 404 });
+  }) as typeof fetch;
   const deliver = (event: object) => {
     const raw = JSON.stringify(event);
-    return handleStripeWebhook(raw, signStripePayload(raw, "whsec_test"), cfg, store);
+    return handleStripeWebhook(raw, signStripePayload(raw, "whsec_test"), cfg, store, fakeStripe);
   };
 
   beforeAll(async () => {
@@ -110,10 +119,27 @@ describe("Accounts and the Stripe webhook", () => {
       livemode: false,
       data: { object: { id: "sub_1", customer: "cus_1", status, current_period_end: 1_900_000_000 } },
     });
+    const now = (status: string) => (stripeNow = { sub_1: { id: "sub_1", customer: "cus_1", status, current_period_end: 1_900_000_000 } });
+    now("active");
     expect((await deliver(sub("active", "evt_a", "customer.subscription.created"))).status).toBe(200);
     expect((await store.get("user_1"))?.plan).toBe("pro");
     expect((await deliver(sub("active", "evt_a", "customer.subscription.created"))).status).toBe(200);
+    now("canceled");
     expect((await deliver(sub("canceled", "evt_b", "customer.subscription.deleted"))).status).toBe(200);
+    expect((await store.get("user_1"))?.plan).toBe("free");
+  });
+
+  it("goes by Stripe's current state when an old event arrives late", async () => {
+    stripeNow = { sub_1: { id: "sub_1", customer: "cus_1", status: "canceled", current_period_end: 1_900_000_000 } };
+    const late = { id: "evt_late", type: "customer.subscription.updated", livemode: false, data: { object: { id: "sub_1", customer: "cus_1", status: "active" } } };
+    expect((await deliver(late)).status).toBe(200);
+    expect((await store.get("user_1"))?.plan).toBe("free");
+  });
+
+  it("asks Stripe to retry when the subscription can't be read", async () => {
+    stripeNow = {};
+    const ev = { id: "evt_missing", type: "customer.subscription.updated", livemode: false, data: { object: { id: "sub_404", customer: "cus_1", status: "active" } } };
+    expect((await deliver(ev)).status).toBe(503);
     expect((await store.get("user_1"))?.plan).toBe("free");
   });
 
