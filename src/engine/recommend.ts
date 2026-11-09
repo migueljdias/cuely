@@ -423,6 +423,8 @@ export function recommendStack(catalog: CatalogSnapshot, input: RecommendInput):
     return {
       ...base,
       productType: { recipe: null, title: null, label: base.productType.label },
+      // No recipe applies, so no note about one either.
+      recipeNote: null,
       status: "outside_coverage",
       profile: profileOut([]),
       questions: [],

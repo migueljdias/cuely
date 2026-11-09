@@ -328,6 +328,7 @@ describe("casual and daily web games", () => {
       expect(r.status, d).toBe("outside_coverage");
       expect(r.stack, d).toHaveLength(0);
       expect(r.productType.recipe, d).toBeNull();
+      expect(r.recipeNote, d).toBeNull();
     }
   });
 
