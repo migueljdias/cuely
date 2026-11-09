@@ -150,11 +150,12 @@ export const RECIPE_FOR = {
   marketplace: "marketplace",
   mobile: "mobile-subscription-app",
   ai: "ai-docs-app",
+  game: "daily-web-game",
 } as const;
 
 /**
  * Picks the recipe for a product: staff tools, then marketplaces, then phone apps,
- * then AI apps, from the profile; otherwise the best keyword match among the rest.
+ * then web games, then AI apps, from the profile; otherwise the best keyword match among the rest.
  * Returns a note when the recipe covers only part of the product.
  */
 export function routeRecipe(recipes: Recipe[], profile: Profile, description: string, b2b: boolean): { recipe: Recipe | null; note: string | null } {
@@ -170,6 +171,10 @@ export function routeRecipe(recipes: Recipe[], profile: Profile, description: st
     recipe = by(RECIPE_FOR.mobile);
     if (profile.money === "none") notes.push("Nothing here is paid, so skip the recipe's purchase, paywall and webhook steps.");
     if (profile.ai) notes.push("The AI parts aren't in this recipe: call the model API from a backend function, never from the app, and see the ai-docs-app recipe for retrieval and usage caps.");
+  } else if (profile.game) {
+    recipe = by(RECIPE_FOR.game);
+    if (profile.money !== "none") notes.push("The recipe has no payment steps; for paid extras on the web, see the b2b-saas recipe's Stripe steps.");
+    if (profile.ai) notes.push("The AI parts aren't in this recipe: call the model API from your server, cap calls per player, and see the ai-docs-app recipe.");
   } else if (profile.ai && (profile.rag || !b2b)) {
     recipe = by(RECIPE_FOR.ai);
     if (b2b) notes.push("Its first step points to the b2b-saas recipe for organizations, roles and invites.");
@@ -226,7 +231,7 @@ export function toCard(tool: Tool, reason: string): ToolCard {
 const isMobile = (p: Profile) => p.platform === "mobile" || p.platform === "both";
 
 /** Which categories this kind of product needs, and why the others are left out. */
-export function categoriesFor(p: Profile): { pick: { slug: CategorySlug; role: StackRole }[]; leftOut: { category: CategorySlug; reason: string }[] } {
+export function categoriesFor(p: Profile, needs: Need[] = []): { pick: { slug: CategorySlug; role: StackRole }[]; leftOut: { category: CategorySlug; reason: string }[] } {
   const pick: { slug: CategorySlug; role: StackRole }[] = [];
   const leftOut: { category: CategorySlug; reason: string }[] = [];
   const add = (slug: CategorySlug, role: StackRole = "core") => pick.push({ slug, role });
@@ -255,8 +260,10 @@ export function categoriesFor(p: Profile): { pick: { slug: CategorySlug; role: S
   else leftOut.push({ category: "payments", reason: "Nothing in the description charges money. Ask for it with categories: [\"payments\"]." });
   if (p.ai) add("llm");
   if (p.rag) add("vector");
+  if (p.game || (needs.includes("counters") && needs.includes("spiky"))) add("kv");
   if (p.realtime) add("realtime");
-  add("email", p.platform === "mobile" ? "optional" : "core");
+  else if (p.game) add("realtime", "optional");
+  add("email", p.platform === "mobile" || p.game ? "optional" : "core");
   add("monitoring");
   add("analytics", "optional");
   add("storage", "optional");
@@ -276,11 +283,13 @@ function productLabel(p: Profile, b2b: boolean): string {
   const parts: string[] = [];
   if (p.platform === "mobile") parts.push("Phone app");
   else if (p.platform === "both") parts.push("Web and phone app");
+  else if (p.game) parts.push("Web game");
   else parts.push(b2b ? "B2B web app" : "Web app");
   if (p.ai) parts.push(p.rag ? "with AI answers over documents" : "with AI features");
   if (p.money === "users_pay_each_other") parts.push("where users pay each other");
   else if (p.money === "users_pay_you" && isMobile(p)) parts.push("with in-app subscriptions");
-  if (p.realtime) parts.push("with live collaboration");
+  if (p.realtime && !p.game) parts.push("with live collaboration");
+  if (p.game && p.shareable) parts.push("built for viral spikes");
   return parts.join(" ");
 }
 
@@ -290,6 +299,7 @@ function headlineOrder(p: Profile, b2b: boolean): CategorySlug[] {
   if (isMobile(p)) o.push("mobile_build", ...(p.money !== "none" ? (["payments"] as CategorySlug[]) : []), "database");
   if (p.money === "users_pay_each_other") o.push("payments");
   if (p.ai) o.push("llm", "vector");
+  if (p.game) o.push("kv", "hosting", "database");
   if (p.realtime) o.push("realtime");
   if (b2b) o.push("auth", "payments");
   o.push("hosting", "database", "auth", "payments", "email");
@@ -309,14 +319,16 @@ function catchesFor(p: Profile, needs: Need[]): typeof CATCHES {
     if (p.ai) flags.push("ai");
     if (p.rag) flags.push("rag");
     if (needs.includes("usage_billing") && p.money !== "none") flags.push("usage_billing");
-    if (p.realtime) flags.push("realtime");
+    if (p.game) flags.push("game");
+    if (p.realtime && !p.game) flags.push("realtime");
   }
   return flags.flatMap((f) => CATCHES.filter((c) => c.when === f));
 }
 
 const money = (n: number) => (n === 0 ? "$0" : n < 1 ? "under $1" : `$${Math.round(n).toLocaleString("en-US")}`);
 
-function costLine(stack: StackPick[], tools: Tool[], internal: boolean, ai: boolean): CostLine | null {
+/** Product types whose launch plan differs from a tool's default cost: a shareable game can't launch on a free plan that stops at its cap. */
+function costLine(stack: StackPick[], tools: Tool[], internal: boolean, ai: boolean, overrides: Record<string, { monthly: number; basis: string }> = {}): CostLine | null {
   const [usersPart, aiPart] = COST_PROFILE.text.split(/(?<=\.)\s+(?=AI apps)/);
   const profileText = internal
     ? `Priced for ${COST_PROFILE.internalStaff} staff.`
@@ -330,7 +342,9 @@ function costLine(stack: StackPick[], tools: Tool[], internal: boolean, ai: bool
   for (const s of core) {
     const t = tools.find((x) => x.slug === s.pick.slug);
     if (!t?.cost) continue;
-    if (t.cost.monthly !== null) items.push({ tool: t.slug, name: t.name, monthly: t.cost.monthly, basis: t.cost.basis });
+    const o = overrides[t.slug];
+    if (o) items.push({ tool: t.slug, name: t.name, monthly: o.monthly, basis: o.basis });
+    else if (t.cost.monthly !== null) items.push({ tool: t.slug, name: t.name, monthly: t.cost.monthly, basis: t.cost.basis });
     if (t.cost.variable) variable.push(`${t.name}: ${t.cost.variable}`);
   }
   const total = items.reduce((a, b) => a + b.monthly, 0);
@@ -374,6 +388,8 @@ export function recommendStack(catalog: CatalogSnapshot, input: RecommendInput):
     dropNeed("b2b");
   }
   if (profile.realtime) addNeed("realtime", "live collaboration");
+  if (profile.game) addNeed("counters", `${profile.matched.game} (scores and streaks)`);
+  if (profile.shareable) addNeed("spiky", "players share results");
   if (!profile.rag) dropNeed("rag");
   for (const n of input.needs ?? []) addNeed(n, "(requested)");
   const needs = detected.map((d) => d.need);
@@ -406,6 +422,7 @@ export function recommendStack(catalog: CatalogSnapshot, input: RecommendInput):
   if (coverage.status === "outside" && !explicit) {
     return {
       ...base,
+      productType: { recipe: null, title: null, label: base.productType.label },
       status: "outside_coverage",
       profile: profileOut([]),
       questions: [],
@@ -450,7 +467,7 @@ export function recommendStack(catalog: CatalogSnapshot, input: RecommendInput):
 
   const plan = explicit
     ? { pick: input.categories!.map((slug) => ({ slug, role: "core" as StackRole })), leftOut: [] }
-    : categoriesFor(profile);
+    : categoriesFor(profile, needs);
 
   const full = input.detail === "full";
   const stack: StackPick[] = [];
@@ -509,8 +526,11 @@ export function recommendStack(catalog: CatalogSnapshot, input: RecommendInput):
     picks,
     catches: allCatches.slice(0, 3),
     moreCatches: allCatches.slice(3),
-    cost: costLine(stack, catalog.tools, profile.audience === "internal" && !explicit, profile.ai),
+    cost: costLine(stack, catalog.tools, profile.audience === "internal" && !explicit, profile.ai, !explicit ? (recipe?.costOverrides ?? {}) : {}),
   };
+  if (summary.cost && !explicit && recipe?.costOverrides?.["cloudflare-workers"] && stack.some((x) => x.pick.slug === "cloudflare-workers" && x.role === "core")) {
+    summary.cost.text += " Workers is priced at Paid because Free stops at 100,000 requests a day.";
+  }
   if (summary.cost && isMobile(profile) && !explicit) {
     summary.cost.text += ` Plus store accounts: ${STORE_ACCOUNTS}.`;
   }

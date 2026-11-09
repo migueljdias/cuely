@@ -1,5 +1,5 @@
 /**
- * Runs the five published evaluation prompts through recommend_stack and get_recipe
+ * Runs the published evaluation prompts (five since Nov 7, 2026, plus the daily web game since Nov 9) through recommend_stack and get_recipe
  * (in-memory catalog) and prints what an agent would receive. Usage: npx tsx scripts/eval-cases.ts
  */
 import { categories, recipes, tools } from "@/catalog";
@@ -12,6 +12,7 @@ export const CASES = [
   "I'm building a local dog-walking marketplace. Owners book and pay walkers through the app, we keep 15%. Web first. Stack?",
   "I run a 10-person bakery. I want a simple app for staff to log daily inventory and wholesale orders. We use Google Workspace. Should I build it, and with what?",
   "I want to build a chatbot that answers questions over a company's PDFs (HR handbook, policies). Sell it to small companies with usage-based billing. What stack?",
+  "A free daily web game: one shared question a day, every player votes, we store every vote and show live crowd percentages, plus streaks and shareable results. It needs to survive viral traffic spikes.",
 ];
 
 const snap = { categories, tools, recipes };

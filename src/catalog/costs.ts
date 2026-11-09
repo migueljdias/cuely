@@ -70,6 +70,13 @@ export const COSTS: Record<string, ToolCost> = {
   "supabase-realtime": { monthly: 0, basis: "Free covers 200 concurrent connections and 2M messages a month." },
   ably: { monthly: 29, basis: "Free stops at 500 MAU; Pro from $29/month covers 1,000 MAU (billed annually)." },
   pusher: { monthly: 49, basis: "Sandbox allows 100 concurrent connections; Startup is $49/month for 500." },
+  "cached-polling": { monthly: 0, basis: "No separate bill; each poll is a cached CDN request on Vercel or a Worker request on Cloudflare." },
+  // Counters and cache (read 2026-11-09)
+  "upstash-redis": { monthly: 0, basis: "About 3 commands per request × 100,000 requests = 300K commands, inside the free 500K; past that, $0.20 per 100K." },
+  "cloudflare-durable-objects": { monthly: 0, basis: "100,000 requests a month fits the free 100,000 a day." },
+  "cloudflare-kv": { monthly: 0, basis: "One read per request fits the free 100,000 reads a day." },
+  "vercel-global-config": { monthly: 0, basis: "One read per request is 100,000 reads, the Hobby allowance; on-demand reads are $3 per million." },
+  "redis-cloud": { monthly: 0, basis: "Counters and a leaderboard fit in the free 30 MB; Essentials is about $5/month for more." },
   // Mobile builds
   "expo-eas": { monthly: 19, basis: "Free updates reach 1,000 MAU, so you're at the limit; Starter is $19/month for 3,000. Builds fit the free 15 + 15 a month." },
   "native-toolchains": { monthly: 0, basis: "Tools are free; store fees are listed separately." },

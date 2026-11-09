@@ -278,3 +278,89 @@ describe("recipes beyond B2B SaaS", () => {
     expect(matchRecipe(recipes, "internal tool for inventory")?.slug).toBe("internal-tool");
   });
 });
+
+describe("casual and daily web games", () => {
+  // The exact prompt from the game channel that Cuely answered with outside_coverage before Nov 9, 2026.
+  const GAME =
+    "A free daily web game: one shared question a day, every player votes, we store every vote and show live crowd percentages, plus streaks and shareable results. It needs to survive viral traffic spikes.";
+
+  it("regression: the daily web game prompt gets a stack, not outside_coverage", () => {
+    const r = recommendStack(snap, { description: GAME });
+    expect(r.status).toBe("ok");
+    expect(r.coverage.status).toBe("covered");
+    expect(r.questions).toHaveLength(0);
+    expect(r.productType.recipe).toBe("daily-web-game");
+    expect(pick(r, "kv")).toBe("upstash-redis");
+    expect(pick(r, "hosting")).toBe("cloudflare-workers");
+    expect(pick(r, "database")).toBe("neon");
+    expect(pick(r, "realtime")).toBe("cached-polling");
+    const needs = r.detectedNeeds.map((d) => d.need);
+    expect(needs).toEqual(expect.arrayContaining(["counters", "spiky"]));
+    const recipe = recipes.find((x) => x.slug === "daily-web-game")!;
+    for (const item of recipe.stack) expect(pick(r, item.category), item.category).toBe(item.tool);
+    // Workers Free stops at 100,000 requests a day, so the cost is priced at Workers Paid.
+    expect(r.summary!.cost!.text).toMatch(/^About \$5\/month at 1,000 users/);
+    expect(r.summary!.cost!.text).toMatch(/Free stops at 100,000 requests a day/);
+    const catches = r.summary!.catches.map((c) => c.text).join(" ");
+    expect(catches).toMatch(/viral/i);
+    expect(catches).toMatch(/Redis/);
+  });
+
+  it("names Vercel when the game is built in Next.js", () => {
+    const r = recommendStack(snap, { description: "A daily trivia game in Next.js that players share with friends", assumeDefaults: true });
+    expect(r.status).toBe("ok");
+    expect(r.productType.recipe).toBe("daily-web-game");
+    expect(pick(r, "hosting")).toBe("vercel");
+    expect(pick(r, "kv")).toBe("upstash-redis");
+  });
+
+  it("never counts votes in an edge config store", () => {
+    const r = recommendStack(snap, { description: GAME });
+    const kv = r.stack.find((s) => s.category === "kv")!;
+    const top = [kv.pick, kv.alternatives[0]].map((t) => t.slug);
+    expect(top).not.toContain("cloudflare-kv");
+    expect(top).not.toContain("vercel-global-config");
+  });
+
+  it("keeps honest outside_coverage for engine, console, 3D and phone games", () => {
+    for (const d of ["A Unity game for iPhone", "a 3D shooter game for consoles", "A 3D game in the browser", "a game on Steam", "a multiplayer game for phones"]) {
+      const r = recommendStack(snap, { description: d });
+      expect(r.status, d).toBe("outside_coverage");
+      expect(r.stack, d).toHaveLength(0);
+      expect(r.productType.recipe, d).toBeNull();
+    }
+  });
+
+  it("says fast real-time multiplayer is only partly covered", () => {
+    const c = detectCoverage("A real-time multiplayer browser game with matchmaking");
+    expect(c.status).toBe("partial");
+    expect(c.notes[0]).toMatch(/authoritative game servers/);
+  });
+
+  it("outside-coverage notes don't repeat themselves", () => {
+    for (const d of ["A Unity game for iPhone", "a multiplayer game for phones", "Unity crypto NFT game", "a game engine game for xbox and playstation"]) {
+      const notes = detectCoverage(d).notes;
+      expect(new Set(notes).size, d).toBe(notes.length);
+      for (const n of notes) {
+        const words = n.toLowerCase().match(/[a-z']+/g)!;
+        const flat = ` ${words.join(" ")} `;
+        for (let i = 0; i + 4 <= words.length; i++) {
+          const phrase = ` ${words.slice(i, i + 4).join(" ")} `;
+          expect(flat.split(phrase).length - 1, `${d}: "${phrase}"`).toBe(1);
+        }
+      }
+    }
+  });
+
+  it("doesn't read game-like words as a game", () => {
+    expect(detectProfile("a game plan tool for sales teams").profile.game).toBe(false);
+    expect(detectProfile("a game-changing CRM").profile.game).toBe(false);
+    expect(detectCoverage("an app for letting off steam at work, for B2B teams").status).toBe("covered");
+    expect(detectCoverage("an AR try-on app for glasses").status).toBe("covered");
+  });
+
+  it("get_recipe finds the game recipe by plain words", () => {
+    expect(matchRecipe(recipes, "daily puzzle game with streaks")?.slug).toBe("daily-web-game");
+    expect(matchRecipe(recipes, "browser trivia game")?.slug).toBe("daily-web-game");
+  });
+});

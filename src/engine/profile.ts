@@ -28,9 +28,13 @@ export interface Profile {
   /** People provide services in person (walking, cleaning, care): background checks matter. */
   inPerson: boolean;
   socialLogin: boolean;
+  /** A casual or daily game that runs in a web browser (engine, console and phone games are outside coverage). */
+  game: boolean;
+  /** Players share results, so traffic can arrive in viral spikes. */
+  shareable: boolean;
   /** Where each value came from. */
   source: Record<"platform" | "money" | "audience", "described" | "answered" | "assumed">;
-  matched: Partial<Record<"platform" | "money" | "audience" | "ai", string>>;
+  matched: Partial<Record<"platform" | "money" | "audience" | "ai" | "game", string>>;
 }
 
 export interface Question {
@@ -86,10 +90,31 @@ const IN_PERSON = ["walk", "walker", "walkers", "walking", "sitter", "sitters", 
   "pet care", "dog"];
 const SOCIAL_LOGIN = ["google login", "google sign-in", "sign in with google", "social login", "facebook login"];
 
+/** Casual and daily games that run in a browser: covered since 2026-11-09. */
+export const GAME = ["game", "games", "daily game", "web game", "browser game", "puzzle game", "word game", "trivia",
+  "trivia game", "quiz game", "guessing game", "daily puzzle", "puzzle", "puzzles", "word puzzle", "crossword", "wordle", "party game", "io game"];
+const PHONE_GAME = [...MOBILE, "phone", "phones", "mobile game", "mobile games", "tablet", "tablets"];
+const SHARE = ["share", "shares", "shareable", "share results", "share their results", "share their score", "viral",
+  "go viral", "goes viral", "spike", "spikes", "traffic spikes"];
+/** Games Cuely doesn't cover: built in an engine, for consoles or in 3D. These words say so on their own. */
+const GAME_ENGINE = ["unity", "unreal", "unreal engine", "godot", "game engine", "playstation", "xbox", "nintendo",
+  "mmorpg", "battle royale"];
+/** These say so only next to a game word ("steam" alone could mean anything). */
+const GAME_3D = ["3d", "console", "consoles", "steam", "fps", "first-person shooter", "mmo", "vr", "virtual reality", "ar"];
+/** Fast multiplayer needs an authoritative game server, which Cuely doesn't cover. */
+const FAST_MULTIPLAYER = ["multiplayer", "real-time multiplayer", "realtime multiplayer", "matchmaking", "netcode",
+  "game server", "game servers", "pvp", "player vs player", "lobbies"];
+
+const ENGINE_NOTE = "Cuely doesn't cover game engines, console or 3D games; it covers casual and daily games that run in a web browser.";
+
 /** Things Cuely doesn't cover. "outside" means the core of the product is out of scope. */
-const OUTSIDE: { words: string[]; note: string; status: "partial" | "outside" }[] = [
-  { words: ["game", "games", "unity", "unreal", "godot", "game engine"], status: "outside",
-    note: "Cuely doesn't cover game engines or game backends." },
+const OUTSIDE: { words: string[]; note: string; status: "partial" | "outside"; needs?: string[] }[] = [
+  { words: GAME_ENGINE, status: "outside", note: ENGINE_NOTE },
+  { words: GAME_3D, needs: GAME, status: "outside", note: ENGINE_NOTE },
+  { words: PHONE_GAME, needs: GAME, status: "outside",
+    note: "Cuely doesn't cover phone games, which are usually built in a game engine; it covers casual and daily games that run in a web browser." },
+  { words: FAST_MULTIPLAYER, needs: GAME, status: "partial",
+    note: "Cuely doesn't cover authoritative game servers or matchmaking for fast real-time multiplayer; the stack below covers accounts, votes, scores, leaderboards and updates every few seconds." },
   { words: ["iot", "firmware", "embedded", "arduino", "raspberry pi", "hardware device", "microcontroller"], status: "outside",
     note: "Cuely doesn't cover hardware, firmware or IoT device fleets." },
   { words: ["crypto", "blockchain", "web3", "nft", "nfts", "smart contract", "smart contracts", "defi", "token sale"], status: "outside",
@@ -114,11 +139,17 @@ const OUTSIDE: { words: string[]; note: string; status: "partial" | "outside" }[
 
 export function detectCoverage(text: string): Coverage {
   const t = maskText(text);
-  const hits = OUTSIDE.filter((o) => any(t, o.words));
+  const hits = OUTSIDE.filter((o) => any(t, o.words) && (!o.needs || any(t, o.needs)));
   if (!hits.length) return { status: "covered", notes: [] };
+  // When the core is out of scope, only the out-of-scope notes apply (there is no "stack below"),
+  // and an engine game that is also a phone game gets one note, not two.
+  const outside = hits.filter((h) => h.status === "outside");
+  const shown = outside.length
+    ? outside.some((h) => h.note === ENGINE_NOTE) ? outside.filter((h) => h.note === ENGINE_NOTE || h.needs !== GAME) : outside
+    : hits;
   return {
-    status: hits.some((h) => h.status === "outside") ? "outside" : "partial",
-    notes: hits.map((h) => h.note),
+    status: outside.length ? "outside" : "partial",
+    notes: [...new Set(shown.map((h) => h.note))],
   };
 }
 
@@ -216,18 +247,22 @@ export function detectProfile(text: string, answers: Answers = {}): ProfileResul
     "live cursors", "co-edit", "co-editing", "live session", "live sessions"]);
   const inPerson = money === "users_pay_each_other" && !!any(t, IN_PERSON);
   const socialLogin = !!any(t, SOCIAL_LOGIN);
+  const gameWord = any(t, GAME);
+  const game = !!gameWord && audience !== "internal";
+  if (game) matched.game = gameWord!;
+  const shareable = game && !!any(t, SHARE);
 
   // Unknown facts that would change the picks.
   const hasApp = !!any(t, APP_WORDS);
-  if (source.platform === "assumed" && audience !== "internal" && hasApp) unknown.push("platform");
+  if (source.platform === "assumed" && audience !== "internal" && hasApp && !game) unknown.push("platform");
   if (source.money === "assumed" && twoSided && audience !== "internal") unknown.push("money");
   if (source.audience === "assumed" && own) unknown.push("audience");
 
   const words = t.split(/[^a-z0-9]+/i).filter((w) => w.length > 2);
-  const vague = words.length < 4 && !web && !mob && !ai && !mk && !you && !internal;
+  const vague = words.length < 4 && !web && !mob && !ai && !mk && !you && !internal && !game;
 
   return {
-    profile: { platform, money, audience, ai, rag, realtime, inPerson, socialLogin, source, matched },
+    profile: { platform, money, audience, ai, rag, realtime, inPerson, socialLogin, game, shareable, source, matched },
     unknown,
     vague,
   };

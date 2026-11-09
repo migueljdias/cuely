@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import { categories, recipes, tools } from "@/catalog";
 
 describe("catalog integrity", () => {
-  it("has the fifteen categories, each with 2 to 5 tools", () => {
+  it("has the sixteen categories, each with 2 to 5 tools", () => {
     expect(categories.map((c) => c.slug).sort()).toEqual(
-      ["analytics", "auth", "database", "dns", "email", "hosting", "internal_tools", "llm", "mobile_build", "monitoring",
+      ["analytics", "auth", "database", "dns", "email", "hosting", "internal_tools", "kv", "llm", "mobile_build", "monitoring",
         "payments", "realtime", "secrets", "storage", "vector"],
     );
     for (const c of categories) {

@@ -44,13 +44,18 @@ export const NEED_TRIGGERS: Record<Need, string[]> = {
   usage_billing: ["usage-based", "usage based", "metered", "pay per use", "pay-per-use", "per request", "per query",
     "per token", "credits"],
   google_workspace: ["google workspace", "g suite", "gsuite", "google sheets", "google drive"],
+  counters: ["vote", "votes", "voting", "upvote", "upvotes", "likes", "tally", "tallies", "counter", "counters",
+    "leaderboard", "leaderboards", "high score", "high scores", "streak", "streaks", "rate limit", "rate limiting",
+    "crowd percentages", "live percentages", "high write", "high-write"],
+  spiky: ["viral", "go viral", "goes viral", "traffic spike", "traffic spikes", "spike", "spikes", "spiky", "bursty",
+    "hacker news", "product hunt", "front page", "launch day", "surge", "surges", "flash crowd"],
 };
 
 /**
  * Phrases removed before matching, so a product name doesn't read as a need:
  * "Google Workspace" is not a B2B workspace, "React Native" is not Next.js.
  */
-const MASKS = [/google workspace/gi, /g suite/gi, /react native/gi, /microsoft 365/gi];
+const MASKS = [/google workspace/gi, /g suite/gi, /react native/gi, /microsoft 365/gi, /game[- ]?(plan|changer|changing)s?/gi];
 
 /** Needs that some phrases imply but the masked text no longer shows. */
 const MASKED_NEEDS: { re: RegExp; need: Need; matched: string }[] = [
@@ -113,6 +118,8 @@ export const NEED_LABELS: Record<Need, string> = {
   usage_billing: "charges by usage",
   internal: "a tool for your own staff",
   google_workspace: "already on Google Workspace",
+  counters: "votes, scores, leaderboards or streaks (many writes to the same numbers)",
+  spiky: "traffic comes in viral spikes",
 };
 
 export const ALL_NEEDS = Object.keys(NEED_TRIGGERS) as Need[];
@@ -138,4 +145,6 @@ export const NEED_SHORT: Record<Need, string> = {
   usage_billing: "usage-based billing",
   internal: "internal staff tools",
   google_workspace: "teams on Google Workspace",
+  counters: "votes, leaderboards and streaks",
+  spiky: "viral traffic spikes",
 };

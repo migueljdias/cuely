@@ -61,6 +61,11 @@ describe("MCP over Streamable HTTP", () => {
     expect(text(byWords)).not.toMatch(/## Steps/);
     const missing: any = await client.callTool({ name: "get_recipe", arguments: { product_type: "mobile game" } });
     expect(missing.structuredContent.found).toBe(false);
+    expect(text(missing)).toMatch(/doesn't cover phone games/);
+    const game: any = await client.callTool({ name: "get_recipe", arguments: { product_type: "daily web game with votes and streaks" } });
+    expect(game.structuredContent.recipe.slug).toBe("daily-web-game");
+    expect(text(game)).toMatch(/HINCRBY/);
+    expect(text(game)).toMatch(/About \$5\/month at 1,000 users in tool bills/);
   });
 
   it("compare_tools compares within a category and errors across categories", async () => {
@@ -76,7 +81,7 @@ describe("MCP over Streamable HTTP", () => {
 
   it("list_categories lists all and expands one", async () => {
     const all: any = await client.callTool({ name: "list_categories", arguments: {} });
-    expect(all.structuredContent.categories).toHaveLength(15);
+    expect(all.structuredContent.categories).toHaveLength(16);
     const one: any = await client.callTool({ name: "list_categories", arguments: { category: "email" } });
     expect(text(one)).toMatch(/Resend/);
     expect(text(one)).toMatch(/3,000 emails per month/);

@@ -6,7 +6,7 @@
 export interface Catch {
   id: string;
   /** Profile flag that triggers it. */
-  when: "mobile_paid" | "mobile" | "mobile_social_login" | "marketplace" | "in_person" | "ai" | "rag" | "usage_billing" | "internal" | "internal_workspace" | "realtime";
+  when: "mobile_paid" | "mobile" | "mobile_social_login" | "marketplace" | "in_person" | "ai" | "rag" | "usage_billing" | "internal" | "internal_workspace" | "realtime" | "game";
   text: string;
   source: string;
   verifiedOn: string;
@@ -98,5 +98,26 @@ export const CATCHES: Catch[] = [
     text: "Live features have their own limits: Liveblocks Free allows 500 monthly active rooms and 10 people per room at once; bigger sessions need Pro ($25/month billed annually).",
     source: "https://liveblocks.io/pricing",
     verifiedOn: V,
+  },
+  {
+    id: "game-free-plans-stop",
+    when: "game",
+    text: "Free plans stop hard on a viral day: Cloudflare Workers Free returns error 1027 after 100,000 requests a day, and on Vercel Hobby going over the included 1M CDN requests a month means waiting 30 days. Move to Workers Paid ($5/month) or Vercel Pro ($20/month) before you share the game.",
+    source: "https://developers.cloudflare.com/workers/platform/limits/",
+    verifiedOn: "2026-11-09",
+  },
+  {
+    id: "game-count-in-redis",
+    when: "game",
+    text: "Count votes in Redis, not with a database count on every view: Upstash runs up to 10,000 commands a second on every plan, with 500K a month free and $0.20 per 100K after, so set its budget cap. Cloudflare KV can't count votes: it allows 1 write per second to the same key.",
+    source: "https://upstash.com/pricing/redis",
+    verifiedOn: "2026-11-09",
+  },
+  {
+    id: "game-poll-dont-push",
+    when: "game",
+    text: "Show live percentages by polling one cached results endpoint every few seconds instead of a realtime service: Supabase Realtime Free allows 200 concurrent connections, Ably Free 500 monthly users and Pusher's Sandbox 100 connections, and a viral day passes those in minutes.",
+    source: "https://supabase.com/pricing",
+    verifiedOn: "2026-11-09",
   },
 ];

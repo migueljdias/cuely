@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { CategorySlug, Need } from "@/catalog";
 import { compareTools } from "@/engine/compare";
 import { ALL_NEEDS, NEED_LABELS } from "@/engine/needs";
+import { detectCoverage } from "@/engine/profile";
 import { matchRecipe, recommendStack } from "@/engine/recommend";
 import type { Repository } from "@/repo";
 import { renderCategories, renderCategory, renderCompare, renderRecipe, renderRecommendation } from "./render";
@@ -11,10 +12,10 @@ export const SERVER_INFO = { name: "cuely", version: "0.2.0" };
 
 const CATEGORY_SLUGS = [
   "hosting", "database", "auth", "payments", "email", "secrets", "dns", "monitoring", "analytics", "storage",
-  "llm", "vector", "realtime", "mobile_build", "internal_tools",
+  "llm", "vector", "realtime", "mobile_build", "internal_tools", "kv",
 ] as const satisfies readonly CategorySlug[];
 
-export const INSTRUCTIONS = `Cuely recommends tools and setup steps for what a user is building: web apps, phone apps, marketplaces, AI apps and staff tools.
+export const INSTRUCTIONS = `Cuely recommends tools and setup steps for what a user is building: web apps, phone apps, marketplaces, AI apps, staff tools and casual web games.
 Use recommend_stack first with a one- or two-sentence description of the product (who it's for, what it does, any constraints such as budget, region, compliance, or tools already in use). The answer leads with the monthly cost at 1,000 users and the catches that matter.
 If it returns questions, ask the user (or answer from the conversation) and call again with answers. If it says the product is outside Cuely's coverage, tell the user rather than forcing a stack.
 If it names a recipe, call get_recipe for full setup steps.
@@ -41,7 +42,7 @@ export function createCuelyServer(ctx: ServerContext): McpServer {
     {
       title: "Recommend a stack",
       description:
-        "Recommend a stack for what the user is building. Leads with the top picks, the monthly cost at 1,000 users and the 2-3 catches that matter (e.g. Apple's in-app purchase rule, marketplace payouts, AI token costs), then one line per category. Picks only the categories the product needs, from: hosting, database, auth, payments, email, secrets, DNS, monitoring, analytics, storage, AI model APIs, vector search, realtime, mobile builds and internal-tool builders. If the description leaves out something that changes the picks (web or phone app, who pays whom, staff or customers), it returns up to 3 short questions instead; call again with answers. Says so when a product is outside Cuely's coverage.",
+        "Recommend a stack for what the user is building. Leads with the top picks, the monthly cost at 1,000 users and the 2-3 catches that matter (e.g. Apple's in-app purchase rule, marketplace payouts, AI token costs), then one line per category. Picks only the categories the product needs, from: hosting, database, auth, payments, email, secrets, DNS, monitoring, analytics, storage, AI model APIs, vector search, realtime, mobile builds, internal-tool builders, and counters and cache. If the description leaves out something that changes the picks (web or phone app, who pays whom, staff or customers), it returns up to 3 short questions instead; call again with answers. Says so when a product is outside Cuely's coverage.",
       inputSchema: {
         description: z
           .string()
@@ -119,8 +120,12 @@ export function createCuelyServer(ctx: ServerContext): McpServer {
     },
     async ({ product_type, include_steps }) => {
       const snap = await ctx.repo.snapshot();
-      const recipe =
-        snap.recipes.find((r) => r.slug === product_type.trim().toLowerCase()) ?? matchRecipe(snap.recipes, product_type);
+      const bySlug = snap.recipes.find((r) => r.slug === product_type.trim().toLowerCase());
+      // A description of something Cuely doesn't cover (a phone or engine game) gets no recipe,
+      // even when a word like "game" matches one.
+      const coverage = bySlug ? null : detectCoverage(product_type);
+      const outside = coverage?.status === "outside" ? coverage.notes.join(" ") + " " : "";
+      const recipe = bySlug ?? (outside ? null : matchRecipe(snap.recipes, product_type));
       log(ctx, "get_recipe", { recipe: recipe?.slug ?? null });
       if (!recipe) {
         const available = snap.recipes.map((r) => ({ slug: r.slug, title: r.title }));
@@ -128,7 +133,7 @@ export function createCuelyServer(ctx: ServerContext): McpServer {
           content: [
             {
               type: "text",
-              text: `No recipe matches "${product_type}" yet. Available: ${available.map((a) => `${a.slug} (${a.title})`).join(", ")}. recommend_stack still works for any product type.`,
+              text: `${outside}No recipe matches "${product_type}" yet. Available: ${available.map((a) => `${a.slug} (${a.title})`).join(", ")}. recommend_stack still works for any product type.`,
             },
           ],
           structuredContent: { found: false, available },

@@ -23,7 +23,7 @@ export const tools: Tool[] = [
     bestFor: ["Next.js apps", "Preview deployments per pull request", "Small teams that want no servers to manage"],
     watchOut: [
       "Hobby (free) is for personal, non-commercial use; a product that charges money needs Pro.",
-      "Hobby projects pause when they exceed the included usage; extra usage can't be bought on Hobby.",
+      "On Hobby, going over the included usage means waiting until 30 days have passed to use that feature again; extra usage can't be bought on Hobby.",
     ],
     freeTier:
       "Hobby, $0/month: 1M function invocations, 4 hours Active CPU, 1M CDN requests, 100 GB Fast Data Transfer and 10 GB Fast Origin Transfer per month, 1 developer seat.",
@@ -37,8 +37,9 @@ export const tools: Tool[] = [
       low_cost: { weight: -1, reason: "Free only for non-commercial use; a paying product starts at $20/month." },
       long_running: { weight: -2, reason: "Functions are request-scoped; long jobs need a queue or another host." },
       edge: { weight: 1, reason: "Global CDN with edge middleware." },
+      spiky: { weight: 2, reason: "On Pro, CDN requests and transfer are flat-rate, and a cached response doesn't run your function, so a viral day of page views and polls costs little. Hobby stops for 30 days once you pass 1M CDN requests a month." },
     },
-    verifiedOn: V,
+    verifiedOn: "2026-11-09",
   },
   {
     slug: "cloudflare-workers",
@@ -51,7 +52,7 @@ export const tools: Tool[] = [
     bestFor: ["Global low-latency APIs", "High request volume on a small budget", "Apps already on Cloudflare"],
     watchOut: [
       "The Workers runtime is not full Node.js; some Node libraries and Next.js features need an adapter.",
-      "Free plan caps CPU at 10 ms per invocation.",
+      "Free plan caps CPU at 10 ms per invocation, and past 100,000 requests a day it returns error 1027 (or skips the Worker, if the route fails open).",
     ],
     freeTier: "Workers Free: 100,000 requests per day and 10 ms of CPU time per invocation.",
     paidStartsAt:
@@ -63,11 +64,12 @@ export const tools: Tool[] = [
     fit: {
       edge: { weight: 3, reason: "Code runs in Cloudflare's edge locations by default." },
       low_cost: { weight: 3, reason: "100k free requests a day, then $5/month covers 10M requests, with no egress charges." },
+      spiky: { weight: 2, reason: "Static assets are free and unlimited, and Paid ($5/month) includes 10M requests, then $0.30 per million. On Free, requests past 100,000 a day get error 1027." },
       high_volume: { weight: 2, reason: "Per-request pricing stays low at high volume and there are no data transfer charges." },
       nextjs: { weight: -1, reason: "Next.js runs through an adapter, not natively." },
       long_running: { weight: -2, reason: "Invocations are CPU-time limited; use Queues or Containers for long work." },
     },
-    verifiedOn: V,
+    verifiedOn: "2026-11-09",
   },
   {
     slug: "netlify",
@@ -116,6 +118,7 @@ export const tools: Tool[] = [
       long_running: { weight: 3, reason: "Always-on services, background workers and cron jobs are first-class." },
       realtime: { weight: 2, reason: "Persistent servers hold websocket connections." },
       nextjs: { weight: 0, reason: "Runs Next.js as a Node server." },
+      spiky: { weight: -1, reason: "A fixed-size server doesn't absorb a sudden spike by itself; you size up or add instances ahead of time." },
     },
     verifiedOn: V,
   },

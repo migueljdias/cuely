@@ -19,7 +19,8 @@ export type CategorySlug =
   | "vector"
   | "realtime"
   | "mobile_build"
-  | "internal_tools";
+  | "internal_tools"
+  | "kv";
 
 /**
  * Needs are what a builder's description can ask for. recommend_stack detects
@@ -45,7 +46,9 @@ export type Need =
   | "rag" // answers over the user's own documents (retrieval)
   | "usage_billing" // charges by usage (metered)
   | "internal" // a tool for the builder's own staff, not for customers
-  | "google_workspace"; // the organization already runs on Google Workspace
+  | "google_workspace" // the organization already runs on Google Workspace
+  | "counters" // votes, scores, leaderboards, streaks: many small writes to the same numbers
+  | "spiky"; // traffic arrives in bursts (a viral share, a launch), not evenly
 
 export interface Category {
   slug: CategorySlug;
@@ -167,5 +170,10 @@ export interface Recipe {
    * each with its arithmetic. The tool bills themselves are summed from the catalog.
    */
   costNotes?: string[];
+  /**
+   * Where this product shape can't run on a tool's free plan (a daily game on Workers
+   * Free), the monthly bill to use instead, with why. Used by get_recipe and recommend_stack.
+   */
+  costOverrides?: Record<string, { monthly: number; basis: string }>;
   verifiedOn: string;
 }

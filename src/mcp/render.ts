@@ -80,7 +80,8 @@ export function recipeCost(r: Recipe, tools: Tool[]): string | null {
   const items = r.stack
     .filter((s) => !s.optional)
     .map((s) => tools.find((t) => t.slug === s.tool))
-    .filter((t): t is Tool => !!t?.cost && t.cost.monthly !== null);
+    .filter((t): t is Tool => !!t?.cost && t.cost.monthly !== null)
+    .map((t) => (r.costOverrides?.[t.slug] ? { ...t, cost: { ...t.cost!, monthly: r.costOverrides[t.slug].monthly } } : t));
   if (!items.length) return null;
   const staff = items.some((t) => t.cost!.scale === "10_staff");
   const total = items.reduce((a, t) => a + t.cost!.monthly!, 0);
@@ -90,7 +91,8 @@ export function recipeCost(r: Recipe, tools: Tool[]): string | null {
   let text = `About ${fmt(total)}/month ${staff ? `for ${COST_PROFILE.internalStaff} staff` : `at ${COST_PROFILE.users.toLocaleString("en-US")} users`} in tool bills`;
   if (paid.length) text += `: ${paid.map((t) => `${t.name} ${fmt(t.cost!.monthly!)}`).join(" + ")}`;
   if (free.length) text += `${paid.length ? "; " : ": "}$0 for ${free.map((t) => t.name).join(", ")}`;
-  return `${text}.`;
+  const why = Object.entries(r.costOverrides ?? {}).filter(([slug]) => items.some((t) => t.slug === slug)).map(([, o]) => o.basis);
+  return `${text}.${why.length ? ` ${why.join(" ")}` : ""}`;
 }
 
 export function renderRecipe(r: Recipe, tools: Tool[], includeSteps = true): string {

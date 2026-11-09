@@ -120,4 +120,12 @@ export const categories: Category[] = [
       "For a small team, a builder on top of the tools you already have usually beats a custom app nobody maintains. Check the price per user and whether it works on your staff's devices.",
     order: 15,
   },
+  {
+    slug: "kv",
+    name: "Counters and cache",
+    description: "A fast key-value store for vote counts, scores, leaderboards, streaks, rate limits and caching hot reads under traffic spikes.",
+    howToChoose:
+      "Counters and leaderboards need atomic increments and sorted sets, which is Redis. A read-mostly cache can sit in an edge key-value store, but check its per-key write limit and how long a write takes to show everywhere.",
+    order: 16,
+  },
 ];
