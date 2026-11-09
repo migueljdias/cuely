@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { paymentsConfig } from "@/billing/stripe";
+import { checkoutOpen, paymentsConfig } from "@/billing/stripe";
 import { PLANS } from "@/plans";
 import { APP_URL } from "@/site";
 import { SiteFooter, SiteHeader } from "../_components/chrome";
@@ -12,6 +12,7 @@ export const metadata: Metadata = {
 
 export default function Pricing() {
   const payments = paymentsConfig();
+  const canCheckout = checkoutOpen(payments);
   const plans = [PLANS.free, PLANS.pro];
   return (
     <>
@@ -34,7 +35,7 @@ export default function Pricing() {
               <p className="plan-price">
                 {p.priceLabel}
                 {p.id === "pro" && payments.mode !== "live" && (
-                  <span className="tag">{payments.mode === "test" ? "Test mode" : "Not on sale yet"}</span>
+                  <span className="tag">{canCheckout ? "Test mode" : "Opens soon"}</span>
                 )}
               </p>
               <p className="plan-summary">{p.summary}</p>
@@ -49,12 +50,17 @@ export default function Pricing() {
                 </a>
               )}
               {p.id === "pro" &&
-                (payments.mode === "off" ? (
-                  <p className="muted small">Pro opens once teams need it. Free has no catch in the meantime.</p>
-                ) : (
+                (canCheckout ? (
                   <a className="btn btn-primary" href={`${APP_URL}/account`}>
-                    Upgrade from your account
+                    Upgrade to Pro
                   </a>
+                ) : (
+                  <>
+                    <a className="btn btn-primary" href={`${APP_URL}/account`}>
+                      See Pro on your account
+                    </a>
+                    <p className="muted small">Checkout opens soon. Free has no catch in the meantime.</p>
+                  </>
                 ))}
             </section>
           ))}

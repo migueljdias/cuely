@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getAccountStore } from "@/accounts/store";
 import { currentUser } from "@/auth/server";
-import { paymentsConfig, priceMatches, stripeGet, stripePost, type StripePrice } from "@/billing/stripe";
+import { checkoutOpen, paymentsConfig, priceMatches, stripeGet, stripePost, type StripePrice } from "@/billing/stripe";
 import { PLANS, planFor } from "@/plans";
 import { APP_URL, SITE_URL } from "@/site";
 
@@ -47,11 +47,11 @@ export async function revokeKeyAction(form: FormData): Promise<void> {
   revalidatePath("/account");
 }
 
-/** Starts Stripe Checkout for Pro. Only runs when PAYMENTS_MODE is test or live with a matching key. */
+/** Starts Stripe Checkout for Pro. Only runs where checkoutOpen() allows it. */
 export async function checkoutAction(): Promise<void> {
   const { user, store, account } = await requireUser();
   const cfg = paymentsConfig();
-  if (cfg.mode === "off") redirect(`${SITE}/pricing?payments=off`);
+  if (cfg.mode === "off" || !checkoutOpen(cfg)) redirect("/account?checkout=soon");
   if (account.plan === "pro") redirect("/account");
 
   // Never charge a different amount from the one the pricing page shows.

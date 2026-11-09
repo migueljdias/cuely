@@ -4,7 +4,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
 import { generateApiKey, hashApiKey, looksLikeApiKey, readApiKey } from "@/accounts/keys";
 import { accountStore } from "@/accounts/store";
-import { formEncode, paymentsConfig, priceMatches, signStripePayload, verifyStripeSignature } from "@/billing/stripe";
+import { checkoutOpen, formEncode, paymentsConfig, priceMatches, signStripePayload, verifyStripeSignature } from "@/billing/stripe";
 import { handleStripeWebhook } from "@/billing/webhook";
 import { createMcpHandler, memoryUsageCounter, nextUtcMidnight } from "@/mcp/http";
 import { clerkIssuer, protectedResourceMetadata } from "@/mcp/oauth";
@@ -35,6 +35,38 @@ describe("API keys", () => {
 });
 
 describe("Payments switch", () => {
+  it("uses the *_LIVE values in live mode and ignores them in test mode", () => {
+    const env = {
+      PAYMENTS_MODE: "live",
+      STRIPE_SECRET_KEY: "sk_test_sandbox",
+      STRIPE_PRICE_PRO: "price_sandbox",
+      STRIPE_WEBHOOK_SECRET: "whsec_sandbox",
+      STRIPE_SECRET_KEY_LIVE: "sk_live_real",
+      STRIPE_PRICE_PRO_LIVE: "price_live",
+      STRIPE_WEBHOOK_SECRET_LIVE: "whsec_live",
+    };
+    const live = paymentsConfig(env);
+    expect(live.mode).toBe("live");
+    expect(live.priceId).toBe("price_live");
+    expect(live.webhookSecret).toBe("whsec_live");
+    const test = paymentsConfig({ ...env, PAYMENTS_MODE: "test" });
+    expect(test.mode).toBe("test");
+    expect(test.priceId).toBe("price_sandbox");
+    expect(test.webhookSecret).toBe("whsec_sandbox");
+    // Live without a live key stays off rather than charging with a test key.
+    expect(paymentsConfig({ ...env, STRIPE_SECRET_KEY_LIVE: undefined }).mode).toBe("off");
+  });
+
+  it("only opens checkout in live mode, or in test mode outside production", () => {
+    const test = paymentsConfig({ PAYMENTS_MODE: "test", STRIPE_SECRET_KEY: "sk_test_x", STRIPE_PRICE_PRO: "price_1" });
+    const live = paymentsConfig({ PAYMENTS_MODE: "live", STRIPE_SECRET_KEY: "sk_live_x", STRIPE_PRICE_PRO: "price_1" });
+    expect(checkoutOpen(test, { VERCEL_ENV: "production" })).toBe(false);
+    expect(checkoutOpen(test, { VERCEL_ENV: "preview" })).toBe(true);
+    expect(checkoutOpen(test, {})).toBe(true);
+    expect(checkoutOpen(live, { VERCEL_ENV: "production" })).toBe(true);
+    expect(checkoutOpen(paymentsConfig({}), {})).toBe(false);
+  });
+
   it("is off by default and refuses mismatched keys", () => {
     expect(paymentsConfig({}).mode).toBe("off");
     expect(paymentsConfig({ PAYMENTS_MODE: "test", STRIPE_SECRET_KEY: "sk_live_x", STRIPE_PRICE_PRO: "price_1" }).mode).toBe("off");

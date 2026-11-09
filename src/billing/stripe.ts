@@ -7,7 +7,11 @@ import { createHmac, timingSafeEqual } from "node:crypto";
  *
  *   PAYMENTS_MODE=off   (default) checkout and portal are unavailable
  *   PAYMENTS_MODE=test  needs STRIPE_SECRET_KEY starting sk_test_
- *   PAYMENTS_MODE=live  needs STRIPE_SECRET_KEY starting sk_live_
+ *   PAYMENTS_MODE=live  needs a key starting sk_live_ (STRIPE_SECRET_KEY_LIVE, else STRIPE_SECRET_KEY)
+ *
+ * In live mode the *_LIVE variables win over the plain ones, so going live is one
+ * switch once the live values are stored. Checkout itself only opens where
+ * checkoutOpen() says so: live mode, or test mode outside production.
  *
  * Checkout uses Stripe Managed Payments (Stripe is merchant of record and handles
  * sales tax and VAT) unless STRIPE_MANAGED_PAYMENTS=off.
@@ -28,9 +32,10 @@ export interface PaymentsConfig {
 export function paymentsConfig(env: Record<string, string | undefined> = process.env): PaymentsConfig {
   const mode = (env.PAYMENTS_MODE ?? "off").trim().toLowerCase();
   if (mode !== "test" && mode !== "live") return { mode: "off", reason: "Payments are not switched on yet." };
-  const secretKey = env.STRIPE_SECRET_KEY?.trim();
-  const priceId = env.STRIPE_PRICE_PRO?.trim();
-  const webhookSecret = env.STRIPE_WEBHOOK_SECRET?.trim();
+  const pick = (name: string) => ((mode === "live" ? env[`${name}_LIVE`]?.trim() : undefined) || env[name]?.trim()) || undefined;
+  const secretKey = pick("STRIPE_SECRET_KEY");
+  const priceId = pick("STRIPE_PRICE_PRO");
+  const webhookSecret = pick("STRIPE_WEBHOOK_SECRET");
   const want = mode === "test" ? "sk_test_" : "sk_live_";
   if (!secretKey || !secretKey.startsWith(want)) {
     return { mode: "off", reason: `PAYMENTS_MODE=${mode} needs a STRIPE_SECRET_KEY starting ${want}.` };
@@ -40,6 +45,16 @@ export function paymentsConfig(env: Record<string, string | undefined> = process
   }
   const managedPayments = (env.STRIPE_MANAGED_PAYMENTS ?? "on").trim().toLowerCase() !== "off";
   return { mode, secretKey, priceId, webhookSecret, managedPayments };
+}
+
+/**
+ * Whether people can start a Pro checkout here. Live mode always can. Test mode can
+ * only outside production (previews, local), so nobody gets Pro on cuely.dev with a
+ * Stripe test card while real payments wait.
+ */
+export function checkoutOpen(cfg: PaymentsConfig, env: Record<string, string | undefined> = process.env): boolean {
+  if (cfg.mode === "live") return true;
+  return cfg.mode === "test" && env.VERCEL_ENV !== "production";
 }
 
 /** Flattens nested params into Stripe's form encoding: a[b][0]=c. */

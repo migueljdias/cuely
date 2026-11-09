@@ -1,7 +1,7 @@
 import { categories, recipes, tools, POLICY } from "@/catalog";
 import { recommendStack } from "@/engine/recommend";
 import { ENDPOINT, KEY_PAGE, connectOptions } from "@/connect";
-import { paymentsConfig } from "@/billing/stripe";
+import { checkoutOpen, paymentsConfig } from "@/billing/stripe";
 import { PLANS } from "@/plans";
 import { authConfigured } from "@/auth/server";
 import { APP_URL, SITE_URL, SUPPORT_EMAIL } from "@/site";
@@ -95,6 +95,7 @@ export default function Home() {
   const costLine = monthly != null ? `About $${Math.round(monthly)}/month at 1,000 users` : "Cost at 1,000 users in every answer";
   const verified = formatDate(tools[0].verifiedOn);
   const payments = paymentsConfig();
+  const canCheckout = checkoutOpen(payments);
   const free = PLANS.free;
   const pro = PLANS.pro;
 
@@ -310,7 +311,7 @@ export default function Home() {
               <h3 className="bp-label">
                 {pro.name}
                 {payments.mode !== "live" && (
-                  <span className="bp-tag">{payments.mode === "test" ? "Test mode" : "Not on sale yet"}</span>
+                  <span className="bp-tag">{canCheckout ? "Test mode" : "Opens soon"}</span>
                 )}
               </h3>
               <p className="bp-price">
@@ -322,13 +323,10 @@ export default function Home() {
                   <li key={f}>{f}</li>
                 ))}
               </ul>
-              {payments.mode === "off" ? (
-                <p className="bp-summary">Pro opens once teams need it. Free has no catch in the meantime.</p>
-              ) : (
-                <a className="bp-btn bp-btn-ink" href={`${APP_URL}/account`}>
-                  Upgrade from your account
-                </a>
-              )}
+              <a className="bp-btn bp-btn-ink" href={`${APP_URL}/account`}>
+                {canCheckout ? "Upgrade to Pro" : "See Pro on your account"}
+              </a>
+              {!canCheckout && <p className="bp-summary">Checkout opens soon. Free has no catch in the meantime.</p>}
             </div>
           </div>
           <p className="bp-note bp-note-sans">

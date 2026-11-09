@@ -1381,3 +1381,25 @@ section {
 .connect-page .panel .btn {
   align-self: flex-start;
 }
+
+/* Pro offer on the account page */
+.upgrade {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--line, currentColor);
+  border-radius: 10px;
+}
+.upgrade h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+.upgrade ul {
+  margin: 0 0 14px;
+  padding-left: 18px;
+}
+.upgrade .muted.small {
+  margin: 8px 0 0;
+}
