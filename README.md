@@ -127,7 +127,7 @@ A browser opening `https://cuely.dev/api/mcp` (Accept `text/html`, no MCP or Aut
 
 Stripe holds all card data. The database stores only the Stripe customer ID, subscription ID, status and period end.
 
-- `/account` starts Stripe Checkout for the Pro price and opens the Stripe customer portal for subscribers.
+- `/account` starts Stripe Checkout for the Pro price with a 7-day free trial (`trialDays` in `src/plans.ts`; skipped for customers who have subscribed before) and opens the Stripe customer portal for subscribers.
 - `/api/stripe/webhook` verifies the signature, refuses events from the other mode, records each event ID once, and sets the plan from `customer.subscription.*` events (active, trialing or past due means Pro).
 
 Payments are **off** unless `PAYMENTS_MODE` and a matching key are set. Where things stand:

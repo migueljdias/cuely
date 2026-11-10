@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { checkoutOpen, paymentsConfig } from "@/billing/stripe";
-import { PLANS } from "@/plans";
+import { PLANS, TRIAL_CTA } from "@/plans";
 import { APP_URL } from "@/site";
 import { SiteFooter, SiteHeader } from "../_components/chrome";
 
@@ -34,9 +34,7 @@ export default function Pricing() {
               <h2 id={`plan-${p.id}`}>{p.name}</h2>
               <p className="plan-price">
                 {p.priceLabel}
-                {p.id === "pro" && payments.mode !== "live" && (
-                  <span className="tag">{canCheckout ? "Test mode" : "Opens soon"}</span>
-                )}
+                {p.id === "pro" && payments.mode === "test" && canCheckout && <span className="tag">Test mode</span>}
               </p>
               <p className="plan-summary">{p.summary}</p>
               <ul>
@@ -49,19 +47,11 @@ export default function Pricing() {
                   Create a free account
                 </a>
               )}
-              {p.id === "pro" &&
-                (canCheckout ? (
-                  <a className="btn btn-primary" href={`${APP_URL}/account`}>
-                    Upgrade to Pro
-                  </a>
-                ) : (
-                  <>
-                    <a className="btn btn-primary" href={`${APP_URL}/account`}>
-                      See Pro on your account
-                    </a>
-                    <p className="muted small">Checkout opens soon. Free has no catch in the meantime.</p>
-                  </>
-                ))}
+              {p.id === "pro" && (
+                <a className="btn btn-primary" href={`${APP_URL}/account`}>
+                  {TRIAL_CTA}
+                </a>
+              )}
             </section>
           ))}
         </div>

@@ -4,7 +4,7 @@ import { getAccountStore } from "@/accounts/store";
 import { authConfigured, currentUser } from "@/auth/server";
 import { checkoutOpen, paymentsConfig } from "@/billing/stripe";
 import { ENDPOINT } from "@/connect";
-import { PLANS, planFor } from "@/plans";
+import { PLANS, TRIAL_CTA, planFor } from "@/plans";
 import { SiteFooter, SiteHeader } from "../_components/chrome";
 import { NewKey } from "./_new-key";
 import { checkoutAction, portalAction, revokeKeyAction } from "./actions";
@@ -47,7 +47,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
 
         {checkout === "done" && (
           <p className="notice" role="status">
-            Thanks. Your plan updates as soon as Stripe confirms the payment, usually within a few seconds.
+            Thanks. Pro turns on as soon as Stripe confirms, usually within a few seconds.
           </p>
         )}
 
@@ -77,7 +77,6 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
             <div className="upgrade">
               <h3>
                 Pro, {PLANS.pro.priceLabel}
-                {!canCheckout && <span className="tag">Opens soon</span>}
               </h3>
               <ul>
                 {PLANS.pro.features.slice(1).map((f) => (
@@ -87,16 +86,16 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
               {canCheckout ? (
                 <form action={checkoutAction}>
                   <button type="submit" className="btn btn-primary">
-                    Upgrade to Pro
+                    {TRIAL_CTA}
                   </button>
                 </form>
               ) : (
                 <>
                   <button type="button" className="btn btn-primary" disabled aria-describedby="pro-soon">
-                    Upgrade to Pro
+                    {TRIAL_CTA}
                   </button>
                   <p id="pro-soon" className="muted small">
-                    Checkout opens soon. Free keeps working in the meantime, with the same answers.
+                    Free keeps working in the meantime, with the same answers.
                   </p>
                 </>
               )}
