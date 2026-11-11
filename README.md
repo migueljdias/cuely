@@ -68,6 +68,18 @@ CUELY_URL=http://localhost:3100/api/mcp npm run e2e   # official MCP client agai
 
 Without `DATABASE_URL`, Cuely serves the bundled catalog from memory. With it, the catalog is read from Postgres (cached for 60 s per instance) and each tool call is logged to `usage_events`.
 
+## CI and security checks
+
+Every pull request and every push to `main` runs two workflows in `.github/workflows`:
+
+- **CI** (`ci.yml`): typecheck, tests, a check that `db/seed.sql` matches the catalog (run `npm run db:sql` if it fails), and a production build.
+- **Security** (`security.yml`), also weekly so new advisories surface without a push:
+  - **gitleaks** scans the whole git history for committed secrets.
+  - **npm audit** fails on high or critical advisories in production dependencies, or critical ones anywhere, and verifies registry signatures.
+  - **Semgrep** runs the JavaScript and TypeScript security rules from a pinned `semgrep/semgrep-rules` commit. Mark a reviewed false positive with a `// nosemgrep` comment and a line saying why.
+
+Actions and tools are pinned to exact versions (actions by commit SHA, gitleaks by checksum). Dependabot (`.github/dependabot.yml`) opens weekly update PRs for npm packages and actions.
+
 ## Database (Neon)
 
 ```sh
