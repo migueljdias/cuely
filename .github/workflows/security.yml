@@ -1,0 +1,100 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Mondays 06:17 UTC: catches newly published advisories even when nothing is pushed.
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gitleaks:
+    name: Secrets (gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GITLEAKS_VERSION: 8.30.1
+      GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # scan every commit, not just the latest
+          persist-credentials: false
+
+      # The CLI binary, checksum-verified, instead of the action (which needs a license for organization repos).
+      - name: Install gitleaks
+        run: |
+          curl -sSfL -o gitleaks.tgz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  gitleaks.tgz" | sha256sum -c -
+          tar -xzf gitleaks.tgz gitleaks
+          sudo mv gitleaks /usr/local/bin/
+          rm gitleaks.tgz
+
+      - name: Scan git history
+        run: gitleaks git --redact --verbose --exit-code 1 .
+
+  dependencies:
+    name: Dependencies (npm audit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+
+      # Checks the lockfile against the npm advisory database; nothing is installed or run.
+      - name: Production dependencies, high or critical
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: All dependencies, critical
+        run: npm audit --audit-level=critical
+
+      - name: Lockfile signatures and provenance
+        run: |
+          npm ci --ignore-scripts
+          npm audit signatures
+
+  semgrep:
+    name: Code (Semgrep)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SEMGREP_VERSION: 1.185.0
+      # semgrep/semgrep-rules, pinned so a new upstream rule can't turn the build red overnight.
+      RULES_SHA: a5ad1714f00c9f7fde980cab0ea1d6dc6d414fd2
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Semgrep
+        run: python3 -m pip install --quiet "semgrep==${SEMGREP_VERSION}"
+
+      # JavaScript and TypeScript security rules only: no audit hints, style or i18n rules,
+      # so a finding here is worth stopping for.
+      - name: Fetch security rules
+        run: |
+          git init -q "$RUNNER_TEMP/semgrep-rules"
+          cd "$RUNNER_TEMP/semgrep-rules"
+          git fetch -q --depth 1 https://github.com/semgrep/semgrep-rules "$RULES_SHA"
+          git checkout -q FETCH_HEAD
+          mkdir -p "$RUNNER_TEMP/rules"
+          find javascript typescript -path '*/security/*' -not -path '*/audit/*' -name '*.yaml' -not -name '*.test.yaml' \
+            -exec cp --parents {} "$RUNNER_TEMP/rules/" \;
+          echo "Rules: $(find "$RUNNER_TEMP/rules" -name '*.yaml' | wc -l)"
+
+      - name: Scan
+        run: semgrep scan --metrics=off --disable-version-check --error --config "$RUNNER_TEMP/rules" .

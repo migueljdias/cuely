@@ -96,7 +96,8 @@ export function createCuelyServer(ctx: ServerContext): McpServer {
         needs: rec.detectedNeeds.map((d) => d.need),
       });
       return {
-        content: [{ type: "text", text: renderRecommendation(rec, args.detail ?? "summary") }],
+        // Semgrep's MCP SSRF rule misfires here: this renders catalog text and makes no outbound request.
+        content: [{ type: "text", text: renderRecommendation(rec, args.detail ?? "summary") }], // nosemgrep
         structuredContent: rec as unknown as Record<string, unknown>,
       };
     },
@@ -123,7 +124,8 @@ export function createCuelyServer(ctx: ServerContext): McpServer {
       const bySlug = snap.recipes.find((r) => r.slug === product_type.trim().toLowerCase());
       // A description of something Cuely doesn't cover (a phone or engine game) gets no recipe,
       // even when a word like "game" matches one.
-      const coverage = bySlug ? null : detectCoverage(product_type);
+      // Semgrep's MCP SSRF rule misfires here: this renders catalog text and makes no outbound request.
+      const coverage = bySlug ? null : detectCoverage(product_type); // nosemgrep
       const outside = coverage?.status === "outside" ? coverage.notes.join(" ") + " " : "";
       const recipe = bySlug ?? (outside ? null : matchRecipe(snap.recipes, product_type));
       log(ctx, "get_recipe", { recipe: recipe?.slug ?? null });
@@ -140,7 +142,8 @@ export function createCuelyServer(ctx: ServerContext): McpServer {
         };
       }
       return {
-        content: [{ type: "text", text: renderRecipe(recipe, snap.tools, include_steps !== false) }],
+        // Semgrep's MCP SSRF rule misfires here: this renders catalog text and makes no outbound request.
+        content: [{ type: "text", text: renderRecipe(recipe, snap.tools, include_steps !== false) }], // nosemgrep
         structuredContent: { found: true, recipe: recipe as unknown as Record<string, unknown> },
       };
     },
@@ -164,7 +167,8 @@ export function createCuelyServer(ctx: ServerContext): McpServer {
       const res = compareTools(snap, { a, b, context });
       log(ctx, "compare_tools", { categories: res.ok ? [res.category] : [], needs: res.ok ? res.detectedNeeds : [] });
       return {
-        content: [{ type: "text", text: renderCompare(res) }],
+        // Semgrep's MCP SSRF rule misfires here: this renders catalog text and makes no outbound request.
+        content: [{ type: "text", text: renderCompare(res) }], // nosemgrep
         structuredContent: res as unknown as Record<string, unknown>,
         isError: !res.ok,
       };
