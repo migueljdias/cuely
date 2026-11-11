@@ -54,11 +54,11 @@ const rules = [
   },
   {
     title: "Same answer for everyone",
-    text: "Free or Pro, no personalization, no live model call deciding your stack. The same description returns the same stack.",
+    text: "Your plan, account and history play no part, and no live model call picks the tools, so the same description always returns the same stack.",
   },
   {
     title: "Facts from the source",
-    text: "Free plans and prices come from each vendor's own pricing page, with the date and the page in every answer. When a page is silent, Cuely says so instead of guessing.",
+    text: "Free plans and prices come from each vendor's own pricing page, with the date and the page in every answer. When a pricing page doesn't state a fact, Cuely says so instead of guessing.",
   },
   {
     title: "What you already use counts",
@@ -66,7 +66,7 @@ const rules = [
   },
   {
     title: "Recipes and picks agree",
-    text: "Cuely matches what you're building to one recipe, and a tool that recipe names gets one extra point, so the stack and the setup steps never point different ways.",
+    text: "Cuely matches what you're building to one recipe, and a tool that recipe names gets one extra point, so the stack and the setup steps name the same tools.",
   },
 ];
 
@@ -166,12 +166,12 @@ export default function Home() {
           <div className="bp-hero-copy">
             <p className="bp-label">MCP server for coding agents</p>
             <h1>
-              The honest second opinion your agent asks <span className="bp-dim">before it builds</span>
+              Your agent asks Cuely which tools to use <span className="bp-dim">before it builds</span>
             </h1>
             <p className="bp-lede">
-              Tell your agent what you&apos;re making. It asks Cuely which tools to use and how to set them up, and gets
-              a stack with reasons, real free-plan limits and step-by-step recipes. Free with a quick sign-in, and no
-              vendor can pay to be the answer.
+              Tell your agent what you&apos;re making. Cuely sends back a stack with the reason for each pick, real
+              free-plan limits and step-by-step setup recipes. It&apos;s free with a quick sign-in, and no vendor can pay
+              to be recommended.
             </p>
             <div className="bp-endpoint">
               <span>Endpoint</span>
@@ -193,7 +193,7 @@ export default function Home() {
         <section className="bp-wrap bp-section" aria-labelledby="parts-title">
           <div className="bp-head">
             <p className="bp-label">Parts list</p>
-            <h2 id="parts-title">{tools.length} tools Cuely weighs. None of them pays to be here.</h2>
+            <h2 id="parts-title">The {tools.length} tools Cuely chooses from, and no vendor pays to be listed</h2>
           </div>
           <div className="bp-parts">
             {categories.map((c) => {
@@ -248,8 +248,8 @@ export default function Home() {
               <span className="bp-label">Step 2</span>
               <h3>Cuely matches needs to published rules</h3>
               <p>
-                Words like B2B, fintech, EU or self-host become needs. Each tool has a published score for each need.
-                The same question gets the same answer, for everyone.
+                Words like B2B, fintech, EU or self-host become needs. Each tool has a published score for each need,
+                so two people who describe the same product get the same stack.
               </p>
             </li>
             <li>
@@ -311,7 +311,7 @@ export default function Home() {
           <div className="bp-wrap">
             <div>
               <p className="bp-label">Method</p>
-              <h2 id="method-title">Money never touches the ranking</h2>
+              <h2 id="method-title">How Cuely ranks tools</h2>
               <p className="bp-method-lede">{POLICY}</p>
             </div>
             <ul className="bp-rules">
@@ -332,8 +332,8 @@ export default function Home() {
         <section id="pricing" className="bp-wrap bp-section" aria-labelledby="price-title">
           <div className="bp-head">
             <p className="bp-label">Schedule of rates</p>
-            <h2 id="price-title">Free for builders. Pro for teams</h2>
-            <p>Every plan gets the same recommendations, recipes and reasons. Paying changes your limits, never the answer.</p>
+            <h2 id="price-title">Free for solo builders, with Pro for teams</h2>
+            <p>Pro raises your daily and per-minute limits. The recommendations, recipes and reasons are the same on every plan.</p>
           </div>
           <div className="bp-plans">
             <div className="bp-plate bp-plan">

@@ -77,8 +77,8 @@ export const dailyWebGame: Recipe = {
   ],
   steps: [
     {
-      title: "Decide the day, the player and the one rule for votes",
-      detail: "Three decisions shape every table and key: when a day starts, how you know a player, and how you stop double votes.",
+      title: "Decide when the day starts, who a player is and how votes are counted",
+      detail: "Make three decisions before you design the tables and keys: when a day starts, how you know a player, and how you stop double votes.",
       actions: [
         "Pick one day boundary for everyone (midnight UTC is simplest, and Cron Triggers run on UTC) and show the countdown in the player's local time.",
         "Use an anonymous player id: a random id created in the browser on first visit and kept in localStorage. Don't ask for sign-in to play.",
@@ -192,7 +192,7 @@ export const dailyWebGame: Recipe = {
     },
     {
       title: "Make sharing the growth loop",
-      detail: "Players share a short text result with a link. That text is what spreads, and it costs nothing to make.",
+      detail: "Players share a short text result with a link. Most new players arrive through these shares, and the text costs nothing to generate.",
       actions: [
         "Build the share text in the browser: the game's name and day number, the player's pick, how much of the crowd agreed, the streak, and the link.",
         "Call navigator.share() from the Share button where the browser supports it, and fall back to navigator.clipboard.writeText() with a 'Copied' message. Both need HTTPS.",

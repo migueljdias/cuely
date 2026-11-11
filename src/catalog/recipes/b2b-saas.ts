@@ -84,7 +84,7 @@ export const b2bSaas: Recipe = {
     {
       category: "analytics",
       tool: "posthog",
-      why: "Group analytics shows usage per customer account, which is what B2B decisions need.",
+      why: "Group analytics reports usage per customer account, so you can see which companies use which features.",
       alternatives: [{ tool: "plausible", when: "You only need cookieless traffic stats for the marketing site." }],
       optional: true,
     },
