@@ -3,8 +3,8 @@ import { redirect } from "next/navigation";
 import { getAccountStore } from "@/accounts/store";
 import { authConfigured, currentUser } from "@/auth/server";
 import { checkoutOpen, paymentsConfig } from "@/billing/stripe";
-import { ENDPOINT } from "@/connect";
 import { PLANS, planFor } from "@/plans";
+import { SITE_URL } from "@/site";
 import { SiteFooter, SiteHeader } from "../_components/chrome";
 import { NewKey } from "./_new-key";
 import { checkoutAction, portalAction, revokeKeyAction } from "./actions";
@@ -142,10 +142,10 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
             </ul>
           )}
           <NewKey />
-          <p className="muted small">Add it to Claude Code (or see cuely.dev for Cursor and VS Code):</p>
-          <pre className="snippet">
-            <code>{`claude mcp add --transport http cuely ${ENDPOINT} \\\n  --header "Authorization: Bearer YOUR_KEY"`}</code>
-          </pre>
+          <p className="muted small">
+            Create a key and the setup for Claude Code, Cursor and VS Code appears here with it filled in. Lost a key?
+            Revoke it and make a new one. Step-by-step help: <a href={`${SITE_URL}/start`}>Get started</a>.
+          </p>
         </section>
       </main>
       <SiteFooter />
