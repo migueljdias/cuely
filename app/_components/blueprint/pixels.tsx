@@ -207,19 +207,44 @@ export function StackFigure({ rows, cost, call }: { rows: StackRow[]; cost: stri
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finalFrame, frame, rows, setLegend]);
 
-  useSchemeChange(finalFrame);
+  // Repaint the resting stack on a colour-scheme change, but only once the drop has played (or
+  // when motion is reduced): painting it on load would show the finished picture first, which on
+  // phones, where the figure starts below the fold, reads as an animation that never plays.
+  const played = useRef(false);
+  const repaint = useCallback(() => {
+    if (played.current || reducedMotion()) finalFrame();
+    else {
+      frame(rows.map(() => null));
+      setLegend(0);
+    }
+  }, [finalFrame, frame, rows, setLegend]);
+  useSchemeChange(repaint);
 
+  // Drop the layers as soon as the figure starts to come into view, and again each time it
+  // comes back after leaving the screen.
   useEffect(() => {
     const cv = canvas.current;
-    if (!cv || !("IntersectionObserver" in window)) return;
+    if (!cv) return;
+    const start = () => {
+      played.current = true;
+      play();
+    };
+    if (!("IntersectionObserver" in window)) {
+      start();
+      return;
+    }
+    // Armed until it plays; re-armed only once the figure is fully off screen, so scrolling
+    // back and forth at the edge doesn't restart the drop halfway through.
+    let armed = true;
     const io = new IntersectionObserver(
       ([e]) => {
-        if (e.isIntersecting) {
-          play();
-          io.disconnect();
+        if (!e.isIntersecting || e.intersectionRatio === 0) armed = true;
+        else if (armed && e.intersectionRatio >= 0.15) {
+          armed = false;
+          start();
         }
       },
-      { threshold: 0.4 },
+      { threshold: [0, 0.15] },
     );
     io.observe(cv);
     return () => {
