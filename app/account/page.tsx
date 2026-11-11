@@ -41,7 +41,9 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
 
         {checkout === "soon" && (
           <p className="notice" role="status">
-            Pro checkout isn&apos;t open yet. Your Free plan keeps working as it is.
+            Thanks for choosing Pro. Upgrades are being switched on right now, so you can&apos;t check out just yet. Your
+            Free plan keeps working with the same answers, and this button will take you straight to checkout once
+            it&apos;s ready.
           </p>
         )}
 
@@ -77,29 +79,17 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
             <div className="upgrade">
               <h3>
                 Pro, {PLANS.pro.priceLabel}
-                {!canCheckout && <span className="tag">Opens soon</span>}
               </h3>
               <ul>
                 {PLANS.pro.features.slice(1).map((f) => (
                   <li key={f}>{f}</li>
                 ))}
               </ul>
-              {canCheckout ? (
-                <form action={checkoutAction}>
-                  <button type="submit" className="btn btn-primary">
-                    Upgrade to Pro
-                  </button>
-                </form>
-              ) : (
-                <>
-                  <button type="button" className="btn btn-primary" disabled aria-describedby="pro-soon">
-                    Upgrade to Pro
-                  </button>
-                  <p id="pro-soon" className="muted small">
-                    Checkout opens soon. Free keeps working in the meantime, with the same answers.
-                  </p>
-                </>
-              )}
+              <form action={checkoutAction}>
+                <button type="submit" className="btn btn-primary">
+                  Upgrade to Pro
+                </button>
+              </form>
             </div>
           )}
         </section>

@@ -310,9 +310,7 @@ export default function Home() {
             <div className="bp-plate bp-plan">
               <h3 className="bp-label">
                 {pro.name}
-                {payments.mode !== "live" && (
-                  <span className="bp-tag">{canCheckout ? "Test mode" : "Opens soon"}</span>
-                )}
+                {payments.mode === "test" && canCheckout && <span className="bp-tag">Test mode</span>}
               </h3>
               <p className="bp-price">
                 ${pro.priceCents / 100} <small>a month</small>
@@ -324,9 +322,8 @@ export default function Home() {
                 ))}
               </ul>
               <a className="bp-btn bp-btn-ink" href={`${APP_URL}/account`}>
-                {canCheckout ? "Upgrade to Pro" : "See Pro on your account"}
+                Upgrade to Pro
               </a>
-              {!canCheckout && <p className="bp-summary">Checkout opens soon. Free has no catch in the meantime.</p>}
             </div>
           </div>
           <p className="bp-note bp-note-sans">
