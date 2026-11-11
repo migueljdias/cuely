@@ -51,7 +51,11 @@ export async function revokeKeyAction(form: FormData): Promise<void> {
 export async function checkoutAction(): Promise<void> {
   const { user, store, account } = await requireUser();
   const cfg = paymentsConfig();
-  if (cfg.mode === "off" || !checkoutOpen(cfg)) redirect("/account?checkout=soon");
+  if (cfg.mode === "off" || !checkoutOpen(cfg)) {
+    // Payments aren't switched on yet: grant nothing, start nothing, and note the interest in the logs.
+    console.info(JSON.stringify({ event: "pro_interest", account: account.userId }));
+    redirect("/account?checkout=soon");
+  }
   if (account.plan === "pro") redirect("/account");
 
   // Never charge a different amount from the one the pricing page shows.
