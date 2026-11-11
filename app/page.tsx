@@ -8,6 +8,7 @@ import { APP_URL, SITE_URL, SUPPORT_EMAIL } from "@/site";
 import { ConnectTabs } from "./_components/connect-tabs";
 import { CopyButton } from "./_components/copy";
 import { HeaderAccount } from "./_components/header-account";
+import { JsonLd } from "./_components/json-ld";
 import { PixelLogo, PixelSprite, StackFigure } from "./_components/blueprint/pixels";
 import "./landing.css";
 
@@ -101,6 +102,35 @@ export default function Home() {
 
   return (
     <div className="bp">
+      <JsonLd
+        data={[
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "Cuely",
+            url: `${SITE_URL}/`,
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "Cuely",
+            url: `${SITE_URL}/`,
+            logo: `${SITE_URL}/brand/icon-512.png`,
+            email: SUPPORT_EMAIL,
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            name: "Cuely",
+            url: `${SITE_URL}/`,
+            applicationCategory: "DeveloperApplication",
+            operatingSystem: "Any (MCP server over HTTPS)",
+            description:
+              "A free MCP server coding agents ask which tools to use and how to set them up for what you're building. No vendor pays for placement.",
+            offers: { "@type": "Offer", price: "0", priceCurrency: "USD", name: free.name },
+          },
+        ]}
+      />
       <a className="skip" href="#main">
         Skip to content
       </a>
@@ -113,8 +143,11 @@ export default function Home() {
             <a className="bp-wide" href="#how">
               How it works
             </a>
-            <a className="bp-wide" href="#connect">
-              Connect
+            <a className="bp-wide" href={`${SITE_URL}/recipes`}>
+              Recipes
+            </a>
+            <a className="bp-wide" href={`${SITE_URL}/tools`}>
+              Tools
             </a>
             <a href={`${SITE_URL}/pricing`}>Pricing</a>
             {authConfigured() ? (
@@ -146,11 +179,11 @@ export default function Home() {
               <CopyButton value={ENDPOINT} />
             </div>
             <div className="bp-ctas">
-              <a className="bp-cta" href="#connect">
-                Connect your agent <PixelArrow />
+              <a className="bp-cta" href={`${SITE_URL}/start`}>
+                Get started free <PixelArrow />
               </a>
-              <a className="bp-link" href={KEY_PAGE}>
-                Get a free key
+              <a className="bp-link" href="#connect">
+                See the setup
               </a>
             </div>
           </div>
@@ -168,12 +201,14 @@ export default function Home() {
               return (
                 <div key={c.slug}>
                   <h3>
-                    <span>{c.name}</span>
+                    <a href={`/categories/${c.slug}`}>{c.name}</a>
                     <span aria-hidden="true">{String(inCat.length).padStart(2, "0")}</span>
                   </h3>
                   <ul>
                     {inCat.map((t) => (
-                      <li key={t.slug}>{t.name}</li>
+                      <li key={t.slug}>
+                        <a href={`/tools/${t.slug}`}>{t.name}</a>
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -182,7 +217,14 @@ export default function Home() {
           </div>
           <p className="bp-note">
             Every free plan and price was read from the vendor&apos;s own site on {verified}. Each answer carries the date
-            and the page. {recipes.length} full setup recipes: {recipes.map((r) => r.title.toLowerCase()).join("; ")}.
+            and the page. {recipes.length} full setup recipes:{" "}
+            {recipes.map((r, i) => (
+              <span key={r.slug}>
+                {i > 0 && "; "}
+                <a href={`/recipes/${r.slug}`}>{r.title.toLowerCase()}</a>
+              </span>
+            ))}
+            .
           </p>
         </section>
 
@@ -341,11 +383,11 @@ export default function Home() {
               answer for everyone. Free with a quick sign-in.
             </p>
             <div className="bp-ctas">
-              <a className="bp-cta" href="#connect">
-                Connect your agent <PixelArrow />
+              <a className="bp-cta" href={`${SITE_URL}/start`}>
+                Get started free <PixelArrow />
               </a>
-              <a className="bp-link" href={KEY_PAGE}>
-                Get a free key
+              <a className="bp-link" href="#connect">
+                See the setup
               </a>
             </div>
             <PixelLogo />
@@ -363,7 +405,9 @@ export default function Home() {
             <span className="bp-label">Product</span>
             <nav aria-label="Product">
               <a href="#how">How it works</a>
-              <a href="#connect">Connect</a>
+              <a href={`${SITE_URL}/start`}>Get started</a>
+              <a href={`${SITE_URL}/recipes`}>Recipes</a>
+              <a href={`${SITE_URL}/tools`}>Tools</a>
               <a href={`${SITE_URL}/pricing`}>Pricing</a>
               <a href="#method">Method</a>
             </nav>

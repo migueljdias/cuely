@@ -1,11 +1,12 @@
 import type { MetadataRoute } from "next";
+import { publicPaths } from "@/seo";
+import { SITE_URL } from "@/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return [
-    { url: "https://cuely.dev/", changeFrequency: "weekly", priority: 1 },
-    { url: "https://cuely.dev/pricing", changeFrequency: "monthly", priority: 0.6 },
-    { url: "https://cuely.dev/llms.txt", changeFrequency: "weekly", priority: 0.5 },
-    { url: "https://cuely.dev/privacy", changeFrequency: "yearly", priority: 0.2 },
-    { url: "https://cuely.dev/terms", changeFrequency: "yearly", priority: 0.2 },
-  ];
+  return publicPaths().map((p) => ({
+    url: `${SITE_URL}${p.path}`,
+    changeFrequency: p.changeFrequency,
+    priority: p.priority,
+    ...(p.lastModified ? { lastModified: p.lastModified } : {}),
+  }));
 }

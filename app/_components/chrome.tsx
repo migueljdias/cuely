@@ -23,13 +23,13 @@ export function SiteHeader() {
       <header className="nav wrap">
         <Logo />
         <nav aria-label="Primary">
-          <a className="nav-wide" href={`${SITE_URL}/#how`}>
-            How it works
+          <a className="nav-wide" href={`${SITE_URL}/recipes`}>
+            Recipes
           </a>
-          <a className="nav-wide" href={`${SITE_URL}/#connect`}>
-            Connect
+          <a className="nav-wide" href={`${SITE_URL}/tools`}>
+            Tools
           </a>
-          <a href={`${SITE_URL}/pricing`}>Pricing</a>
+          <a href={`${SITE_URL}/start`}>Get started</a>
           {authConfigured() ? <HeaderAccount /> : <a href={`${APP_URL}/sign-in`}>Sign in</a>}
         </nav>
       </header>
@@ -42,6 +42,9 @@ export function SiteFooter() {
     <footer className="footer wrap">
       <Logo small />
       <nav className="footer-links" aria-label="Footer">
+        <a href={`${SITE_URL}/start`}>Get started</a>
+        <a href={`${SITE_URL}/recipes`}>Recipes</a>
+        <a href={`${SITE_URL}/tools`}>Tools</a>
         <a href={`${SITE_URL}/pricing`}>Pricing</a>
         <a href={`${SITE_URL}/#method`}>Method</a>
         <a href={`${SITE_URL}/llms.txt`}>llms.txt</a>

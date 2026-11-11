@@ -932,3 +932,12 @@ html:has(.bp) {
 .bp pre code {
   font-size: inherit;
 }
+
+/* Parts list entries link to their catalog pages */
+.bp-parts a {
+  text-decoration: none;
+}
+.bp-parts a:hover,
+.bp-parts a:focus-visible {
+  text-decoration: underline;
+}
