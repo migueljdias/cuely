@@ -145,7 +145,7 @@ export const mobileSubscriptionApp: Recipe = {
     {
       title: "Create the subscription in both stores and in RevenueCat",
       detail:
-        "Apple and Google each hold the real products. RevenueCat maps them to one entitlement (for example pro) that your code checks.",
+        "Apple and Google each hold the store products. RevenueCat maps them to one entitlement (for example pro) that your code checks.",
       actions: [
         "In App Store Connect, create a subscription group and an auto-renewable subscription (for example pro_monthly at $7.99). Subscription periods must be at least seven days (Guideline 3.1.2).",
         "In Google Play Console, create a subscription with the same product id and a base plan at the same price.",

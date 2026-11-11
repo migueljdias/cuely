@@ -55,7 +55,7 @@ export default function Terms() {
           <strong>Changes:</strong> if the price changes, subscribers get at least 30 days&apos; notice by email first.
         </li>
       </ul>
-      <p>Every plan gets the same recommendations. Paying changes your limits, never the answers.</p>
+      <p>Every plan gets the same recommendations. A paid plan raises your usage limits and doesn't change the answers.</p>
 
       <h2>Availability</h2>
       <p>

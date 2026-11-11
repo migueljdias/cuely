@@ -176,7 +176,7 @@ export const internalTool: Recipe = {
   costNotes: [
     "For 10 staff: $0 if your Workspace edition includes AppSheet Core; otherwise AppSheet Starter at $5 × 10 = $50 a month, or Core at $10 × 10 = $100.",
     "Retool instead: 1 builder at $10 + 9 staff at $5 = $55 a month, billed annually.",
-    "A custom app instead: hosting and database can be free at this size, but the real cost is the hours to build and maintain it.",
+    "A custom app instead: hosting and database can be free at this size, but most of the cost is the hours spent building and maintaining it.",
   ],
   verifiedOn: V,
 };

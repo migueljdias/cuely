@@ -103,7 +103,7 @@ export const aiDocsApp: Recipe = {
     },
     {
       title: "Store documents, chunks and embeddings in Postgres",
-      detail: "Every chunk carries organization_id, and every query filters by it. That one rule is what keeps one customer's handbook out of another's answers.",
+      detail: "Every chunk carries organization_id, and every query filters by it, so one customer's handbook never shows up in another customer's answers.",
       actions: [
         "Enable the vector extension in Neon.",
         "Create documents (file key, status, pages), chunks (text, page, embedding, full-text vector) and usage_events tables.",
@@ -228,7 +228,7 @@ export const aiDocsApp: Recipe = {
     },
     {
       title: "Ship and watch quality",
-      detail: "AI features fail quietly: answers get worse without errors. Watch quality as well as uptime.",
+      detail: "AI answers can get worse without raising any errors, so track answer quality as well as uptime.",
       actions: [
         "Move Vercel to Pro before the first paying customer; Hobby is for non-commercial use.",
         "Install Sentry and add timing around retrieval and the model call.",

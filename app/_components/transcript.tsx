@@ -158,7 +158,7 @@ export function Transcript({ prompt, query, rows, recipe }: Props) {
           </span>
         </p>
       </div>
-      <figcaption>Live output from the catalog, not a mockup</figcaption>
+      <figcaption>Generated live from the catalog</figcaption>
     </figure>
   );
 }

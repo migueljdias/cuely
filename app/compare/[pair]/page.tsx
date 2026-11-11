@@ -59,7 +59,7 @@ export default async function ComparePage({ params }: { params: Promise<{ pair: 
   const def = result.verdict.startsWith(`With no context, ${a.name} is`) ? a : b;
   const other = def === a ? b : a;
   const edge = result.differences.find((d) => (other === a ? d.a.weight > d.b.weight : d.b.weight > d.a.weight));
-  const verdict = `${def.name} is Cuely's default ${cat.name.toLowerCase()} pick when nothing else decides it: ${def.pitch.charAt(0).toLowerCase()}${def.pitch.slice(1)}${
+  const verdict = `${def.name} is Cuely's default ${cat.name.toLowerCase()} pick when your description doesn't favor either one: ${def.pitch.charAt(0).toLowerCase()}${def.pitch.slice(1)}${
     edge ? ` Pick ${other.name} if you care most about ${NEED_SHORT[edge.need]}.` : ""
   }`;
   const faq = [

@@ -18,10 +18,10 @@ export default function Pricing() {
     <>
       <SiteHeader />
       <main id="main" className="wrap pricing">
-        <h1 className="page-title">Free for builders. Pro for teams</h1>
+        <h1 className="page-title">Free for solo builders, with Pro for teams</h1>
         <p className="page-lede">
-          Every plan gets the same recommendations, recipes and reasons. Paying changes your limits, never the answer,
-          and no vendor can pay to be picked.
+          Pro raises your daily and per-minute limits. The recommendations, recipes and reasons are the same on every
+          plan, and no vendor can pay to be picked.
         </p>
         <p className="page-lede">
           Anyone can browse Cuely&apos;s recipes and catalog on this site. The MCP server, which your agent calls, needs a
