@@ -2,7 +2,7 @@ import { categories, recipes, tools, POLICY } from "@/catalog";
 import { recommendStack } from "@/engine/recommend";
 import { ENDPOINT, KEY_PAGE, connectOptions } from "@/connect";
 import { checkoutOpen, paymentsConfig } from "@/billing/stripe";
-import { PLANS, TRIAL_CTA } from "@/plans";
+import { PLANS } from "@/plans";
 import { authConfigured } from "@/auth/server";
 import { APP_URL, SITE_URL, SUPPORT_EMAIL } from "@/site";
 import { ConnectTabs } from "./_components/connect-tabs";
@@ -310,7 +310,9 @@ export default function Home() {
             <div className="bp-plate bp-plan">
               <h3 className="bp-label">
                 {pro.name}
-                {payments.mode === "test" && canCheckout && <span className="bp-tag">Test mode</span>}
+                {payments.mode !== "live" && (
+                  <span className="bp-tag">{canCheckout ? "Test mode" : "Opens soon"}</span>
+                )}
               </h3>
               <p className="bp-price">
                 ${pro.priceCents / 100} <small>a month</small>
@@ -322,8 +324,9 @@ export default function Home() {
                 ))}
               </ul>
               <a className="bp-btn bp-btn-ink" href={`${APP_URL}/account`}>
-                {TRIAL_CTA}
+                {canCheckout ? "Upgrade to Pro" : "See Pro on your account"}
               </a>
+              {!canCheckout && <p className="bp-summary">Checkout opens soon. Free has no catch in the meantime.</p>}
             </div>
           </div>
           <p className="bp-note bp-note-sans">

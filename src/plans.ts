@@ -19,8 +19,6 @@ export interface Plan {
   priceLabel: string;
   /** Monthly price in US cents. Checkout refuses a Stripe price that doesn't match. */
   priceCents: number;
-  /** Free trial length at checkout, in days. 0 means no trial. */
-  trialDays: number;
   summary: string;
   features: string[];
 }
@@ -37,7 +35,6 @@ export const PLANS: Record<PlanId, Plan> = {
     ...free,
     priceLabel: "$0",
     priceCents: 0,
-    trialDays: 0,
     summary: "Everything a solo builder needs. Sign in with Google or GitHub and get a key in seconds.",
     features: [
       "Every tool, recipe and recommendation",
@@ -52,7 +49,6 @@ export const PLANS: Record<PlanId, Plan> = {
     ...pro,
     priceLabel: "$10 a month",
     priceCents: 1000,
-    trialDays: 7,
     summary: "For agencies, teams and agents that run all day.",
     features: [
       "Everything in Free, with the same answers",
@@ -66,6 +62,3 @@ export const PLANS: Record<PlanId, Plan> = {
 export function planFor(plan: string | null | undefined): Plan {
   return plan === "pro" ? PLANS.pro : PLANS.free;
 }
-
-/** Label for the Pro checkout button, e.g. "Start a 7-day free trial". */
-export const TRIAL_CTA = PLANS.pro.trialDays > 0 ? `Start a ${PLANS.pro.trialDays}-day free trial` : "Upgrade to Pro";

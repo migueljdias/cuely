@@ -69,10 +69,6 @@ export async function checkoutAction(): Promise<void> {
     await store.setStripeCustomer(user.id, customerId);
   }
 
-  // One free trial per customer: anyone who has subscribed before pays from day one.
-  const past = await stripeGet<{ data: unknown[] }>(cfg, `subscriptions?customer=${customerId}&status=all&limit=1`);
-  const trialDays = past.data.length === 0 ? PLANS.pro.trialDays : 0;
-
   const session = await stripePost<{ url: string }>(cfg, "checkout/sessions", {
     mode: "subscription",
     customer: customerId,
@@ -81,10 +77,7 @@ export async function checkoutAction(): Promise<void> {
     allow_promotion_codes: "true",
     success_url: `${APP}/account?checkout=done`,
     cancel_url: `${SITE}/pricing`,
-    subscription_data: {
-      metadata: { cuely_user_id: user.id },
-      ...(trialDays > 0 ? { trial_period_days: trialDays } : {}),
-    },
+    subscription_data: { metadata: { cuely_user_id: user.id } },
     // Stripe as merchant of record: it collects and files sales tax and VAT.
     ...(cfg.managedPayments ? { managed_payments: { enabled: "true" } } : {}),
   });
