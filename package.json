@@ -13,6 +13,7 @@
     "db:seed": "tsx scripts/seed.ts",
     "check:pricing": "tsx scripts/check-pricing.ts",
     "collect:signals": "tsx scripts/collect-signals.ts",
+    "update:facts": "tsx scripts/update-facts.ts",
     "typecheck": "tsc --noEmit",
     "vercel-build": "tsx scripts/seed.ts --production-only && next build"
   },
@@ -30,6 +31,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@anthropic-ai/sdk": "^1.8.0",
     "@electric-sql/pglite": "^0.5.15",
     "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",

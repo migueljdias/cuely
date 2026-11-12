@@ -1,16 +1,21 @@
 name: Pricing freshness
 
-# Reads every tool's pricing page once a week and proposes the changes as a pull
-# request. It only updates the snapshots under data/pricing; the catalog itself is
-# updated by a person who has read the page.
+# Reads every tool's pricing page once a week. For each page that changed, Claude
+# re-reads the price and limit facts (on the repository's own ANTHROPIC_API_KEY) and
+# the published checks in src/freshness/facts.ts decide what goes live. Nothing waits
+# for a person unless a change is held back, which files an issue.
 on:
   schedule:
     - cron: "17 6 * * 1" # Mondays 06:17 UTC
   workflow_dispatch:
+    inputs:
+      recheck:
+        description: "Tool slugs (comma-separated) whose facts to re-read even if their page didn't change"
+        type: string
+        default: ""
 
 permissions:
   contents: write
-  pull-requests: write
   issues: write
 
 concurrency:
@@ -35,25 +40,47 @@ jobs:
 
       - name: Read pages and compare with the last read
         id: read
-        run: npm run -s check:pricing -- --report "$RUNNER_TEMP/pricing-report.md" >> "$GITHUB_STEP_SUMMARY"
+        run: npm run -s check:pricing -- --report "$RUNNER_TEMP/pricing-report.md" --changes "$RUNNER_TEMP/pricing-changes.json" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Propose the changes
-        if: steps.read.outputs.changed == 'true'
+      - name: Re-read the facts of the pages that changed
+        id: facts
+        if: steps.read.outputs.changed == 'true' || inputs.recheck != ''
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          RECHECK: ${{ inputs.recheck }}
+        run: |
+          if [ -n "$RECHECK" ]; then
+            npm run -s update:facts -- --only "$RECHECK" --report "$RUNNER_TEMP/facts-report.md"
+          else
+            npm run -s update:facts -- --changes "$RUNNER_TEMP/pricing-changes.json" --report "$RUNNER_TEMP/facts-report.md"
+          fi
+          cat "$RUNNER_TEMP/facts-report.md" >> "$GITHUB_STEP_SUMMARY"
+
+      # Nothing is published unless the catalog still typechecks and every test passes with the new facts.
+      - name: Regenerate the seed and check
+        if: steps.read.outputs.changed == 'true' || steps.facts.outputs.changed == 'true'
+        run: |
+          npm run -s db:sql
+          npm run typecheck
+          npm test
+
+      - name: Publish
+        if: steps.read.outputs.changed == 'true' || steps.facts.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          BRANCH: freshness/pricing
           BASE: ${{ github.event.repository.default_branch }}
         run: |
-          title="Pricing pages changed ($(date -u +%F))"
+          title="Pricing pages re-read ($(date -u +%F))"
+          cat "$RUNNER_TEMP/facts-report.md" "$RUNNER_TEMP/pricing-report.md" > "$RUNNER_TEMP/report.md"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout -B "$BRANCH"
-          git add data/pricing
+          git add data/pricing data/facts.json db/seed.sql
           git commit -m "$title"
-          git push --force origin "$BRANCH"
-          if [ -n "$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number')" ]; then
-            gh pr edit "$BRANCH" --title "$title" --body-file "$RUNNER_TEMP/pricing-report.md"
-          elif ! gh pr create --head "$BRANCH" --base "$BASE" --title "$title" --body-file "$RUNNER_TEMP/pricing-report.md"; then
-            # The repository doesn't let Actions open pull requests: file the report as an issue instead.
-            gh issue create --title "$title" --body-file "$RUNNER_TEMP/pricing-report.md"
+          if ! git push origin "HEAD:$BASE"; then
+            # The branch refuses direct pushes: file the report so the change isn't lost silently.
+            gh issue create --title "$title (not published: push to $BASE refused)" --body-file "$RUNNER_TEMP/report.md"
+            exit 1
+          fi
+          if [ "${{ steps.facts.outputs.held }}" = "true" ]; then
+            gh issue create --title "Pricing changes that need a person ($(date -u +%F))" --body-file "$RUNNER_TEMP/report.md"
           fi

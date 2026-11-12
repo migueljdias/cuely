@@ -2,9 +2,9 @@
  * Pricing-page freshness: reads a vendor's pricing page, keeps only the lines that
  * state a price or a limit, and compares them with the last read.
  *
- * This never edits the catalog. It tells a person which pages changed and which
- * amounts the catalog quotes that the page no longer shows; the facts in
- * src/catalog are still updated by hand, with a new verifiedOn date.
+ * This never edits the catalog. It says which pages changed and which amounts the
+ * catalog quotes that the page no longer shows; src/freshness/facts.ts takes it
+ * from there.
  *
  * Pure functions only, so they can be tested without the network
  * (scripts/check-pricing.ts does the fetching and writes the snapshots).

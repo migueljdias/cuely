@@ -54,8 +54,9 @@ src/mcp/                MCP server (tools), stateless HTTP handler, IP rate limi
 src/repo/               Catalog access: in-memory seed, or Postgres; seed SQL generator
 db/schema.sql           Postgres schema (categories, tools, recipes, recipe_tools, usage_events)
 db/seed.sql             Generated from src/catalog by `npm run db:sql`
-src/freshness/          Reading pricing pages and comparing them with the last read
+src/freshness/          Reading pricing pages, updating facts from them, and measuring tool health
 data/pricing/           Last-read price and limit lines per tool (written by `npm run check:pricing`)
+data/facts.json         Price and limit facts re-read from changed pricing pages (written by `npm run update:facts`)
 data/signals.json       Measured incidents, advisories and downloads per tool (written by `npm run collect:signals`)
 scripts/                e2e check, SQL generation, seeding a database, pricing check
 tests/                  Vitest: catalog integrity, engine, Postgres (PGlite), MCP over HTTP
@@ -77,7 +78,7 @@ Without `DATABASE_URL`, Cuely serves the bundled catalog from memory. With it, t
 
 `npm run check:pricing` reads every tool's `pricingUrl`, keeps the lines that state a price or a limit, and compares them with the last read in `data/pricing/<slug>.json`. It reports the lines that were added or removed, the dollar amounts the catalog quotes (`freeTier`, `paidStartsAt`) that are no longer on the page, and the pages a plain fetch couldn't read.
 
-The **Pricing freshness** workflow (`pricing.yml`) runs it every Monday and opens a pull request with the new snapshots and that report. It never edits the catalog: a person opens each changed page, updates the facts in `src/catalog`, sets a new `verifiedOn` date and runs `npm run db:sql`. For the workflow to open the pull request, turn on "Allow GitHub Actions to create and approve pull requests" under Settings, Actions, General; without it the report is filed as an issue.
+The **Pricing freshness** workflow (`pricing.yml`) runs it every Monday. For each page that changed, `npm run update:facts` gives Claude the page's price lines next to the catalog's current wording and asks whether the facts still hold. It runs on the repository's own `ANTHROPIC_API_KEY` secret; without the secret, changed pages are only reported. A model proposes the wording, but the rule in `src/freshness/facts.ts` decides what is published: every dollar amount in the new wording must be on the page as read that day, and a monthly cost can't move by more than $50 or 3× in one step. Accepted changes are written to `data/facts.json`, which the catalog lays over the hand-written entry in `src/catalog`, and pushed to `main` once the typecheck and tests pass. A page that still says the same only gets a new `verifiedOn` date. Anything held back is filed as an issue for a person.
 
 Options: `--only <slug,slug>`, `--dry-run` (write nothing), `--report <file>`, and `--html-dir <dir>` to read `<dir>/<slug>.html` in place of fetching, for pages that only render in a browser.
 

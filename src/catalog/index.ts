@@ -11,7 +11,9 @@ import { internalTool } from "./recipes/internal-tool";
 import { dailyWebGame } from "./recipes/daily-web-game";
 import type { Recipe, Tool } from "./types";
 import { healthFrom, normsOf, outageRivals, type SignalsFile } from "@/freshness/health";
+import { applyFacts, type FactsFile } from "@/freshness/facts";
 import signalsJson from "../../data/signals.json";
+import factsJson from "../../data/facts.json";
 
 export * from "./types";
 export { COST_PROFILE };
@@ -23,13 +25,20 @@ export { CATCHES, type Catch } from "./catches";
  */
 export const signals: SignalsFile = process.env.CUELY_NO_SIGNALS === "1" ? { measuredOn: null, tools: {} } : (signalsJson as SignalsFile);
 
+/**
+ * Price and limit facts the weekly job re-read from vendor pages (scripts/update-facts.ts).
+ * CUELY_NO_FACT_UPDATES=1 leaves them out, so tests check the hand-written catalog.
+ */
+export const factUpdates: FactsFile = process.env.CUELY_NO_FACT_UPDATES === "1" ? { tools: {} } : (factsJson as FactsFile);
+
 /** Every tool, with its monthly cost at the published profile and its measured health attached. */
 const allTools = [...coreTools, ...moreTools, ...gameTools];
 const norms = normsOf(signals);
 const rivals = outageRivals(allTools, signals);
 export const tools: Tool[] = allTools.map((t) => {
   const health = healthFrom(signals.tools[t.slug], signals.measuredOn, norms, rivals.has(t.slug));
-  return { ...t, cost: t.cost ?? COSTS[t.slug], ...(health ? { health } : {}) };
+  const withCost = applyFacts({ ...t, cost: t.cost ?? COSTS[t.slug] }, factUpdates.tools[t.slug]);
+  return { ...withCost, ...(health ? { health } : {}) };
 });
 export { categories };
 
