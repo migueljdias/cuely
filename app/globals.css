@@ -4,6 +4,14 @@
   The accent marks one thing on the page: the pick.
 */
 :root {
+  /*
+    Page width. Fixed at 1240px up to roughly a 1850px window, then grows with
+    the window to 1760px, so a large monitor is filled without going edge to edge.
+    --t is the matching type bump: 0 on laptops, up to 2px on the widest screens.
+  */
+  --page-w: clamp(1240px, 67vw, 1760px);
+  --t: clamp(0px, (100vw - 1850px) * 0.0028, 2px);
+
   /* Accent: Cuely blue */
   --accent: #1f4bd8;
   --accent-ink: #1a3fb8; /* accent as text on paper, 4.5:1 or better */
@@ -72,7 +80,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--sans);
-  font-size: 17px;
+  font-size: calc(17px + var(--t));
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
 }
@@ -117,7 +125,7 @@ pre {
 
 .wrap {
   width: 100%;
-  max-width: 1200px;
+  max-width: calc(var(--page-w) - 40px);
   margin: 0 auto;
   padding: 0 32px;
 }
@@ -1804,7 +1812,7 @@ section {
   box-shadow: 0 10px 30px -22px rgba(15, 22, 48, 0.5);
 }
 .site-nav-bar {
-  max-width: 1272px;
+  max-width: calc(var(--page-w) + 32px);
   margin: 0 auto;
   padding: 0 16px;
   height: 68px;
@@ -1947,7 +1955,7 @@ section {
 }
 
 .site-foot {
-  max-width: 1272px;
+  max-width: calc(var(--page-w) + 32px);
   margin: 0 auto;
   padding: 48px 16px 32px;
 }
@@ -2044,7 +2052,7 @@ section {
   border-color: #3563ff;
 }
 main.wrap {
-  max-width: 1104px;
+  max-width: calc(var(--page-w) * 0.89);
 }
 
 /* Inner pages sit on the same framed sheet as the home page. */
