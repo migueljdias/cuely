@@ -29,8 +29,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f5f7fc" },
-    { media: "(prefers-color-scheme: dark)", color: "#0b1226" },
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0e1a" },
   ],
 };
 
@@ -40,9 +40,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         {/* Lets CSS hold the hero example back until it can replay; it shows anyway after 2.5s. */}
         <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@500;700&family=Funnel+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
       </head>
       <body>
         {children}

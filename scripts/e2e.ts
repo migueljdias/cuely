@@ -48,7 +48,7 @@ await client.close();
 
 const page = await fetch(new URL("/", url));
 const html = await page.text();
-check("landing page renders", page.ok && html.includes("before it builds") && html.includes("claude mcp add"));
+check("landing page renders", page.ok && html.includes("before your agent writes a line") && html.includes("claude mcp add"));
 const llms = await fetch(new URL("/llms.txt", url));
 check("llms.txt served", llms.ok && (await llms.text()).includes("recommend_stack"));
 
