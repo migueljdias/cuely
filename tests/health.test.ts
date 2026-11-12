@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { categories, recipes, tools } from "@/catalog";
 import { SOURCES } from "@/catalog/sources";
 import { recommendStack, scoreTool } from "@/engine/recommend";
-import { countAdvisories, countIncidents, downloadWindows, healthFrom, normsOf, NO_NORMS, type ToolSignals } from "@/freshness/health";
+import { countAdvisories, countIncidents, downloadWindows, healthFrom, normsOf, NO_NORMS, outageRivals, type ToolSignals } from "@/freshness/health";
 
 const NOW = new Date("2026-11-12T00:00:00Z");
 const none: ToolSignals = { incidents: null, advisories: null, downloads: null };
@@ -79,6 +79,17 @@ describe("health against the typical tool", () => {
       score: -0.5,
       reasons: ["6 major incidents on its status page in the last 90 days, more than the typical vendor Cuely tracks (https://status1.example.com)."],
     });
+  });
+
+  it("counts outages only for tools with a rival measured on another status page", () => {
+    const list = [
+      { slug: "a", category: "hosting" }, { slug: "b", category: "hosting" }, { slug: "c", category: "hosting" },
+      { slug: "d", category: "monitoring" }, { slug: "e", category: "monitoring" },
+      { slug: "f", category: "kv" }, { slug: "g", category: "kv" },
+    ];
+    const file = { measuredOn: "2026-11-12", tools: { a: page(1, 9), b: page(2, 0), c: pkg(1, 100_000), d: page(3, 9), e: pkg(2, 100_000), f: page(4, 1), g: page(4, 1) } };
+    expect([...outageRivals(list, file)].sort()).toEqual(["a", "b"]);
+    expect(healthFrom(page(3, 9), "2026-11-12", NO_NORMS, false)).toEqual({ score: 0, reasons: [], measuredOn: "2026-11-12" });
   });
 
   it("measures adoption against the market, so a rising market lifts nobody", () => {

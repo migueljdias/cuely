@@ -20,6 +20,10 @@
  * it does better or worse than the rest. A signal that couldn't be measured is null and
  * counts as typical, so a vendor is never rewarded for having no readable status page.
  *
+ * Outages only count when a rival in the same category has a measured status page of
+ * its own (outageRivals). Otherwise the tool would lose its place to tools nobody could
+ * measure, which says nothing about which is more reliable.
+ *
  * One rank in a category's default order is worth 0.4, so two major incidents or one
  * critical incident more than the typical vendor is enough to hand a close pick to the
  * next tool.
@@ -91,8 +95,31 @@ const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n
 const round1 = (n: number) => Math.round(n * 10) / 10;
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
-/** The health a tool's signals work out to, or undefined when nothing was measured. */
-export function healthFrom(signals: ToolSignals | undefined, measuredOn: string | null, norms: Norms = NO_NORMS): ToolHealth | undefined {
+/**
+ * The tools whose outages can be compared: those with a rival in the same category
+ * measured on a different status page.
+ */
+export function outageRivals(tools: { slug: string; category: string }[], file: SignalsFile): Set<string> {
+  const pages = new Map<string, Set<string>>();
+  for (const t of tools) {
+    const source = file.tools[t.slug]?.incidents?.source;
+    if (!source) continue;
+    if (!pages.has(t.category)) pages.set(t.category, new Set());
+    pages.get(t.category)!.add(source);
+  }
+  return new Set(tools.filter((t) => file.tools[t.slug]?.incidents && pages.get(t.category)!.size > 1).map((t) => t.slug));
+}
+
+/**
+ * The health a tool's signals work out to, or undefined when nothing was measured.
+ * countOutages is false for a tool with no measured rival (see outageRivals).
+ */
+export function healthFrom(
+  signals: ToolSignals | undefined,
+  measuredOn: string | null,
+  norms: Norms = NO_NORMS,
+  countOutages = true,
+): ToolHealth | undefined {
   if (!signals || !measuredOn) return undefined;
   const { incidents, advisories, downloads } = signals;
   if (!incidents && !advisories && !downloads) return undefined;
@@ -100,7 +127,7 @@ export function healthFrom(signals: ToolSignals | undefined, measuredOn: string 
   const inFavor: string[] = [];
 
   let outages = 0;
-  if (incidents && incidentPoints(incidents) > norms.incidentPoints) {
+  if (countOutages && incidents && incidentPoints(incidents) > norms.incidentPoints) {
     outages = Math.min(MAX_OUTAGES, incidentPoints(incidents) - norms.incidentPoints);
     const parts = [
       incidents.critical ? plural(incidents.critical, "critical incident") : null,
@@ -127,7 +154,10 @@ export function healthFrom(signals: ToolSignals | undefined, measuredOn: string 
     const gap = clamp(growth / norms.growth - 1, -MAX_ADOPTION, MAX_ADOPTION);
     if (Math.abs(gap) >= 0.1) {
       adoption = gap;
-      const moved = (g: number) => `${g >= 1 ? "rose" : "fell"} ${Math.round(Math.abs(g - 1) * 100)}%`;
+      const moved = (g: number) => {
+        const pct = Math.round(Math.abs(g - 1) * 100);
+        return pct === 0 ? "stayed flat" : `${g > 1 ? "rose" : "fell"} ${pct}%`;
+      };
       const typical = norms.growth !== 1 ? `; the typical package Cuely tracks ${moved(norms.growth)}` : "";
       (gap > 0 ? inFavor : against).push(`Downloads of ${downloads.package} ${moved(growth)} over three months${typical}.`);
     }

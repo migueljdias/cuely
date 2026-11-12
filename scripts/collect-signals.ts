@@ -15,7 +15,7 @@ import path from "node:path";
 import { tools } from "@/catalog";
 import { SOURCES } from "@/catalog/sources";
 import {
-  countAdvisories, countIncidents, downloadWindows, healthFrom, normsOf, type SignalsFile, type ToolSignals,
+  countAdvisories, countIncidents, downloadWindows, healthFrom, normsOf, outageRivals, type SignalsFile, type ToolSignals,
 } from "@/freshness/health";
 
 const FILE = path.resolve(import.meta.dirname, "..", "data", "signals.json");
@@ -127,14 +127,16 @@ L.push(`Signals measured on ${today}: ${Object.keys(next.tools).length} tools, $
 
 const normsBefore = normsOf(previous);
 const normsNow = normsOf(next);
+const rivalsBefore = outageRivals(tools, previous);
+const rivalsNow = outageRivals(tools, next);
 L.push(`Typical vendor: ${normsNow.incidentPoints} incident points. Typical package: downloads ×${normsNow.growth.toFixed(2)} over three months.`);
 
 const moves: string[] = [];
 const healthBefore = new Map<string, number>();
 const healthNow = new Map<string, number>();
 for (const tool of tools) {
-  const was = healthFrom(previous.tools[tool.slug], previous.measuredOn, normsBefore)?.score ?? 0;
-  const h = healthFrom(next.tools[tool.slug], today, normsNow);
+  const was = healthFrom(previous.tools[tool.slug], previous.measuredOn, normsBefore, rivalsBefore.has(tool.slug))?.score ?? 0;
+  const h = healthFrom(next.tools[tool.slug], today, normsNow, rivalsNow.has(tool.slug));
   const is = h?.score ?? 0;
   healthBefore.set(tool.slug, was);
   healthNow.set(tool.slug, is);
