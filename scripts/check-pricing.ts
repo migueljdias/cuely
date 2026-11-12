@@ -4,10 +4,12 @@
  * changed, and prints a report of what changed and which amounts quoted in the
  * catalog are no longer on the page.
  *
- * It never edits src/catalog: a person re-reads the page, updates the facts and
- * sets a new verifiedOn date.
+ * It never edits the catalog's facts: scripts/update-facts.ts does that for the pages
+ * this reports as changed.
  *
- * Usage: npx tsx scripts/check-pricing.ts [--report <file>] [--only <slug,slug>] [--dry-run] [--html-dir <dir>]
+ * Usage: npx tsx scripts/check-pricing.ts [--report <file>] [--changes <file>] [--only <slug,slug>] [--dry-run] [--html-dir <dir>]
+ *
+ * --changes writes the changed tools as JSON ([{ slug, added, removed }]) for scripts/update-facts.ts.
  *
  * --html-dir reads <dir>/<slug>.html when it exists instead of fetching, for pages
  * that only render in a browser (save the page there by hand or from a browser run).
@@ -27,6 +29,7 @@ const arg = (name: string) => {
   return i === -1 ? null : process.argv[i + 1] ?? null;
 };
 const reportPath = arg("--report");
+const changesPath = arg("--changes");
 const only = arg("--only")?.split(",").map((s) => s.trim()).filter(Boolean) ?? null;
 const dryRun = process.argv.includes("--dry-run");
 const htmlDir = arg("--html-dir");
@@ -117,7 +120,6 @@ function render(results: Result[]): string {
   const unread = [...by("unreadable"), ...by("error")];
   const out: string[] = [];
   out.push(`Pricing pages read on ${today}: ${results.length} tools, ${changed.length} changed, ${fresh.length} read for the first time, ${by("unchanged").length} unchanged, ${unread.length} could not be read.`);
-  out.push("", "This only reports. For each tool below, open the page, update the facts in `src/catalog` if they changed, and set a new `verifiedOn` date.");
 
   if (changed.length) {
     out.push("", "## Pages that changed");
@@ -154,6 +156,10 @@ const results = await pool(selected, CONCURRENCY, check);
 const report = render(results);
 console.log(report);
 if (reportPath) writeFileSync(reportPath, report);
+if (changesPath) {
+  const changed = results.filter((r) => r.status === "changed").map(({ slug, added, removed }) => ({ slug, added, removed }));
+  writeFileSync(changesPath, `${JSON.stringify(changed, null, 2)}\n`);
+}
 
 const wrote = results.some((r) => r.status === "changed" || r.status === "new");
 if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `changed=${wrote && !dryRun}\n`);
