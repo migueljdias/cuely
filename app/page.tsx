@@ -589,7 +589,7 @@ export default function Home() {
               </div>
               <pre className="formula" aria-label="Scoring formula" data-rv>
                 <code>
-                  score = <span>Σ fit[need]</span> + 0.4 × (n − default_rank + 1) + <span>health</span> + (already_using ? 4 : 0) + (in_recipe ? 1 : 0)
+                  score = <span>Σ fit[need]</span> + 0.4 × (n − default_rank + 1) + <span>health</span> + <span>compliance</span> + (already_using ? 4 : 0) + (in_recipe ? 1 : 0)
                 </code>
               </pre>
             </div>

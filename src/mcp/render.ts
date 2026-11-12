@@ -1,9 +1,30 @@
-import type { Category, Recipe, Tool } from "@/catalog";
+import type { Category, ComplianceTopic, Recipe, Tool } from "@/catalog";
 import { COST_PROFILE } from "@/catalog";
 import type { CompareResult } from "@/engine/compare";
 import type { Recommendation } from "@/engine/recommend";
+import { TOPIC_LABELS, statedCompliance } from "@/freshness/compliance";
 
 const free = (t: { freeTier: string | null }) => t.freeTier ?? "No free plan.";
+
+/**
+ * What the picks' vendors say on the compliance topics this product needs: stated
+ * answers one per line, then who doesn't say, per topic.
+ */
+function complianceSection(r: Recommendation): string[] {
+  const picks = r.stack.filter((x) => x.pick.compliance);
+  if (!picks.length) return [];
+  const L = ["## Compliance (each vendor's own words; check before you sign, this is not legal advice)"];
+  const silent = new Map<string, string[]>();
+  for (const x of picks) {
+    for (const i of x.pick.compliance!.items) {
+      if (i.answer === "unstated") silent.set(i.topic, [...(silent.get(i.topic) ?? []), x.pick.name]);
+      else L.push(`- ${x.pick.name}: ${i.text}`);
+    }
+  }
+  for (const [topic, names] of silent) L.push(`- ${TOPIC_LABELS[topic as ComplianceTopic]} not stated on the pages Cuely reads for: ${names.join(", ")}. Ask each before relying on it.`);
+  L.push("");
+  return L;
+}
 
 export function renderRecommendation(r: Recommendation, detail: "summary" | "full" = "summary"): string {
   const L: string[] = [];
@@ -48,6 +69,7 @@ export function renderRecommendation(r: Recommendation, detail: "summary" | "ful
       if (x.pick.paidStartsAt) L.push(`- Paid from: ${x.pick.paidStartsAt}`);
       if (x.pick.watchOut) L.push(`- Watch out: ${x.pick.watchOut}`);
       if (x.pick.health) L.push(`- Measured ${x.pick.health.measuredOn} (${x.pick.health.score > 0 ? "+" : ""}${x.pick.health.score} to its score): ${x.pick.health.reasons.join(" ")}`);
+      for (const i of x.pick.compliance?.items ?? []) L.push(`- ${i.text}`);
       for (const a of x.alternatives) L.push(`- Alternative, ${a.name}: ${a.when}`);
       L.push(`- Facts read ${x.pick.verifiedOn} from ${x.pick.pricingUrl}`, "");
     }
@@ -62,6 +84,7 @@ export function renderRecommendation(r: Recommendation, detail: "summary" | "ful
       L.push(`- ${x.categoryName}${roleTag(x)}: ${x.pick.name}. ${x.pick.reason}${alt}`);
     }
     L.push("");
+    L.push(...complianceSection(r));
   }
   if (r.leftOut.length) {
     const byReason = new Map<string, string[]>();
@@ -146,6 +169,7 @@ export function renderCompare(c: CompareResult): string {
     L.push(`## ${t.name}`, t.summary, `- Best for: ${t.bestFor.join("; ")}`, `- Watch out: ${t.watchOut.join(" ")}`);
     L.push(`- Free plan: ${free(t)}`, `- Paid from: ${t.paidStartsAt ?? "not stated on the pricing page"}`);
     L.push(`- Open source: ${t.openSource ? "yes" : "no"}; self-hostable: ${t.selfHostable ? "yes" : "no"}`);
+    for (const line of t.compliance) L.push(`- ${line}`);
     L.push(`- Facts read ${t.verifiedOn} from ${t.pricingUrl}`, "");
   }
   if (c.differences.length) {
@@ -173,7 +197,9 @@ export function renderCategory(c: Category, tools: Tool[]): string {
   for (const t of inCat) {
     L.push(`## ${t.name} (\`${t.slug}\`)${t.baseline === 1 ? ", the default pick" : ""}`, t.summary);
     L.push(`- Best for: ${t.bestFor.join("; ")}`, `- Free plan: ${free(t)}`, `- Paid from: ${t.paidStartsAt ?? "not stated"}`);
-    L.push(`- Watch out: ${t.watchOut.join(" ")}`, `- Facts read ${t.verifiedOn} from ${t.pricingUrl}`, "");
+    L.push(`- Watch out: ${t.watchOut.join(" ")}`);
+    for (const line of statedCompliance(t.compliance)) L.push(`- ${line}`);
+    L.push(`- Facts read ${t.verifiedOn} from ${t.pricingUrl}`, "");
   }
   return L.join("\n");
 }

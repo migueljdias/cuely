@@ -6,7 +6,7 @@
 export interface Catch {
   id: string;
   /** Profile flag that triggers it. */
-  when: "mobile_paid" | "mobile" | "mobile_social_login" | "marketplace" | "in_person" | "ai" | "rag" | "usage_billing" | "internal" | "internal_workspace" | "realtime" | "game";
+  when: "mobile_paid" | "mobile" | "mobile_social_login" | "marketplace" | "in_person" | "ai" | "rag" | "usage_billing" | "internal" | "internal_workspace" | "realtime" | "game" | "health_data";
   text: string;
   source: string;
   verifiedOn: string;
@@ -15,6 +15,13 @@ export interface Catch {
 const V = "2026-11-07";
 
 export const CATCHES: Catch[] = [
+  {
+    id: "hipaa-baa",
+    when: "health_data",
+    text: "If the product handles patient information for a US healthcare provider or insurer, HIPAA applies: each vendor that stores or processes that information needs a signed business associate agreement (BAA) with you before any of it goes in. Check the BAA line on every pick below.",
+    source: "https://www.hhs.gov/hipaa/for-professionals/privacy/guidance/business-associates/index.html",
+    verifiedOn: "2026-11-12",
+  },
   {
     id: "ios-in-app-purchase",
     when: "mobile_paid",

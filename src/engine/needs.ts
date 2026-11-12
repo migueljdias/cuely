@@ -15,7 +15,8 @@ export const NEED_TRIGGERS: Record<Need, string[]> = {
     "to companies", "small companies", "for businesses", "to businesses", "small businesses", "invite their team", "invite teammates"],
   regulated: ["fintech", "bank", "banking", "finance", "financial", "payments platform", "lending", "insurance",
     "insurtech", "health", "healthcare", "hipaa", "medical", "soc 2", "soc2", "compliance", "audit", "pci", "kyc",
-    "legal", "govtech", "regulated"],
+    "legal", "govtech", "regulated", "patient", "patients", "clinic", "clinics", "therapy", "therapist", "therapists",
+    "telehealth", "telemedicine", "phi"],
   global_tax: ["worldwide", "global", "international", "internationally", "vat", "sales tax", "merchant of record",
     "mor", "sell abroad", "digital products"],
   open_source: ["open source", "open-source", "oss", "self-host", "self-hosted", "self hosted", "self-hosting",
@@ -49,6 +50,8 @@ export const NEED_TRIGGERS: Record<Need, string[]> = {
     "crowd percentages", "live percentages", "high write", "high-write"],
   spiky: ["viral", "go viral", "goes viral", "traffic spike", "traffic spikes", "spike", "spikes", "spiky", "bursty",
     "hacker news", "product hunt", "front page", "launch day", "surge", "surges", "flash crowd"],
+  health_data: ["hipaa", "phi", "health", "healthcare", "medical", "patient", "patients", "clinic", "clinics", "therapy",
+    "therapist", "therapists", "telehealth", "telemedicine", "doctor", "doctors", "mental health", "health records"],
 };
 
 /**
@@ -120,6 +123,7 @@ export const NEED_LABELS: Record<Need, string> = {
   google_workspace: "already on Google Workspace",
   counters: "votes, scores, leaderboards or streaks (many writes to the same numbers)",
   spiky: "traffic comes in viral spikes",
+  health_data: "stores patient or health information",
 };
 
 export const ALL_NEEDS = Object.keys(NEED_TRIGGERS) as Need[];
@@ -147,4 +151,5 @@ export const NEED_SHORT: Record<Need, string> = {
   google_workspace: "teams on Google Workspace",
   counters: "votes, leaderboards and streaks",
   spiky: "viral traffic spikes",
+  health_data: "patient and health data",
 };
