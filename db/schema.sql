@@ -31,6 +31,8 @@ create table if not exists tools (
 );
 -- Monthly cost at Cuely's published usage profile (src/catalog/costs.ts).
 alter table tools add column if not exists cost jsonb;
+-- Measured health (src/freshness/health.ts): { score, reasons, measuredOn }, rewritten by the scheduled signals job.
+alter table tools add column if not exists health jsonb;
 create index if not exists tools_category_idx on tools (category);
 
 create table if not exists recipes (

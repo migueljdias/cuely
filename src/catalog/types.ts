@@ -98,6 +98,22 @@ export interface Tool {
   cost?: ToolCost;
   /** Date the facts were read from the vendor's own site (YYYY-MM-DD). */
   verifiedOn: string;
+  /** Measured health (src/freshness/health.ts), or absent when nothing has been measured. */
+  health?: ToolHealth;
+}
+
+/**
+ * What the measured signals add to or take from a tool's score. Worked out by a
+ * published formula from data/signals.json, which a scheduled job rewrites; no
+ * person or model sets it.
+ */
+export interface ToolHealth {
+  /** Added to the tool's score: -3 (failing) to +1 (growing fast, no problems). */
+  score: number;
+  /** One line per signal that moved the score, each with its number. */
+  reasons: string[];
+  /** Date the signals were measured (YYYY-MM-DD). */
+  measuredOn: string;
 }
 
 /**

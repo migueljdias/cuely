@@ -45,6 +45,8 @@ export interface ToolCard {
   paidStartsAt: string | null;
   freeTierCommercialUse: boolean | null;
   watchOut: string | null;
+  /** Measured signals that moved this tool's score, or null when none did. */
+  health: { score: number; reasons: string[]; measuredOn: string } | null;
   monthlyCost: number | null;
   costBasis: string | null;
   pricingUrl: string;
@@ -191,7 +193,7 @@ export function routeRecipe(recipes: Recipe[], profile: Profile, description: st
 export function scoreTool(tool: Tool, needs: Need[], categorySize: number, alreadyUsing: boolean): number {
   const needScore = needs.reduce((sum, n) => sum + (tool.fit[n]?.weight ?? 0), 0);
   const baseline = (categorySize - tool.baseline + 1) * 0.4;
-  return needScore + baseline + (alreadyUsing ? 4 : 0);
+  return needScore + baseline + (tool.health?.score ?? 0) + (alreadyUsing ? 4 : 0);
 }
 
 function strongestReason(tool: Tool, needs: Need[]): string | null {
@@ -221,6 +223,7 @@ export function toCard(tool: Tool, reason: string): ToolCard {
     paidStartsAt: tool.paidStartsAt,
     freeTierCommercialUse: tool.freeTierCommercialUse,
     watchOut: tool.watchOut[0] ?? null,
+    health: tool.health && tool.health.score !== 0 ? tool.health : null,
     monthlyCost: tool.cost?.monthly ?? null,
     costBasis: tool.cost?.basis ?? null,
     pricingUrl: tool.pricingUrl,
@@ -486,9 +489,18 @@ export function recommendStack(catalog: CatalogSnapshot, input: RecommendInput):
       .sort((a, b) => b.s - a.s || a.t.baseline - b.t.baseline);
 
     const top = ranked[0];
-    const reason = using.has(top.t.slug)
+    // The tool that would have won on the rules alone, when measured health moved it down.
+    const displaced = ranked
+      .filter(({ t }) => t !== top.t && (t.health?.score ?? 0) < 0)
+      .map(({ t, s }) => ({ t, s: s - t.health!.score }))
+      .sort((a, b) => b.s - a.s)[0];
+    const demoted = displaced && displaced.s > top.s - (top.t.health?.score ?? 0) ? displaced.t : null;
+    const baseReason = using.has(top.t.slug)
       ? `You already use ${top.t.name}; nothing you described is worth the cost of switching.`
       : (strongestReason(top.t, needs) ?? (top.t.slug === recipeItem?.tool ? recipeItem.why : top.t.pitch));
+    const reason = demoted
+      ? `${baseReason} Picked over ${demoted.name}, which measured worse on ${demoted.health!.measuredOn}: ${demoted.health!.reasons[0]}`
+      : baseReason;
 
     // The recipe says which parts are core for this product type; "only if you build it" stays.
     const finalRole: StackRole = recipeItem && role !== "if_you_build" ? (recipeItem.optional ? "optional" : "core") : role;
@@ -521,7 +533,12 @@ export function recommendStack(catalog: CatalogSnapshot, input: RecommendInput):
     .map((p) => stack.find((s) => s.category === p.category)!.pick)
     .filter((c) => c.watchOut && !laneSources.has(c.pricingUrl))
     .map((c) => ({ text: `${c.name}: ${c.watchOut}`, source: c.pricingUrl, verifiedOn: c.verifiedOn }));
-  const allCatches = [...fromProfile, ...fromPicks];
+  // A pick that is losing points on measured health says so, with the number.
+  const fromHealth = stack
+    .map((x) => x.pick)
+    .filter((c) => c.health && c.health.score < 0)
+    .map((c) => ({ text: `${c.name}: ${c.health!.reasons[0]}`, source: METHOD_URL, verifiedOn: c.health!.measuredOn }));
+  const allCatches = [...fromProfile, ...fromHealth, ...fromPicks];
 
   const summary: Summary = {
     headline: `${base.productType.label}: ${picks.map((p) => `${p.name} (${/^.[^A-Z]*$/.test(p.categoryName) ? p.categoryName.toLowerCase() : p.categoryName})`).join(", ")}.`,

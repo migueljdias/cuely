@@ -10,13 +10,24 @@ import { aiDocsApp } from "./recipes/ai-docs-app";
 import { internalTool } from "./recipes/internal-tool";
 import { dailyWebGame } from "./recipes/daily-web-game";
 import type { Recipe, Tool } from "./types";
+import { healthFrom, type SignalsFile } from "@/freshness/health";
+import signalsJson from "../../data/signals.json";
 
 export * from "./types";
 export { COST_PROFILE };
 export { CATCHES, type Catch } from "./catches";
 
-/** Every tool, with its monthly cost at the published profile attached. */
-export const tools: Tool[] = [...coreTools, ...moreTools, ...gameTools].map((t) => ({ ...t, cost: t.cost ?? COSTS[t.slug] }));
+/**
+ * Measured signals, rewritten by the scheduled job (scripts/collect-signals.ts).
+ * CUELY_NO_SIGNALS=1 leaves them out, so tests of the rules don't move with the week's data.
+ */
+export const signals: SignalsFile = process.env.CUELY_NO_SIGNALS === "1" ? { measuredOn: null, tools: {} } : (signalsJson as SignalsFile);
+
+/** Every tool, with its monthly cost at the published profile and its measured health attached. */
+export const tools: Tool[] = [...coreTools, ...moreTools, ...gameTools].map((t) => {
+  const health = healthFrom(signals.tools[t.slug], signals.measuredOn);
+  return { ...t, cost: t.cost ?? COSTS[t.slug], ...(health ? { health } : {}) };
+});
 export { categories };
 
 /** Sorted by slug, the same order the Postgres repository returns. */
