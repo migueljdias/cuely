@@ -1,0 +1,69 @@
+name: Signals
+
+# Measures every tool's health signals (status-page incidents, security advisories,
+# npm downloads) and publishes them. The ranking follows these numbers by a published
+# formula (src/freshness/health.ts); no person or model is in the loop.
+on:
+  schedule:
+    - cron: "47 5 * * 1" # Mondays 05:47 UTC. For daily runs: "47 5 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Measure and report only; publish nothing
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: signals
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    name: Measure and publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Measure signals
+        id: measure
+        run: |
+          npm run -s collect:signals -- --report "$RUNNER_TEMP/signals-report.md" ${{ inputs.dry_run && '--dry-run' || '' }}
+          cat "$RUNNER_TEMP/signals-report.md" >> "$GITHUB_STEP_SUMMARY"
+
+      # Nothing is published unless the catalog still typechecks and every test passes with the new numbers.
+      - name: Regenerate the seed and check
+        if: steps.measure.outputs.changed == 'true'
+        run: |
+          npm run -s db:sql
+          npm run typecheck
+          npm test
+
+      - name: Publish
+        if: steps.measure.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE: ${{ github.event.repository.default_branch }}
+        run: |
+          title="Signals measured ($(date -u +%F))"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/signals.json db/seed.sql
+          git commit -m "$title"
+          if ! git push origin "HEAD:$BASE"; then
+            # The branch refuses direct pushes: file the report so the change isn't lost silently.
+            gh issue create --title "$title (not published: push to $BASE refused)" --body-file "$RUNNER_TEMP/signals-report.md"
+            exit 1
+          fi

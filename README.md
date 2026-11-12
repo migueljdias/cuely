@@ -34,7 +34,9 @@ The rule that can't bend: money never touches the ranking. There are no sponsore
 1. `src/engine/profile.ts` reads the kind of product: web, phone or both; who pays (nobody, users pay you, users pay each other); customers or your own staff; AI, documents, realtime; casual and daily web games and whether results get shared. It decides which categories are shown, which catches lead the answer, and when to ask instead of guess: a question is asked only when the fact is missing and would change the picks. It also flags products outside Cuely's coverage (engine, console, 3D and phone games, hardware, crypto) and partial ones (stores, SMS, video, fast real-time multiplayer).
 2. `src/engine/needs.ts` turns plain words in the description into needs (b2b, regulated, global_tax, open_source, eu, low_cost, edge, nextjs, realtime, fewer_vendors, per_tenant_db, long_running, high_volume, rag, usage_billing, google_workspace). The profile adds mobile, marketplace and internal. Product names are masked first, so "Google Workspace" isn't a workspace and "React Native" isn't Next.js.
 3. Every tool in `src/catalog/tools.ts` has a published fit weight (−3 to +3) and a reason for each need it's good or bad at, plus an editorial default order in its category.
-4. `score = Σ fit[need] + 0.4 × (n − default_rank + 1) + (already_using ? 4 : 0) + (in_recipe ? 1 : 0)`, where `in_recipe` means the recipe Cuely routed to names that tool. Highest score wins; the default order settles ties.
+4. `score = Σ fit[need] + 0.4 × (n − default_rank + 1) + health + (already_using ? 4 : 0) + (in_recipe ? 1 : 0)`, where `in_recipe` means the recipe Cuely routed to names that tool. Highest score wins; the default order settles ties.
+
+   `health` is measured, not written by hand (`src/freshness/health.ts`): `adoption − outages − security`, capped to −3…+1. Outages are 0.25 per major and 0.75 per critical incident on the vendor's status page in the last 90 days. Security is 0.25 per high and 0.5 per critical advisory for the tool's package in the last 180 days. Adoption is the change in npm downloads over three months, when it is 10% or more. One rank in the default order is worth 0.4, so a tool that starts failing loses close picks to the next one, and the answer says which measurement did it.
 
 5. The answer leads with the cost at Cuely's published usage profile (`src/catalog/costs.ts`: 1,000 monthly active users, 10 staff for staff tools), each tool's cost with the math in its basis line, and the catches for that kind of product (`src/catalog/catches.ts`), each with its source page and date.
 
@@ -54,6 +56,7 @@ db/schema.sql           Postgres schema (categories, tools, recipes, recipe_tool
 db/seed.sql             Generated from src/catalog by `npm run db:sql`
 src/freshness/          Reading pricing pages and comparing them with the last read
 data/pricing/           Last-read price and limit lines per tool (written by `npm run check:pricing`)
+data/signals.json       Measured incidents, advisories and downloads per tool (written by `npm run collect:signals`)
 scripts/                e2e check, SQL generation, seeding a database, pricing check
 tests/                  Vitest: catalog integrity, engine, Postgres (PGlite), MCP over HTTP
 ```
@@ -77,6 +80,14 @@ Without `DATABASE_URL`, Cuely serves the bundled catalog from memory. With it, t
 The **Pricing freshness** workflow (`pricing.yml`) runs it every Monday and opens a pull request with the new snapshots and that report. It never edits the catalog: a person opens each changed page, updates the facts in `src/catalog`, sets a new `verifiedOn` date and runs `npm run db:sql`. For the workflow to open the pull request, turn on "Allow GitHub Actions to create and approve pull requests" under Settings, Actions, General; without it the report is filed as an issue.
 
 Options: `--only <slug,slug>`, `--dry-run` (write nothing), `--report <file>`, and `--html-dir <dir>` to read `<dir>/<slug>.html` in place of fetching, for pages that only render in a browser.
+
+## Rankings that follow the data
+
+`npm run collect:signals` measures every tool listed in `src/catalog/sources.ts`: incidents from its status page, advisories for its package from [OSV](https://osv.dev), and npm downloads in two windows. It rewrites `data/signals.json`, and the catalog works each tool's `health` out from that file. No model is called and nobody edits the numbers.
+
+The **Signals** workflow (`signals.yml`) runs it on a schedule, regenerates `db/seed.sql`, runs the typecheck and tests, and pushes the result to `main`, which deploys it. To run it daily, change its `cron` line. Two guards keep a bad run from moving a ranking: a source that fails keeps its last measured value, and if more than 40% fail the run stops without writing. If the push to `main` is refused (branch protection), it files the report as an issue.
+
+Tests run with `CUELY_NO_SIGNALS=1` (set in `vitest.config.ts`), so the rules are tested apart from the week's data.
 
 ## CI and security checks
 

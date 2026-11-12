@@ -12,6 +12,7 @@
     "db:sql": "tsx scripts/generate-sql.ts",
     "db:seed": "tsx scripts/seed.ts",
     "check:pricing": "tsx scripts/check-pricing.ts",
+    "collect:signals": "tsx scripts/collect-signals.ts",
     "typecheck": "tsc --noEmit",
     "vercel-build": "tsx scripts/seed.ts --production-only && next build"
   },

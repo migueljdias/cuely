@@ -47,6 +47,7 @@ export function renderRecommendation(r: Recommendation, detail: "summary" | "ful
       L.push(`- Free plan: ${free(x.pick)}`);
       if (x.pick.paidStartsAt) L.push(`- Paid from: ${x.pick.paidStartsAt}`);
       if (x.pick.watchOut) L.push(`- Watch out: ${x.pick.watchOut}`);
+      if (x.pick.health) L.push(`- Measured ${x.pick.health.measuredOn} (${x.pick.health.score > 0 ? "+" : ""}${x.pick.health.score} to its score): ${x.pick.health.reasons.join(" ")}`);
       for (const a of x.alternatives) L.push(`- Alternative, ${a.name}: ${a.when}`);
       L.push(`- Facts read ${x.pick.verifiedOn} from ${x.pick.pricingUrl}`, "");
     }

@@ -50,7 +50,7 @@ const mcpTools = [
 const rules = [
   {
     title: "Published rules",
-    text: "Each tool has a score from −3 to +3 for each need, with the reason written next to it. A pick is the sum of the needs you described, plus a small editorial default that only settles close calls.",
+    text: "Each tool has a score from −3 to +3 for each need, with the reason written next to it. A pick is the sum of the needs you described, plus a small editorial default that settles close calls, plus a health number measured from each tool's outages, security advisories and adoption.",
   },
   {
     title: "Same answer for everyone",
@@ -324,7 +324,7 @@ export default function Home() {
             </ul>
             <pre className="bp-formula" aria-label="Scoring formula">
               <span aria-hidden="true">Scoring formula</span>
-              <code>score = Σ fit[need] + 0.4 × (n − default_rank + 1) + (already_using ? 4 : 0) + (in_recipe ? 1 : 0)</code>
+              <code>score = Σ fit[need] + 0.4 × (n − default_rank + 1) + health + (already_using ? 4 : 0) + (in_recipe ? 1 : 0)</code>
             </pre>
           </div>
         </section>

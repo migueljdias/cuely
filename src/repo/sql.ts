@@ -18,11 +18,11 @@ export function generateSeedStatements(): string[] {
   }
   for (const t of tools) {
     out.push(
-      `insert into tools (slug, name, category, website, pricing_url, summary, pitch, best_for, watch_out, free_tier, paid_starts_at, free_tier_commercial_use, open_source, self_hostable, baseline, fit, cost, verified_on) values (${[
+      `insert into tools (slug, name, category, website, pricing_url, summary, pitch, best_for, watch_out, free_tier, paid_starts_at, free_tier_commercial_use, open_source, self_hostable, baseline, fit, cost, health, verified_on) values (${[
         q(t.slug), q(t.name), q(t.category), q(t.website), q(t.pricingUrl), q(t.summary), q(t.pitch), j(t.bestFor),
         j(t.watchOut), q(t.freeTier), q(t.paidStartsAt), q(t.freeTierCommercialUse), q(t.openSource),
-        q(t.selfHostable), q(t.baseline), j(t.fit), t.cost ? j(t.cost) : "null", q(t.verifiedOn),
-      ].join(", ")})\n  on conflict (slug) do update set name = excluded.name, category = excluded.category, website = excluded.website, pricing_url = excluded.pricing_url, summary = excluded.summary, pitch = excluded.pitch, best_for = excluded.best_for, watch_out = excluded.watch_out, free_tier = excluded.free_tier, paid_starts_at = excluded.paid_starts_at, free_tier_commercial_use = excluded.free_tier_commercial_use, open_source = excluded.open_source, self_hostable = excluded.self_hostable, baseline = excluded.baseline, fit = excluded.fit, cost = excluded.cost, verified_on = excluded.verified_on, updated_at = now();`,
+        q(t.selfHostable), q(t.baseline), j(t.fit), t.cost ? j(t.cost) : "null", t.health ? j(t.health) : "null", q(t.verifiedOn),
+      ].join(", ")})\n  on conflict (slug) do update set name = excluded.name, category = excluded.category, website = excluded.website, pricing_url = excluded.pricing_url, summary = excluded.summary, pitch = excluded.pitch, best_for = excluded.best_for, watch_out = excluded.watch_out, free_tier = excluded.free_tier, paid_starts_at = excluded.paid_starts_at, free_tier_commercial_use = excluded.free_tier_commercial_use, open_source = excluded.open_source, self_hostable = excluded.self_hostable, baseline = excluded.baseline, fit = excluded.fit, cost = excluded.cost, health = excluded.health, verified_on = excluded.verified_on, updated_at = now();`,
     );
   }
   for (const r of recipes) {
