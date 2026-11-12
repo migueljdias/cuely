@@ -122,7 +122,7 @@ let failed = false;
 if (changes.length === 0) {
   console.log("No pricing page changed; facts left as they are.");
 } else if (!process.env.ANTHROPIC_API_KEY && !process.env.ANTHROPIC_AUTH_TOKEN) {
-  held.push(...changes.map((c) => `- \`${c.slug}\`: not checked, because the ANTHROPIC_API_KEY secret isn't set.`));
+  held.push(...changes.map((c) => `- \`${c.slug}\`: not checked, because no ANTHROPIC_API_KEY reached the job (see the Infisical setup in the README).`));
 } else {
   for (const change of changes) {
     const tool = tools.find((t) => t.slug === change.slug);

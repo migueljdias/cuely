@@ -1,7 +1,8 @@
 name: Pricing freshness
 
 # Reads every tool's pricing page once a week. For each page that changed, Claude
-# re-reads the price and limit facts (on the repository's own ANTHROPIC_API_KEY) and
+# re-reads the price and limit facts (on the project's own ANTHROPIC_API_KEY, read from
+# Infisical with a short-lived GitHub identity, so no key is stored in GitHub) and
 # the published checks in src/freshness/facts.ts decide what goes live. Nothing waits
 # for a person unless a change is held back, which files an issue.
 on:
@@ -16,6 +17,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write # lets the job prove to Infisical which repository it is
   issues: write
 
 concurrency:
@@ -42,11 +44,24 @@ jobs:
         id: read
         run: npm run -s check:pricing -- --report "$RUNNER_TEMP/pricing-report.md" --changes "$RUNNER_TEMP/pricing-changes.json" >> "$GITHUB_STEP_SUMMARY"
 
+      # Variables, not secrets: none of these is sensitive. Set them under Settings, Secrets and variables, Actions, Variables.
+      - name: Read the Claude API key from Infisical
+        if: (steps.read.outputs.changed == 'true' || inputs.recheck != '') && vars.INFISICAL_IDENTITY_ID != ''
+        uses: Infisical/secrets-action@d2e351f16c6ca20d17c85e6c992e04bdeb64e87d # v1.0.18
+        with:
+          method: oidc
+          identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
+          project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
+          env-slug: ${{ vars.INFISICAL_ENV_SLUG || 'prod' }}
+          domain: ${{ vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
+          secret-name: ANTHROPIC_API_KEY
+
       - name: Re-read the facts of the pages that changed
         id: facts
         if: steps.read.outputs.changed == 'true' || inputs.recheck != ''
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # From Infisical when it is set up; a repository secret of the same name also works.
+          ANTHROPIC_API_KEY: ${{ env.ANTHROPIC_API_KEY || secrets.ANTHROPIC_API_KEY }}
           RECHECK: ${{ inputs.recheck }}
         run: |
           if [ -n "$RECHECK" ]; then
