@@ -125,7 +125,7 @@ const ProposalSchema = z.object({ baa: Answer, dpa: Answer, eu_region: Answer, s
 
 const SYSTEM = `You read a software vendor's own compliance pages for a catalog that developers use to choose tools for products with sensitive data. A wrong "yes" could lead someone to put patient data somewhere it can't legally go, so answer only what the lines state.
 
-You are given one tool and the lines of its vendor's pages that touch compliance, grouped by page. Answer four questions about that tool specifically (a vendor's page may cover several products; an answer about another product is not an answer about this one):
+You are given one tool and the lines of its vendor's pages that touch compliance, grouped by page (each group starts with "=== Page:" and the page's URL). Answer four questions about that tool specifically (a vendor's page may cover several products; an answer about another product is not an answer about this one):
 
 - baa: does the vendor sign a HIPAA business associate agreement (BAA) for this tool?
 - dpa: does the vendor offer a GDPR data processing agreement or addendum (DPA)?
@@ -151,7 +151,7 @@ async function ask(tool: Tool, pages: ComplianceSnapshot["pages"]): Promise<Comp
   const prompt = [
     `Tool: ${tool.name} (${tool.category}). ${tool.summary}`,
     "",
-    ...pages.flatMap((p) => [`<page url="${p.url}">`, ...p.lines, "</page>", ""]),
+    ...pages.flatMap((p) => [`=== Page: ${p.url}`, ...p.lines, "=== End of page", ""]),
   ].join("\n");
   const response = await client.beta.messages.parse({
     model: MODEL,
