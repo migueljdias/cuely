@@ -10,7 +10,7 @@ import { aiDocsApp } from "./recipes/ai-docs-app";
 import { internalTool } from "./recipes/internal-tool";
 import { dailyWebGame } from "./recipes/daily-web-game";
 import type { Recipe, Tool } from "./types";
-import { healthFrom, type SignalsFile } from "@/freshness/health";
+import { healthFrom, normsOf, type SignalsFile } from "@/freshness/health";
 import signalsJson from "../../data/signals.json";
 
 export * from "./types";
@@ -24,8 +24,9 @@ export { CATCHES, type Catch } from "./catches";
 export const signals: SignalsFile = process.env.CUELY_NO_SIGNALS === "1" ? { measuredOn: null, tools: {} } : (signalsJson as SignalsFile);
 
 /** Every tool, with its monthly cost at the published profile and its measured health attached. */
+const norms = normsOf(signals);
 export const tools: Tool[] = [...coreTools, ...moreTools, ...gameTools].map((t) => {
-  const health = healthFrom(signals.tools[t.slug], signals.measuredOn);
+  const health = healthFrom(signals.tools[t.slug], signals.measuredOn, norms);
   return { ...t, cost: t.cost ?? COSTS[t.slug], ...(health ? { health } : {}) };
 });
 export { categories };

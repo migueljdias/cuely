@@ -6,6 +6,9 @@
  * npm:    the package a builder installs to use the tool; its downloads measure
  *         adoption and its advisories measure security.
  *
+ * Neon, Turso, Lemon Squeezy, PostHog and Liveblocks publish status pages in other
+ * formats that the collector can't read yet, so they have no status entry.
+ *
  * A tool with no entry, or a source that can't be read, has no measured health
  * and keeps its default place. Sources are facts about where to look, not opinions.
  */
@@ -25,21 +28,20 @@ export const SOURCES: Record<string, ToolSources> = {
   netlify: { status: "https://www.netlifystatus.com", npm: "netlify-cli" },
   render: { status: "https://status.render.com" },
   // Database
-  neon: { status: "https://neonstatus.com", npm: "@neondatabase/serverless" },
+  neon: { npm: "@neondatabase/serverless" },
   supabase: { status: SUPABASE, npm: "@supabase/supabase-js" },
-  turso: { status: "https://status.turso.tech", npm: "@libsql/client" },
+  turso: { npm: "@libsql/client" },
   firebase: { npm: "firebase" },
   // Auth
   "workos-authkit": { status: "https://status.workos.com", npm: "@workos-inc/authkit-nextjs" },
   clerk: { status: "https://status.clerk.com", npm: "@clerk/nextjs" },
   "better-auth": { npm: "better-auth" },
   "supabase-auth": { status: SUPABASE, npm: "@supabase/auth-js" },
-  "neon-auth": { status: "https://neonstatus.com" },
   // Payments
   stripe: { npm: "stripe" },
   "stripe-connect": { npm: "@stripe/connect-js" },
   paddle: { status: "https://paddlestatus.com", npm: "@paddle/paddle-js" },
-  "lemon-squeezy": { status: "https://status.lemonsqueezy.com", npm: "@lemonsqueezy/lemonsqueezy.js" },
+  "lemon-squeezy": { npm: "@lemonsqueezy/lemonsqueezy.js" },
   revenuecat: { status: "https://status.revenuecat.com", npm: "react-native-purchases" },
   // Email
   resend: { status: "https://resend-status.com", npm: "resend" },
@@ -54,7 +56,7 @@ export const SOURCES: Record<string, ToolSources> = {
   sentry: { status: "https://status.sentry.io", npm: "@sentry/node" },
   "better-stack": { npm: "@logtail/node" },
   // Analytics
-  posthog: { status: "https://status.posthog.com", npm: "posthog-js" },
+  posthog: { npm: "posthog-js" },
   "vercel-web-analytics": { status: VERCEL, npm: "@vercel/analytics" },
   // Storage
   "cloudflare-r2": { status: CLOUDFLARE },
@@ -69,7 +71,7 @@ export const SOURCES: Record<string, ToolSources> = {
   pinecone: { status: "https://status.pinecone.io", npm: "@pinecone-database/pinecone" },
   turbopuffer: { npm: "@turbopuffer/turbopuffer" },
   // Realtime
-  liveblocks: { status: "https://status.liveblocks.io", npm: "@liveblocks/client" },
+  liveblocks: { npm: "@liveblocks/client" },
   "supabase-realtime": { status: SUPABASE, npm: "@supabase/realtime-js" },
   ably: { npm: "ably" },
   pusher: { status: "https://status.pusher.com", npm: "pusher-js" },

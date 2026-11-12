@@ -6,15 +6,23 @@
  * tool's score. It is deterministic and published; no person or model sets a
  * tool's health, and no vendor can pay to change it.
  *
- *   outages   = 0.25 × major incidents + 0.75 × critical incidents   (last 90 days, capped at 2.5)
- *   security  = 0.25 × high advisories + 0.5 × critical advisories   (last 180 days, capped at 1)
- *   adoption  = downloads in the last 28 days ÷ downloads in the 28 days ending 91 days ago − 1
- *               (capped to −1…+1; ignored under 1,000 downloads)
- *   health    = adoption − outages − security, capped to −3…+1, rounded to 0.1
+ *   incident points = 0.25 × major incidents + 0.75 × critical incidents   (last 90 days)
+ *   outages   = incident points − the typical vendor's incident points      (never below 0, capped at 1.2)
+ *   security  = 0.25 × high advisories + 0.5 × critical advisories          (last 180 days, capped at 1)
+ *   growth    = downloads in the last 28 days ÷ downloads in the 28 days ending 91 days ago
+ *   adoption  = growth ÷ the typical package's growth − 1
+ *               (capped to −0.5…+0.5; ignored under a 10% gap or under 1,000 downloads)
+ *   health    = adoption − outages − security, rounded to 0.1
  *
- * One rank in a category's default order is worth 0.4, so two major incidents, one
- * critical incident or a 40% drop in adoption is enough to hand a close pick to the
- * next tool. A signal that couldn't be measured is null and counts as zero.
+ * "Typical" is the median across everything Cuely measured that day (normsOf). Every
+ * tool is judged against it because vendors differ in how readily they post incidents,
+ * and npm downloads rise and fall for the whole market at once; a tool only moves when
+ * it does better or worse than the rest. A signal that couldn't be measured is null and
+ * counts as typical, so a vendor is never rewarded for having no readable status page.
+ *
+ * One rank in a category's default order is worth 0.4, so two major incidents or one
+ * critical incident more than the typical vendor is enough to hand a close pick to the
+ * next tool.
  */
 import type { ToolHealth } from "@/catalog/types";
 
@@ -41,12 +49,50 @@ export interface SignalsFile {
   tools: Record<string, ToolSignals>;
 }
 
+/** What a typical measured tool looks like on one day; each tool's health is judged against it. */
+export interface Norms {
+  /** Median incident points across the status pages that were read. */
+  incidentPoints: number;
+  /** Median download growth (recent ÷ earlier) across the packages that were read. */
+  growth: number;
+}
+
+/** Judges a tool on its own numbers alone. Used until enough tools are measured to say what is typical. */
+export const NO_NORMS: Norms = { incidentPoints: 0, growth: 1 };
+/** Fewer measurements than this can't say what is typical. */
+export const MIN_FOR_NORMS = 5;
+export const MAX_OUTAGES = 1.2;
+export const MAX_ADOPTION = 0.5;
+
+const incidentPoints = (i: { major: number; critical: number }) => 0.25 * i.major + 0.75 * i.critical;
+
+function median(values: number[]): number | null {
+  if (values.length < MIN_FOR_NORMS) return null;
+  const v = [...values].sort((a, b) => a - b);
+  const mid = v.length >> 1;
+  return v.length % 2 ? v[mid] : (v[mid - 1] + v[mid]) / 2;
+}
+
+/** The typical incident points and download growth in one measurement. Each status page and package counts once. */
+export function normsOf(file: SignalsFile): Norms {
+  const pages = new Map<string, number>();
+  const packages = new Map<string, number>();
+  for (const s of Object.values(file.tools)) {
+    if (s.incidents) pages.set(s.incidents.source, incidentPoints(s.incidents));
+    if (s.downloads && s.downloads.earlier >= MIN_DOWNLOADS) packages.set(s.downloads.package, s.downloads.recent / s.downloads.earlier);
+  }
+  return {
+    incidentPoints: median([...pages.values()]) ?? NO_NORMS.incidentPoints,
+    growth: median([...packages.values()]) || NO_NORMS.growth,
+  };
+}
+
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 const round1 = (n: number) => Math.round(n * 10) / 10;
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
 /** The health a tool's signals work out to, or undefined when nothing was measured. */
-export function healthFrom(signals: ToolSignals | undefined, measuredOn: string | null): ToolHealth | undefined {
+export function healthFrom(signals: ToolSignals | undefined, measuredOn: string | null, norms: Norms = NO_NORMS): ToolHealth | undefined {
   if (!signals || !measuredOn) return undefined;
   const { incidents, advisories, downloads } = signals;
   if (!incidents && !advisories && !downloads) return undefined;
@@ -54,13 +100,14 @@ export function healthFrom(signals: ToolSignals | undefined, measuredOn: string 
   const inFavor: string[] = [];
 
   let outages = 0;
-  if (incidents && incidents.major + incidents.critical > 0) {
-    outages = Math.min(2.5, 0.25 * incidents.major + 0.75 * incidents.critical);
+  if (incidents && incidentPoints(incidents) > norms.incidentPoints) {
+    outages = Math.min(MAX_OUTAGES, incidentPoints(incidents) - norms.incidentPoints);
     const parts = [
       incidents.critical ? plural(incidents.critical, "critical incident") : null,
       incidents.major ? plural(incidents.major, "major incident") : null,
     ].filter(Boolean);
-    against.push(`${parts.join(" and ")} on its status page in the last ${OUTAGE_DAYS} days (${incidents.source}).`);
+    const typical = norms.incidentPoints > 0 ? ", more than the typical vendor Cuely tracks" : "";
+    against.push(`${parts.join(" and ")} on its status page in the last ${OUTAGE_DAYS} days${typical} (${incidents.source}).`);
   }
 
   let security = 0;
@@ -73,18 +120,20 @@ export function healthFrom(signals: ToolSignals | undefined, measuredOn: string 
     against.push(`${parts.join(" and ")} for ${advisories.package} in the last ${ADVISORY_DAYS} days.`);
   }
 
-  // Changes under 10% are noise and move nothing.
+  // Gaps under 10% are noise and move nothing.
   let adoption = 0;
   if (downloads && downloads.earlier >= MIN_DOWNLOADS) {
-    const change = clamp(downloads.recent / downloads.earlier - 1, -1, 1);
-    if (Math.abs(change) >= 0.1) {
-      adoption = change;
-      const line = `Downloads of ${downloads.package} ${change > 0 ? "rose" : "fell"} ${Math.round(Math.abs(change) * 100)}% over three months.`;
-      (change > 0 ? inFavor : against).push(line);
+    const growth = downloads.recent / downloads.earlier;
+    const gap = clamp(growth / norms.growth - 1, -MAX_ADOPTION, MAX_ADOPTION);
+    if (Math.abs(gap) >= 0.1) {
+      adoption = gap;
+      const moved = (g: number) => `${g >= 1 ? "rose" : "fell"} ${Math.round(Math.abs(g - 1) * 100)}%`;
+      const typical = norms.growth !== 1 ? `; the typical package Cuely tracks ${moved(norms.growth)}` : "";
+      (gap > 0 ? inFavor : against).push(`Downloads of ${downloads.package} ${moved(growth)} over three months${typical}.`);
     }
   }
 
-  const score = round1(clamp(adoption - outages - security, -3, 1));
+  const score = round1(adoption - outages - security);
   // Lead with the side that decided the sign.
   const reasons = score > 0 ? [...inFavor, ...against] : [...against, ...inFavor];
   return { score, reasons, measuredOn };

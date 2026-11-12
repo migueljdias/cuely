@@ -15,7 +15,7 @@ import path from "node:path";
 import { tools } from "@/catalog";
 import { SOURCES } from "@/catalog/sources";
 import {
-  countAdvisories, countIncidents, downloadWindows, healthFrom, type SignalsFile, type ToolSignals,
+  countAdvisories, countIncidents, downloadWindows, healthFrom, normsOf, type SignalsFile, type ToolSignals,
 } from "@/freshness/health";
 
 const FILE = path.resolve(import.meta.dirname, "..", "data", "signals.json");
@@ -23,6 +23,10 @@ const USER_AGENT = "Mozilla/5.0 (compatible; CuelyFreshness/1.0; +https://cuely.
 const TIMEOUT_MS = 20_000;
 /** Stop without writing when more than this share of sources can't be read. */
 const MAX_FAILED_SHARE = 0.4;
+const ATTEMPTS = 4;
+/** Pause between npm download requests, which rate-limit bursts. */
+const NPM_PAUSE_MS = 400;
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 const arg = (name: string) => {
   const i = process.argv.indexOf(name);
@@ -40,7 +44,7 @@ function getJson(url: string, init?: { method: string; body: string }): Promise<
   let hit = cache.get(key);
   if (!hit) {
     hit = (async () => {
-      for (let attempt = 0; attempt < 2; attempt++) {
+      for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
         try {
           const res = await fetch(url, {
             ...init,
@@ -52,7 +56,8 @@ function getJson(url: string, init?: { method: string; body: string }): Promise<
         } catch {
           // retried below
         }
-        await new Promise((r) => setTimeout(r, 1500));
+        // 2s, 6s, 18s: npm's download API answers 429 for a while once it starts.
+        if (attempt < ATTEMPTS - 1) await sleep(2000 * 3 ** attempt);
       }
       return null;
     })();
@@ -62,6 +67,7 @@ function getJson(url: string, init?: { method: string; body: string }): Promise<
 }
 
 async function downloads(pkg: string, [from, to]: [string, string]): Promise<number | null> {
+  await sleep(NPM_PAUSE_MS);
   const body = (await getJson(`https://api.npmjs.org/downloads/point/${from}:${to}/${pkg}`)) as { downloads?: unknown } | null;
   return typeof body?.downloads === "number" ? body.downloads : null;
 }
@@ -97,7 +103,8 @@ async function measure(slug: string): Promise<ToolSignals | null> {
       out.advisories = before?.advisories ?? null;
     }
     const w = downloadWindows(now);
-    const [recent, earlier] = await Promise.all([downloads(src.npm, w.recent), downloads(src.npm, w.earlier)]);
+    const recent = await downloads(src.npm, w.recent);
+    const earlier = await downloads(src.npm, w.earlier);
     if (recent !== null && earlier !== null) out.downloads = { recent, earlier, package: src.npm };
     else {
       failed.push(`${slug}: downloads of ${src.npm}`);
@@ -118,14 +125,36 @@ const failedShare = attempted ? failed.length / attempted : 1;
 const L: string[] = [];
 L.push(`Signals measured on ${today}: ${Object.keys(next.tools).length} tools, ${attempted} sources read, ${failed.length} failed.`);
 
+const normsBefore = normsOf(previous);
+const normsNow = normsOf(next);
+L.push(`Typical vendor: ${normsNow.incidentPoints} incident points. Typical package: downloads ×${normsNow.growth.toFixed(2)} over three months.`);
+
 const moves: string[] = [];
+const healthBefore = new Map<string, number>();
+const healthNow = new Map<string, number>();
 for (const tool of tools) {
-  const was = healthFrom(previous.tools[tool.slug], previous.measuredOn)?.score ?? 0;
-  const h = healthFrom(next.tools[tool.slug], today);
+  const was = healthFrom(previous.tools[tool.slug], previous.measuredOn, normsBefore)?.score ?? 0;
+  const h = healthFrom(next.tools[tool.slug], today, normsNow);
   const is = h?.score ?? 0;
+  healthBefore.set(tool.slug, was);
+  healthNow.set(tool.slug, is);
   if (was !== is) moves.push(`| ${tool.name} | ${tool.category} | ${was} | ${is} | ${h?.reasons.join(" ") ?? ""} |`);
 }
 if (moves.length) L.push("", "## Health that changed", "", "| Tool | Category | Was | Now | Why |", "| --- | --- | --- | --- | --- |", ...moves);
+
+// The pick for a description that states no needs: default order plus health.
+const defaultPick = (category: string, health: Map<string, number>) => {
+  const inCategory = tools.filter((t) => t.category === category);
+  const score = (t: (typeof tools)[number]) => (inCategory.length - t.baseline + 1) * 0.4 + (health.get(t.slug) ?? 0);
+  return [...inCategory].sort((a, b) => score(b) - score(a) || a.baseline - b.baseline)[0];
+};
+const flips: string[] = [];
+for (const category of new Set(tools.map((t) => t.category))) {
+  const was = defaultPick(category, healthBefore);
+  const is = defaultPick(category, healthNow);
+  if (was.slug !== is.slug) flips.push(`- ${category}: ${was.name} → ${is.name}`);
+}
+if (flips.length) L.push("", "## Default picks that changed", "", ...flips);
 if (failed.length) L.push("", "## Sources that couldn't be read (last value kept)", "", ...failed.map((f) => `- ${f}`));
 
 const tooMany = failedShare > MAX_FAILED_SHARE;
