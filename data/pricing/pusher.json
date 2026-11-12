@@ -1,0 +1,27 @@
+{
+  "slug": "pusher",
+  "url": "https://pusher.com/channels/pricing/",
+  "readOn": "2026-11-12",
+  "lines": [
+    "200k",
+    "$49/month",
+    "1 million",
+    "$99/month",
+    "4 million",
+    "$299/month",
+    "10 million",
+    "$499/month",
+    "20 million",
+    "$699/month",
+    "40 million",
+    "$899/month",
+    "60 million",
+    "$1,199/month",
+    "90 million",
+    "10 million connections? 100 billion messages? The sky is the limit with our enterprise plan.",
+    "Target 24 Hours",
+    "From $3,000/month",
+    "Target 1 Hours",
+    "A message refers to messages we receive through our API and those we deliver to your connected users. For example, if you publish one message to 50 subscribers, that’s 51 messages."
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "slug": "redis-cloud",
+  "url": "https://redis.io/pricing/",
+  "readOn": "2026-11-12",
+  "lines": [
+    "saw a 40% increase in revenue generation through their new Redis powered online experience. See how",
+    "uses Redis for 100+ vector search queries per second. See how",
+    "achieved 37% faster API response times while having a 15% lower memory footprint with Redis. See how",
+    "$0",
+    "30 MB single DB",
+    "$0.007/hour",
+    "Total $5/monthGet Essentials",
+    "250 MB-100 GB RAM & SSD, single DB",
+    "Up to 99.99% uptime, basic support only",
+    "Redis Flex at 10% RAM for lowest cost",
+    "First $200 free",
+    "$0.014/hour",
+    "*Minimum $200 /monthGo Pro",
+    "Up to 99.999% uptime",
+    "EssentialsFrom $0.007/hour",
+    "FreeFrom $0/hour",
+    "ProFrom $0.014/hour"
+  ]
+}

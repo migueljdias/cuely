@@ -1,0 +1,13 @@
+{
+  "slug": "vercel-global-config",
+  "url": "https://vercel.com/docs/global-config/global-config-limits",
+  "readOn": "2026-11-12",
+  "lines": [
+    "$3 per 1,000,000 Reads",
+    "$1 per 100 Writes",
+    "1 MB",
+    "7 days",
+    "90 days",
+    "365 days"
+  ]
+}

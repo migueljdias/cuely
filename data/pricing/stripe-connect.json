@@ -1,0 +1,21 @@
+{
+  "slug": "stripe-connect",
+  "url": "https://stripe.com/connect/pricing",
+  "readOn": "2026-11-12",
+  "lines": [
+    "$2",
+    "0.25% + 25¢",
+    "$2 per active user per month",
+    "0.25% + 25¢ per payout",
+    "1% of payout volume",
+    "Starting at 0.25% of payout volume",
+    "0.25% of payout volume",
+    "1% of transaction volume",
+    "$2.99 per 1099 e-filed with IRS",
+    "$1.49 per 1099 e-filed with states",
+    "$2.99 per 1099 mailed",
+    "1.5% of debit volume",
+    "2.9%",
+    "+ 30¢"
+  ]
+}

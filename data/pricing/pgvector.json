@@ -1,0 +1,12 @@
+{
+  "slug": "pgvector",
+  "url": "https://neon.com/docs/extensions/pgvector",
+  "readOn": "2026-11-12",
+  "lines": [
+    "Lakebase Postgres is built on object storage, but 99.99999% of reads are served from high-performance local caches",
+    "SET maintenance_work_mem='10 GB';",
+    "The recommended setting is your working set size (the size of your tuples for vector index creation). However, your maintenance_work_mem setting should not exceed 50 to 60 percent of your compute's available RAM. For example, the maintenance_work_mem='10 GB' setting shown above has been successfully…",
+    "Choosing an appropriate number of lists. A good starting point is rows/1000 for up to 1M rows and sqrt(rows) for over 1M rows.",
+    "When integrating OpenAI's embeddings, you can take advantage of half-precision vectors by storing embeddings in a compressed format. For instance, OpenAI’s high-dimensional embeddings can be effectively stored with half-precision vectors, achieving high levels of accuracy, such as a 98% rate. This a…"
+  ]
+}

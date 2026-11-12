@@ -1,0 +1,17 @@
+{
+  "slug": "vercel-web-analytics",
+  "url": "https://vercel.com/docs/analytics/limits-and-pricing",
+  "readOn": "2026-11-12",
+  "lines": [
+    "Debug 500 Errors",
+    "50,000 events / month included",
+    "$0.03 per 1K events",
+    "Pro teams can also purchase the Web Analytics Plus add-on for an additional $10 /month per team, which grants access to more features and an extended reporting window.",
+    "Wait 7 days before Vercel will start collecting events again",
+    "Unlock the full potential of Vercel Pro during your 14-day trial with $20 in credits. Benefit from Pro features like team collaboration and enhanced analytics.",
+    "For Teams on a Pro trial, the trial will end after 14 days.",
+    "You will be charged $0.03 per 1K events . These numbers are based on a per-billing cycle basis. Vercel will send you notifications when you get closer to spending your included credit.",
+    "Teams on the Pro plan can optionally extend usage and capabilities through the Web Analytics Plus add-on for an additional $10 /month per team.",
+    "Hobby teams won't be billed beyond their allocation. Instead, collection will be paused after the 3 days grace period."
+  ]
+}
