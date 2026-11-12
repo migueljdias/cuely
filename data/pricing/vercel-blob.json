@@ -1,0 +1,32 @@
+{
+  "slug": "vercel-blob",
+  "url": "https://vercel.com/docs/vercel-blob/usage-and-pricing",
+  "readOn": "2026-11-12",
+  "lines": [
+    "1GB/month",
+    "$0.023 per GB",
+    "$0.400 per 1M",
+    "$5.000 per 1M",
+    "First 10 GB",
+    "$0.050 per GB",
+    "The maximum size of a blob in cache is 512 MB. Any blob larger than this will generate a cache MISS on every access, resulting in a Fast Origin Transfer and CDN Request charge each time it is accessed",
+    "Vercel will send you emails as you are nearing your usage limits. You will not pay for any additional usage. However, you will not be able to access Vercel Blob if limits are exceeded. In this scenario, you will have to wait until 30 days have passed before using Blob storage again.",
+    "Unlock the full potential of Vercel Pro during your 14-day trial with $20 in credits. Benefit from Pro features like team collaboration and enhanced analytics.",
+    "Let's say during one month of usage, you upload 120,000 blobs of which 30% (36,000 blobs) are uploaded using multipart uploads with 5 parts each.",
+    "Your storage averages 50 GB and your blobs are downloaded 2.5 million times, with a 70% cache HIT ratio (meaning 30% or 750,000 downloads are cache MISSes), for a total of 350 GB of data transfer.",
+    "Storage: 50 GB total at $ 0.023 /GB = $1.15",
+    "Simple Operations: 750K (30% cache MISSes of 2.5M downloads + head calls) at $ 0.40 /1M = $ 0.30",
+    "Single uploads: 84K (70% of 120K blobs)",
+    "Multipart uploads: 36K × (1 start + 5 parts + 1 completion) = 252K operations",
+    "Total: 336K at $ 5.00 /1M = $ 1.68",
+    "Data Transfer (iad1): 350 GB total at $0.05 /GB = $17.50",
+    "CDN Requests: 2.5M requests (all downloads) - 10M included = $0.00",
+    "Fast Origin Transfer (iad1): 105 GB (30% cache MISSes of 350 GB) at $ 0.06 /GB = $ 6.30",
+    "Total: $ 26.93 /month",
+    "Note: Rate limits are based on the number of operations, not HTTP requests. For example, when using del([pathnames]) to delete multiple blobs in one call, each blob deletion counts as a separate operation toward your rate limit. Deleting 100 blobs in a batch counts as 100 operations, not one.",
+    "Cache Size Limit: 512 MB per blob",
+    "Blobs larger than 512 MB will not be cached",
+    "Maximum File Size: 5TB (5,000GB)",
+    "For files larger than 100MB, we recommend using multipart uploads"
+  ]
+}

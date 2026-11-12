@@ -1,0 +1,14 @@
+{
+  "slug": "cloudflare-kv",
+  "url": "https://developers.cloudflare.com/kv/platform/pricing/",
+  "readOn": "2026-11-12",
+  "lines": [
+    "10 million/month, + $0.50/million",
+    "1 million/month, + $5.00/million",
+    "1 GB",
+    "1 GB, + $0.50/ GB-month",
+    "Unlimited, with a default limit of 1,000. First 1,000 included + $0.10 per additional namespace per month.",
+    "The Workers Paid plan includes 1,000 namespaces per account. Each additional namespace costs $0.10 per month.",
+    "For example, 1,050 namespaces existing for a full billing month cost (1,050 - 1,000) × $0.10 = $5.00 for the 50 additional namespaces. Read, write, delete, list, and storage charges apply separately."
+  ]
+}

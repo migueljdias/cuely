@@ -1,0 +1,23 @@
+{
+  "slug": "plausible",
+  "url": "https://plausible.io/",
+  "readOn": "2026-11-12",
+  "lines": [
+    "22k",
+    "332B",
+    "Uptime (Last 90 days)",
+    "99.99%",
+    "My 100% favorite GA4 alternative so far is Plausible. Not free and not a ton of bells and whistles, but SOOOO easy to use (for clients too) and the data is near real-time. A good solution for ~70% of websites struggling with GA4.",
+    "Up to 10k monthly pageviews",
+    "10k",
+    "10M+",
+    "$9 /month",
+    "$14 /month",
+    "Up to 3 team members",
+    "$19 /month",
+    "Up to 10 team members",
+    "Stats API (600 requests per hour)",
+    "10+ team members",
+    "600+ Stats API requests per hour"
+  ]
+}
