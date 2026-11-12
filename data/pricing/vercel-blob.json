@@ -10,6 +10,7 @@
     "First 10 GB",
     "$0.050 per GB",
     "The maximum size of a blob in cache is 512 MB. Any blob larger than this will generate a cache MISS on every access, resulting in a Fast Origin Transfer and CDN Request charge each time it is accessed",
+    "Setting a TTL on a blob adds one Advanced Operation per started 60 days of TTL on top of the write (setTtl() is billed only this charge): 1 to 60 days is one extra operation, 61 to 120 days is two, and the maximum of 730 days is 13. Blobs deleted by their TTL are free to delete",
     "Vercel will send you emails as you are nearing your usage limits. You will not pay for any additional usage. However, you will not be able to access Vercel Blob if limits are exceeded. In this scenario, you will have to wait until 30 days have passed before using Blob storage again.",
     "Unlock the full potential of Vercel Pro during your 14-day trial with $20 in credits. Benefit from Pro features like team collaboration and enhanced analytics.",
     "Let's say during one month of usage, you upload 120,000 blobs of which 30% (36,000 blobs) are uploaded using multipart uploads with 5 parts each.",
