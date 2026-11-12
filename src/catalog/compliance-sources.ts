@@ -12,6 +12,10 @@
  * - tools with no vendor behind them (Better Auth, pgvector, cached polling): the
  *   answer is whatever your own host and database say.
  *
+ * - Turso, the Gemini API and Pusher Channels: no page of theirs on these topics
+ *   loads without a browser (checked 2026-11-12). Google Cloud's HIPAA page covers
+ *   Vertex AI, not the Gemini API, so it isn't used.
+ *
  * A tool with no entry, or pages that can't be read, has no compliance facts and is
  * shown as "not stated". Sources are facts about where to look, not opinions.
  */
@@ -30,16 +34,15 @@ export const COMPLIANCE_SOURCES: Record<string, string[]> = {
   // Database
   neon: NEON,
   supabase: SUPABASE,
-  turso: ["https://turso.tech/security", "https://docs.turso.tech/cloud/regions"],
   firebase: ["https://firebase.google.com/support/privacy", "https://firebase.google.com/docs/projects/locations"],
   // Auth
   "workos-authkit": ["https://workos.com/security", "https://workos.com/legal/dpa"],
-  clerk: ["https://clerk.com/legal/dpa", "https://clerk.com/docs/security/overview"],
+  clerk: ["https://clerk.com/legal/dpa"],
   "supabase-auth": SUPABASE,
   "neon-auth": NEON,
   // Email
   resend: ["https://resend.com/security", "https://resend.com/legal/dpa", "https://resend.com/docs/dashboard/domains/regions"],
-  postmark: ["https://postmarkapp.com/eu-privacy", "https://postmarkapp.com/support/article/1166-is-postmark-hipaa-compliant"],
+  postmark: ["https://postmarkapp.com/eu-privacy", "https://postmarkapp.com/support/article/1041-is-postmark-hipaa-compliant"],
   "amazon-ses": AWS,
   // Monitoring
   sentry: ["https://sentry.io/security/", "https://sentry.io/legal/dpa/", "https://docs.sentry.io/organization/data-storage-location/"],
@@ -53,9 +56,8 @@ export const COMPLIANCE_SOURCES: Record<string, string[]> = {
   "vercel-blob": VERCEL,
   "amazon-s3": AWS,
   // AI model APIs
-  "gemini-api": ["https://ai.google.dev/gemini-api/terms"],
   "claude-api": ["https://www.anthropic.com/legal/data-processing-addendum", "https://privacy.claude.com/en/articles/8114513-business-associate-agreements-baa-for-commercial-customers"],
-  "openai-api": ["https://openai.com/security-and-privacy/", "https://platform.openai.com/docs/guides/your-data"],
+  "openai-api": ["https://platform.openai.com/docs/guides/your-data"],
   // Vector search
   pinecone: ["https://www.pinecone.io/security/", "https://docs.pinecone.io/guides/production/security-overview"],
   turbopuffer: ["https://turbopuffer.com/docs/security", "https://turbopuffer.com/docs/regions"],
@@ -63,9 +65,8 @@ export const COMPLIANCE_SOURCES: Record<string, string[]> = {
   liveblocks: ["https://liveblocks.io/security"],
   "supabase-realtime": SUPABASE,
   ably: ["https://ably.com/security-and-compliance"],
-  pusher: ["https://pusher.com/legal/security/", "https://pusher.com/legal/dpa/"],
   // Internal tool builders
-  retool: ["https://retool.com/security", "https://retool.com/dpa"],
+  retool: ["https://retool.com/security", "https://docs.retool.com/legal/dpa"],
   airtable: ["https://www.airtable.com/security", "https://www.airtable.com/company/dpa"],
   glide: ["https://www.glideapps.com/security"],
   // Counters and cache
@@ -73,5 +74,5 @@ export const COMPLIANCE_SOURCES: Record<string, string[]> = {
   "cloudflare-durable-objects": [...CLOUDFLARE, "https://developers.cloudflare.com/durable-objects/reference/data-location/"],
   "cloudflare-kv": CLOUDFLARE,
   "vercel-global-config": VERCEL,
-  "redis-cloud": ["https://redis.io/trust/", "https://redis.io/legal/redis-dpa/"],
+  "redis-cloud": ["https://redis.io/trust/"],
 };
