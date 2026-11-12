@@ -48,7 +48,8 @@ export type Need =
   | "internal" // a tool for the builder's own staff, not for customers
   | "google_workspace" // the organization already runs on Google Workspace
   | "counters" // votes, scores, leaderboards, streaks: many small writes to the same numbers
-  | "spiky"; // traffic arrives in bursts (a viral share, a launch), not evenly
+  | "spiky" // traffic arrives in bursts (a viral share, a launch), not evenly
+  | "health_data"; // stores patient or health information (HIPAA in the US)
 
 export interface Category {
   slug: CategorySlug;
@@ -100,6 +101,30 @@ export interface Tool {
   verifiedOn: string;
   /** Measured health (src/freshness/health.ts), or absent when nothing has been measured. */
   health?: ToolHealth;
+  /** What the vendor's own pages say about BAAs, DPAs, EU regions and SOC 2 (src/freshness/compliance.ts). */
+  compliance?: ToolCompliance;
+}
+
+export type ComplianceTopic = "baa" | "dpa" | "eu_region" | "soc2";
+
+/** One compliance answer, with the vendor's own sentence and the page it is on. */
+export interface ComplianceFact {
+  /** "plan": offered, but only on some plans or as a paid add-on (detail says which). */
+  answer: "yes" | "plan" | "no";
+  detail: string;
+  /** The vendor's sentence, word for word. */
+  quote: string;
+  source: string;
+}
+
+/**
+ * Compliance facts read by the scheduled job from the vendor's pages. A topic that
+ * is absent means the pages don't say; it never means "no".
+ */
+export interface ToolCompliance {
+  facts: Partial<Record<ComplianceTopic, ComplianceFact>>;
+  /** Date the pages were last read (YYYY-MM-DD). */
+  readOn: string;
 }
 
 /**

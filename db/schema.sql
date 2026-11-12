@@ -33,6 +33,8 @@ create table if not exists tools (
 alter table tools add column if not exists cost jsonb;
 -- Measured health (src/freshness/health.ts): { score, reasons, measuredOn }, rewritten by the scheduled signals job.
 alter table tools add column if not exists health jsonb;
+-- Compliance facts (src/freshness/compliance.ts): { facts, readOn }, rewritten by the scheduled compliance job.
+alter table tools add column if not exists compliance jsonb;
 create index if not exists tools_category_idx on tools (category);
 
 create table if not exists recipes (

@@ -1,5 +1,6 @@
 import type { Category, CategorySlug, Need, Recipe, Tool } from "@/catalog";
 import { CATCHES, COST_PROFILE, POLICY } from "@/catalog";
+import { complianceFor, type ComplianceView } from "@/freshness/compliance";
 import { ALL_NEEDS, detectNeeds, NEED_LABELS, NEED_SHORT, type DetectedNeed } from "./needs";
 import {
   detectCoverage,
@@ -47,6 +48,11 @@ export interface ToolCard {
   watchOut: string | null;
   /** Measured signals that moved this tool's score, or null when none did. */
   health: { score: number; reasons: string[]; measuredOn: string } | null;
+  /**
+   * What the vendor's pages say on the compliance topics this product needs (BAA for
+   * health data, EU region for EU data), or null when none applies.
+   */
+  compliance: (ComplianceView & { readOn: string | null }) | null;
   monthlyCost: number | null;
   costBasis: string | null;
   pricingUrl: string;
@@ -193,7 +199,7 @@ export function routeRecipe(recipes: Recipe[], profile: Profile, description: st
 export function scoreTool(tool: Tool, needs: Need[], categorySize: number, alreadyUsing: boolean): number {
   const needScore = needs.reduce((sum, n) => sum + (tool.fit[n]?.weight ?? 0), 0);
   const baseline = (categorySize - tool.baseline + 1) * 0.4;
-  return needScore + baseline + (tool.health?.score ?? 0) + (alreadyUsing ? 4 : 0);
+  return needScore + baseline + (tool.health?.score ?? 0) + (complianceFor(tool, needs)?.score ?? 0) + (alreadyUsing ? 4 : 0);
 }
 
 function strongestReason(tool: Tool, needs: Need[]): string | null {
@@ -214,7 +220,8 @@ function alternativeWhen(tool: Tool): string {
   return best ? `Choose it for ${NEED_SHORT[best.need]}: ${best.reason}` : tool.pitch;
 }
 
-export function toCard(tool: Tool, reason: string): ToolCard {
+export function toCard(tool: Tool, reason: string, needs: Need[] = []): ToolCard {
+  const view = complianceFor(tool, needs);
   return {
     slug: tool.slug,
     name: tool.name,
@@ -224,6 +231,7 @@ export function toCard(tool: Tool, reason: string): ToolCard {
     freeTierCommercialUse: tool.freeTierCommercialUse,
     watchOut: tool.watchOut[0] ?? null,
     health: tool.health && tool.health.score !== 0 ? tool.health : null,
+    compliance: view ? { ...view, readOn: tool.compliance?.readOn ?? null } : null,
     monthlyCost: tool.cost?.monthly ?? null,
     costBasis: tool.cost?.basis ?? null,
     pricingUrl: tool.pricingUrl,
@@ -325,6 +333,7 @@ function catchesFor(p: Profile, needs: Need[]): typeof CATCHES {
     if (p.game) flags.push("game");
     if (p.realtime && !p.game) flags.push("realtime");
   }
+  if (needs.includes("health_data")) flags.unshift("health_data");
   return flags.flatMap((f) => CATCHES.filter((c) => c.when === f));
 }
 
@@ -510,7 +519,7 @@ export function recommendStack(catalog: CatalogSnapshot, input: RecommendInput):
       categoryName: cat.name,
       role: finalRole,
       optional: finalRole !== "core",
-      pick: toCard(top.t, reason),
+      pick: toCard(top.t, reason, needs),
       alternatives: ranked.slice(1, full ? 3 : 2).map(({ t }) => ({ slug: t.slug, name: t.name, when: alternativeWhen(t) })),
       score: Math.round(top.s * 10) / 10,
     });
@@ -538,7 +547,12 @@ export function recommendStack(catalog: CatalogSnapshot, input: RecommendInput):
     .map((x) => x.pick)
     .filter((c) => c.health && c.health.score < 0)
     .map((c) => ({ text: `${c.name}: ${c.health!.reasons[0]}`, source: METHOD_URL, verifiedOn: c.health!.measuredOn }));
-  const allCatches = [...fromProfile, ...fromHealth, ...fromPicks];
+  // A pick whose vendor says it doesn't offer what this product's data needs says so first.
+  const fromCompliance = stack
+    .map((x) => x.pick)
+    .filter((c) => c.compliance?.blockers.length)
+    .map((c) => ({ text: `${c.name}: ${c.compliance!.blockers[0]}`, source: METHOD_URL, verifiedOn: c.compliance!.readOn ?? c.verifiedOn }));
+  const allCatches = [...fromCompliance, ...fromProfile, ...fromHealth, ...fromPicks];
 
   const summary: Summary = {
     headline: `${base.productType.label}: ${picks.map((p) => `${p.name} (${/^.[^A-Z]*$/.test(p.categoryName) ? p.categoryName.toLowerCase() : p.categoryName})`).join(", ")}.`,

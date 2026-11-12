@@ -1,0 +1,132 @@
+name: Compliance
+
+# Reads each vendor's compliance pages once a week (BAA, DPA, EU region, SOC 2). For
+# each tool whose pages changed, Claude answers from the page's own lines on the
+# project's ANTHROPIC_API_KEY, and the published checks in src/freshness/compliance.ts
+# decide what goes live: an answer must quote a sentence that is on the page. Nothing
+# waits for a person unless an answer is held back, which files an issue.
+#
+# On a pull request that changes the page list or the collector, it only checks that
+# the listed pages load. No key is used and nothing is written.
+on:
+  schedule:
+    - cron: "47 6 * * 1" # Mondays 06:47 UTC, after the pricing job
+  workflow_dispatch:
+    inputs:
+      recheck:
+        description: "Tool slugs (comma-separated) to re-read even if their pages didn't change; empty reads every tool whose pages changed"
+        type: string
+        default: ""
+      dry_run:
+        description: "Read and report only; publish nothing"
+        type: boolean
+        default: false
+  pull_request:
+    paths:
+      - src/catalog/compliance-sources.ts
+      - scripts/collect-compliance.ts
+      - .github/workflows/compliance.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: compliance-${{ github.event_name == 'pull_request' && github.ref || 'publish' }}
+  cancel-in-progress: false
+
+jobs:
+  pages:
+    name: Check that the listed pages load
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Read every listed page
+        run: npm run -s collect:compliance -- --no-model --dry-run >> "$GITHUB_STEP_SUMMARY"
+
+  collect:
+    name: Read compliance pages
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      id-token: write # lets the job prove to Infisical which repository it is
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # Variables, not secrets: none of these is sensitive. Only used when the key isn't synced as a repository secret.
+      - name: Read the Claude API key from Infisical
+        if: vars.INFISICAL_IDENTITY_ID != ''
+        uses: Infisical/secrets-action@d2e351f16c6ca20d17c85e6c992e04bdeb64e87d # v1.0.18
+        with:
+          method: oidc
+          identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
+          project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
+          env-slug: ${{ vars.INFISICAL_ENV_SLUG || 'prod' }}
+          domain: ${{ vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
+          secret-name: ANTHROPIC_API_KEY
+
+      - name: Read pages and re-read the facts of those that changed
+        id: collect
+        env:
+          ANTHROPIC_API_KEY: ${{ env.ANTHROPIC_API_KEY || secrets.ANTHROPIC_API_KEY }}
+          RECHECK: ${{ inputs.recheck }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          args=(--report "$RUNNER_TEMP/compliance-report.md")
+          if [ -n "$RECHECK" ]; then args+=(--only "$RECHECK"); fi
+          if [ "$DRY_RUN" = "true" ]; then args+=(--dry-run); fi
+          npm run -s collect:compliance -- "${args[@]}" >> "$GITHUB_STEP_SUMMARY"
+
+      # Nothing is published unless the catalog still typechecks and every test passes with the new facts.
+      - name: Regenerate the seed and check
+        if: steps.collect.outputs.changed == 'true'
+        run: |
+          npm run -s db:sql
+          npm run typecheck
+          npm test
+
+      - name: Publish
+        if: steps.collect.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE: ${{ github.event.repository.default_branch }}
+        run: |
+          title="Compliance pages re-read ($(date -u +%F))"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/compliance data/compliance.json db/seed.sql
+          git commit -m "$title"
+          if ! git push origin "HEAD:$BASE"; then
+            # The branch refuses direct pushes: file the report so the change isn't lost silently.
+            gh issue create --title "$title (not published: push to $BASE refused)" --body-file "$RUNNER_TEMP/compliance-report.md"
+            exit 1
+          fi
+
+      - name: File what was held back
+        if: steps.collect.outputs.held == 'true' && inputs.dry_run != true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue create --title "Compliance answers that need a person ($(date -u +%F))" --body-file "$RUNNER_TEMP/compliance-report.md"

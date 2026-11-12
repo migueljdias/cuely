@@ -32,11 +32,13 @@ VS Code (`.vscode/mcp.json`): `{ "servers": { "cuely": { "type": "http", "url": 
 The rule that can't bend: money never touches the ranking. There are no sponsored answers and no affiliate links (a test fails if a URL in the catalog carries query parameters).
 
 1. `src/engine/profile.ts` reads the kind of product: web, phone or both; who pays (nobody, users pay you, users pay each other); customers or your own staff; AI, documents, realtime; casual and daily web games and whether results get shared. It decides which categories are shown, which catches lead the answer, and when to ask instead of guess: a question is asked only when the fact is missing and would change the picks. It also flags products outside Cuely's coverage (engine, console, 3D and phone games, hardware, crypto) and partial ones (stores, SMS, video, fast real-time multiplayer).
-2. `src/engine/needs.ts` turns plain words in the description into needs (b2b, regulated, global_tax, open_source, eu, low_cost, edge, nextjs, realtime, fewer_vendors, per_tenant_db, long_running, high_volume, rag, usage_billing, google_workspace). The profile adds mobile, marketplace and internal. Product names are masked first, so "Google Workspace" isn't a workspace and "React Native" isn't Next.js.
+2. `src/engine/needs.ts` turns plain words in the description into needs (b2b, regulated, global_tax, open_source, eu, low_cost, edge, nextjs, realtime, fewer_vendors, per_tenant_db, long_running, high_volume, rag, usage_billing, google_workspace, counters, spiky, health_data). The profile adds mobile, marketplace and internal. Product names are masked first, so "Google Workspace" isn't a workspace and "React Native" isn't Next.js.
 3. Every tool in `src/catalog/tools.ts` has a published fit weight (−3 to +3) and a reason for each need it's good or bad at, plus an editorial default order in its category.
-4. `score = Σ fit[need] + 0.4 × (n − default_rank + 1) + health + (already_using ? 4 : 0) + (in_recipe ? 1 : 0)`, where `in_recipe` means the recipe Cuely routed to names that tool. Highest score wins; the default order settles ties.
+4. `score = Σ fit[need] + 0.4 × (n − default_rank + 1) + health + compliance + (already_using ? 4 : 0) + (in_recipe ? 1 : 0)`, where `in_recipe` means the recipe Cuely routed to names that tool. Highest score wins; the default order settles ties.
 
    `health` is measured, not written by hand (`src/freshness/health.ts`): `adoption − outages − security`, between −2.7 and +0.5. Every tool is judged against the typical tool measured the same day (the median), because vendors differ in how readily they post incidents and npm downloads move for the whole market at once. Outages are 0.25 per major and 0.75 per critical incident on the vendor's status page in the last 90 days, counted only beyond the typical vendor's, capped at 1.2, and only when a rival in the same category has a measured status page of its own. Security is 0.25 per high and 0.5 per critical advisory for the tool's package in the last 180 days, capped at 1. Adoption is how much faster or slower the tool's npm downloads grew over three months than the typical package's, when the gap is 10% or more, capped at ±0.5. A signal that can't be read counts as typical. One rank in the default order is worth 0.4, so a tool that starts failing loses close picks to the next one, and the answer says which measurement did it.
+
+   `compliance` is read from each vendor's own pages (`src/freshness/compliance.ts`) and only counts when the product needs it, for tools that hold user data. Health data: a vendor that says it signs a HIPAA BAA gets +1 (+0.5 if only on some plans), one that says it doesn't gets −3. EU data: +1 for an EU region (+0.5 on some plans), −2 for none, −1 for no DPA. Regulated products: +0.5 for a SOC 2 report. A vendor whose pages don't say gets 0 and the answer says "not stated", never "no".
 
 5. The answer leads with the cost at Cuely's published usage profile (`src/catalog/costs.ts`: 1,000 monthly active users, 10 staff for staff tools), each tool's cost with the math in its basis line, and the catches for that kind of product (`src/catalog/catches.ts`), each with its source page and date.
 
@@ -57,6 +59,8 @@ db/seed.sql             Generated from src/catalog by `npm run db:sql`
 src/freshness/          Reading pricing pages, updating facts from them, and measuring tool health
 data/pricing/           Last-read price and limit lines per tool (written by `npm run check:pricing`)
 data/facts.json         Price and limit facts re-read from changed pricing pages (written by `npm run update:facts`)
+data/compliance.json    What each vendor's pages say on BAAs, DPAs, EU regions and SOC 2 (written by `npm run collect:compliance`)
+data/compliance/        Last-read compliance lines per tool
 data/signals.json       Measured incidents, advisories and downloads per tool (written by `npm run collect:signals`)
 scripts/                e2e check, SQL generation, seeding a database, pricing check
 tests/                  Vitest: catalog integrity, engine, Postgres (PGlite), MCP over HTTP
@@ -89,6 +93,16 @@ Options: `--only <slug,slug>`, `--dry-run` (write nothing), `--report <file>`, a
 The **Signals** workflow (`signals.yml`) runs it on a schedule, regenerates `db/seed.sql`, runs the typecheck and tests, and pushes the result to `main`, which deploys it. To run it daily, change its `cron` line. Two guards keep a bad run from moving a ranking: a source that fails keeps its last measured value, and if more than 40% fail the run stops without writing. If the push to `main` is refused (branch protection), it files the report as an issue.
 
 Tests run with `CUELY_NO_SIGNALS=1` (set in `vitest.config.ts`), so the rules are tested apart from the week's data.
+
+## Compliance facts that follow the vendors
+
+`npm run collect:compliance` reads the pages listed in `src/catalog/compliance-sources.ts` (each vendor's security, HIPAA, DPA and regions pages) and keeps the lines that touch four topics: HIPAA BAA, GDPR DPA, EU data region and SOC 2. When a tool's lines change, Claude answers the four questions for that tool, quoting the vendor's own sentence for each, on the same `ANTHROPIC_API_KEY` as the pricing job.
+
+The rule in `src/freshness/compliance.ts` decides what is published to `data/compliance.json`: the quoted sentence must be on the named page as read that day and must mention the topic. A change from "offered" to "not offered" (or back) is held and filed as an issue for a person. A fact the pages no longer state is removed, because "not stated" is the safe direction. A page that fails to load is not treated as a change.
+
+The **Compliance** workflow (`compliance.yml`) runs it every Monday and pushes to `main` once the typecheck and tests pass. On a pull request that changes the page list or the collector, it only checks that every listed page still loads. Tests run with `CUELY_NO_COMPLIANCE=1`.
+
+Answers show these facts only when the description calls for them: health words (patients, therapy, clinic, HIPAA) add the `health_data` need, a HIPAA catch and a BAA line per pick; EU words add EU region and DPA lines. They are the vendors' statements with links, not legal advice.
 
 ## CI and security checks
 

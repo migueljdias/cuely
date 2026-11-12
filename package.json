@@ -14,6 +14,7 @@
     "check:pricing": "tsx scripts/check-pricing.ts",
     "collect:signals": "tsx scripts/collect-signals.ts",
     "update:facts": "tsx scripts/update-facts.ts",
+    "collect:compliance": "tsx scripts/collect-compliance.ts",
     "typecheck": "tsc --noEmit",
     "vercel-build": "tsx scripts/seed.ts --production-only && next build"
   },

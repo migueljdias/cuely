@@ -1,5 +1,6 @@
 import type { Need, Tool } from "@/catalog";
 import { POLICY } from "@/catalog";
+import { statedCompliance } from "@/freshness/compliance";
 import { detectNeeds, NEED_LABELS, NEED_SHORT } from "./needs";
 import { detectProfile } from "./profile";
 import { METHOD_URL, resolveTool, scoreTool, type CatalogSnapshot } from "./recommend";
@@ -36,6 +37,7 @@ function side(t: Tool) {
     freeTierCommercialUse: t.freeTierCommercialUse,
     openSource: t.openSource,
     selfHostable: t.selfHostable,
+    compliance: statedCompliance(t.compliance),
     pricingUrl: t.pricingUrl,
     verifiedOn: t.verifiedOn,
   };

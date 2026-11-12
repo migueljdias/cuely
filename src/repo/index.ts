@@ -45,7 +45,7 @@ export function postgresRepository(query: QueryFn, cacheMs = 60_000): Repository
     const [cats, tls, rcs] = await Promise.all([
       query("select slug, name, description, how_to_choose, sort_order from categories order by sort_order"),
       query(
-        "select slug, name, category, website, pricing_url, summary, pitch, best_for, watch_out, free_tier, paid_starts_at, free_tier_commercial_use, open_source, self_hostable, baseline, fit, cost, health, verified_on::text as verified_on from tools order by category, baseline",
+        "select slug, name, category, website, pricing_url, summary, pitch, best_for, watch_out, free_tier, paid_starts_at, free_tier_commercial_use, open_source, self_hostable, baseline, fit, cost, health, compliance, verified_on::text as verified_on from tools order by category, baseline",
       ),
       query("select body from recipes order by slug"),
     ]);
@@ -74,6 +74,7 @@ export function postgresRepository(query: QueryFn, cacheMs = 60_000): Repository
           fit: parse(r.fit),
           cost: r.cost ? parse(r.cost) : undefined,
           health: r.health ? parse(r.health) : undefined,
+          compliance: r.compliance ? parse(r.compliance) : undefined,
           verifiedOn: r.verified_on,
         }),
       ),
