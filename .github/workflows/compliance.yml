@@ -54,7 +54,8 @@ jobs:
         run: npm ci
 
       - name: Read every listed page
-        run: npm run -s collect:compliance -- --no-model --dry-run >> "$GITHUB_STEP_SUMMARY"
+        shell: bash # with pipefail, so a failed read isn't hidden by tee
+        run: npm run -s collect:compliance -- --no-model --dry-run | tee -a "$GITHUB_STEP_SUMMARY"
 
   collect:
     name: Read compliance pages
@@ -94,11 +95,12 @@ jobs:
           ANTHROPIC_API_KEY: ${{ env.ANTHROPIC_API_KEY || secrets.ANTHROPIC_API_KEY }}
           RECHECK: ${{ inputs.recheck }}
           DRY_RUN: ${{ inputs.dry_run }}
+        shell: bash # with pipefail, so a failed run isn't hidden by tee
         run: |
           args=(--report "$RUNNER_TEMP/compliance-report.md")
           if [ -n "$RECHECK" ]; then args+=(--only "$RECHECK"); fi
           if [ "$DRY_RUN" = "true" ]; then args+=(--dry-run); fi
-          npm run -s collect:compliance -- "${args[@]}" >> "$GITHUB_STEP_SUMMARY"
+          npm run -s collect:compliance -- "${args[@]}" | tee -a "$GITHUB_STEP_SUMMARY"
 
       # Nothing is published unless the catalog still typechecks and every test passes with the new facts.
       - name: Regenerate the seed and check
