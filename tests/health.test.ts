@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { categories, recipes, tools } from "@/catalog";
 import { SOURCES } from "@/catalog/sources";
 import { recommendStack, scoreTool } from "@/engine/recommend";
-import { countAdvisories, countIncidents, downloadWindows, healthFrom, type ToolSignals } from "@/freshness/health";
+import { countAdvisories, countIncidents, downloadWindows, healthFrom, normsOf, NO_NORMS, outageRivals, type ToolSignals } from "@/freshness/health";
 
 const NOW = new Date("2026-11-12T00:00:00Z");
 const none: ToolSignals = { incidents: null, advisories: null, downloads: null };
@@ -24,12 +24,12 @@ describe("health from signals", () => {
     expect(h).toEqual({ score: 0, reasons: [], measuredOn: "2026-11-12" });
   });
 
-  it("takes 0.25 per major and 0.75 per critical incident, capped at 2.5", () => {
+  it("takes 0.25 per major and 0.75 per critical incident, capped at 1.2", () => {
     const h = (major: number, critical: number) => healthFrom({ ...none, incidents: { minor: 0, major, critical, source: status } }, "2026-11-12")!;
     expect(h(2, 0).score).toBe(-0.5);
     expect(h(1, 1).score).toBe(-1);
     expect(h(1, 1).reasons[0]).toBe(`1 critical incident and 1 major incident on its status page in the last 90 days (${status}).`);
-    expect(h(20, 20).score).toBe(-2.5);
+    expect(h(20, 20).score).toBe(-1.2);
   });
 
   it("takes points for recent high and critical advisories, capped at 1", () => {
@@ -40,16 +40,69 @@ describe("health from signals", () => {
     expect(h(9, 9).score).toBe(-1);
   });
 
-  it("follows adoption both ways, ignores small packages, and never goes past -3 or +1", () => {
+  it("follows adoption both ways, ignores small packages, and never goes past -2.7 or +0.5", () => {
     const h = (recent: number, earlier: number, extra: Partial<ToolSignals> = {}) =>
       healthFrom({ ...none, ...extra, downloads: { recent, earlier, package: "pkg" } }, "2026-11-12")!;
-    expect(h(150_000, 100_000)).toMatchObject({ score: 0.5, reasons: ["Downloads of pkg rose 50% over three months."] });
+    expect(h(130_000, 100_000)).toMatchObject({ score: 0.3, reasons: ["Downloads of pkg rose 30% over three months."] });
     expect(h(60_000, 100_000)).toMatchObject({ score: -0.4, reasons: ["Downloads of pkg fell 40% over three months."] });
-    expect(h(900_000, 100_000).score).toBe(1);
+    expect(h(900_000, 100_000).score).toBe(0.5);
     expect(h(5_000, 500).score).toBe(0);
     const worst = h(0, 100_000, { incidents: { minor: 0, major: 0, critical: 9, source: status }, advisories: { high: 0, critical: 9, package: "pkg" } });
-    expect(worst.score).toBe(-3);
+    expect(worst.score).toBe(-2.7);
     expect(worst.reasons[0]).toMatch(/critical incidents/);
+  });
+});
+
+describe("health against the typical tool", () => {
+  const page = (n: number, major: number, critical = 0): ToolSignals => ({ ...none, incidents: { minor: 0, major, critical, source: `https://status${n}.example.com` } });
+  const pkg = (n: number, recent: number, earlier = 100_000): ToolSignals => ({ ...none, downloads: { recent, earlier, package: `pkg${n}` } });
+
+  it("takes the median across status pages and packages, counting a shared one once", () => {
+    const tools: Record<string, ToolSignals> = {
+      a: page(1, 0), b: page(2, 2), c: page(3, 4), d: page(4, 8), e: page(5, 0, 4),
+      f: page(5, 0, 4), // same page as e
+      g: pkg(1, 110_000), h: pkg(2, 140_000), i: pkg(3, 150_000), j: pkg(4, 160_000), k: pkg(5, 300_000),
+      l: pkg(6, 9_000, 500), // too small to count
+    };
+    expect(normsOf({ measuredOn: "2026-11-12", tools })).toEqual({ incidentPoints: 1, growth: 1.5 });
+  });
+
+  it("judges each tool on its own until five are measured", () => {
+    expect(normsOf({ measuredOn: "2026-11-12", tools: { a: page(1, 4), b: pkg(1, 200_000) } })).toEqual(NO_NORMS);
+    expect(normsOf({ measuredOn: null, tools: {} })).toEqual(NO_NORMS);
+  });
+
+  it("only counts incidents beyond the typical vendor's", () => {
+    const norms = { incidentPoints: 1, growth: 1 };
+    expect(healthFrom(page(1, 4), "2026-11-12", norms)).toEqual({ score: 0, reasons: [], measuredOn: "2026-11-12" });
+    expect(healthFrom(page(1, 6), "2026-11-12", norms)).toMatchObject({
+      score: -0.5,
+      reasons: ["6 major incidents on its status page in the last 90 days, more than the typical vendor Cuely tracks (https://status1.example.com)."],
+    });
+  });
+
+  it("counts outages only for tools with a rival measured on another status page", () => {
+    const list = [
+      { slug: "a", category: "hosting" }, { slug: "b", category: "hosting" }, { slug: "c", category: "hosting" },
+      { slug: "d", category: "monitoring" }, { slug: "e", category: "monitoring" },
+      { slug: "f", category: "kv" }, { slug: "g", category: "kv" },
+    ];
+    const file = { measuredOn: "2026-11-12", tools: { a: page(1, 9), b: page(2, 0), c: pkg(1, 100_000), d: page(3, 9), e: pkg(2, 100_000), f: page(4, 1), g: page(4, 1) } };
+    expect([...outageRivals(list, file)].sort()).toEqual(["a", "b"]);
+    expect(healthFrom(page(3, 9), "2026-11-12", NO_NORMS, false)).toEqual({ score: 0, reasons: [], measuredOn: "2026-11-12" });
+  });
+
+  it("measures adoption against the market, so a rising market lifts nobody", () => {
+    const norms = { incidentPoints: 0, growth: 1.5 };
+    expect(healthFrom(pkg(1, 150_000), "2026-11-12", norms)!.score).toBe(0);
+    expect(healthFrom(pkg(1, 195_000), "2026-11-12", norms)).toMatchObject({
+      score: 0.3,
+      reasons: ["Downloads of pkg1 rose 95% over three months; the typical package Cuely tracks rose 50%."],
+    });
+    expect(healthFrom(pkg(1, 105_000), "2026-11-12", norms)).toMatchObject({
+      score: -0.3,
+      reasons: ["Downloads of pkg1 rose 5% over three months; the typical package Cuely tracks rose 50%."],
+    });
   });
 });
 
