@@ -11,6 +11,7 @@
     "e2e": "tsx scripts/e2e.ts",
     "db:sql": "tsx scripts/generate-sql.ts",
     "db:seed": "tsx scripts/seed.ts",
+    "check:pricing": "tsx scripts/check-pricing.ts",
     "typecheck": "tsc --noEmit",
     "vercel-build": "tsx scripts/seed.ts --production-only && next build"
   },

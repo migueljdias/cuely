@@ -52,7 +52,9 @@ src/mcp/                MCP server (tools), stateless HTTP handler, IP rate limi
 src/repo/               Catalog access: in-memory seed, or Postgres; seed SQL generator
 db/schema.sql           Postgres schema (categories, tools, recipes, recipe_tools, usage_events)
 db/seed.sql             Generated from src/catalog by `npm run db:sql`
-scripts/                e2e check, SQL generation, seeding a database
+src/freshness/          Reading pricing pages and comparing them with the last read
+data/pricing/           Last-read price and limit lines per tool (written by `npm run check:pricing`)
+scripts/                e2e check, SQL generation, seeding a database, pricing check
 tests/                  Vitest: catalog integrity, engine, Postgres (PGlite), MCP over HTTP
 ```
 
@@ -67,6 +69,14 @@ CUELY_URL=http://localhost:3100/api/mcp npm run e2e   # official MCP client agai
 ```
 
 Without `DATABASE_URL`, Cuely serves the bundled catalog from memory. With it, the catalog is read from Postgres (cached for 60 s per instance) and each tool call is logged to `usage_events`.
+
+## Keeping prices fresh
+
+`npm run check:pricing` reads every tool's `pricingUrl`, keeps the lines that state a price or a limit, and compares them with the last read in `data/pricing/<slug>.json`. It reports the lines that were added or removed, the dollar amounts the catalog quotes (`freeTier`, `paidStartsAt`) that are no longer on the page, and the pages a plain fetch couldn't read.
+
+The **Pricing freshness** workflow (`pricing.yml`) runs it every Monday and opens a pull request with the new snapshots and that report. It never edits the catalog: a person opens each changed page, updates the facts in `src/catalog`, sets a new `verifiedOn` date and runs `npm run db:sql`. For the workflow to open the pull request, turn on "Allow GitHub Actions to create and approve pull requests" under Settings, Actions, General; without it the report is filed as an issue.
+
+Options: `--only <slug,slug>`, `--dry-run` (write nothing), `--report <file>`, and `--html-dir <dir>` to read `<dir>/<slug>.html` in place of fetching, for pages that only render in a browser.
 
 ## CI and security checks
 
