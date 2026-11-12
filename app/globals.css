@@ -9,13 +9,14 @@
   --accent-ink: #1a3fb8; /* accent as text on paper, 4.5:1 or better */
 
   /* One cool neutral ramp */
-  --bg: #f5f7fc;
+  --bg: #ffffff;
   --surface: #ffffff;
-  --surface-2: #e9edf7;
-  --text: #0e1220;
-  --text-2: #444b5e;
-  --text-3: #5b6378;
-  --line: color-mix(in srgb, var(--text) 12%, transparent);
+  --surface-2: #f6f8fc;
+  --text: #14161c;
+  --text-2: #4a505e;
+  --text-3: #6a7182;
+  --line: #e6e9f0;
+  --guide: #d9dee8; /* the dashed guide lines that frame the page */
 
   /* The dark "terminal" surfaces (transcript, code, method band) */
   --term: #0b1226;
@@ -25,8 +26,8 @@
   --term-code: #c7d3ff;
 
   /* Type */
-  --display: "Funnel Display", ui-sans-serif, system-ui, sans-serif;
-  --sans: "Funnel Sans", var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display: var(--sans);
   --mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
 
   /* Shape and motion */
@@ -42,13 +43,15 @@
   :root {
     --accent: #2f5bff;
     --accent-ink: #86a0ff;
-    --bg: #0b1226;
-    --surface: #111a33;
-    --surface-2: #18223f;
-    --text: #e9edf7;
-    --text-2: #b3bbd0;
-    --text-3: #8c95ad;
-    --term: #111a33;
+    --bg: #0a0e1a;
+    --surface: #0f1424;
+    --surface-2: #131a2d;
+    --text: #eef1f8;
+    --text-2: #b4bbcc;
+    --text-3: #8a92a6;
+    --line: #1e2538;
+    --guide: #232b40;
+    --term: #0f1424;
     color-scheme: dark;
   }
 }
@@ -1705,4 +1708,441 @@ section {
 }
 .guide .crumbs + .eyebrow {
   margin: 20px 0 0;
+}
+
+
+/* Site chrome: the sticky header, its slide-down menu, pill buttons and the footer. Shared by every page. */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--text);
+  font: 500 15px var(--sans);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition:
+    background-color var(--fast) var(--ease),
+    border-color var(--fast) var(--ease),
+    transform var(--fast) var(--ease);
+}
+.pill:hover {
+  border-color: color-mix(in srgb, var(--text) 28%, transparent);
+}
+.pill:active {
+  transform: scale(0.97);
+}
+.pill-solid {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.pill-solid:hover {
+  background: #3563ff;
+  border-color: #3563ff;
+}
+.pill-white {
+  background: #fff;
+  border-color: #fff;
+  color: #0f1630;
+  height: 50px;
+  padding: 0 26px;
+  font-size: 16px;
+}
+.pill-ghost {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: #fff;
+  height: 50px;
+  padding: 0 22px;
+  font-size: 16px;
+}
+.pill-ghost:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+/* A light sweep across the filled buttons on hover. */
+.pill-solid::after,
+.pill-white::after,
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 35%, rgba(255, 255, 255, 0.4) 50%, transparent 65%);
+  translate: -120% 0;
+  transition: translate 0.7s var(--ease);
+  pointer-events: none;
+}
+.pill-white::after {
+  background: linear-gradient(100deg, transparent 35%, rgba(31, 75, 216, 0.16) 50%, transparent 65%);
+}
+.pill-solid:hover::after,
+.pill-white:hover::after,
+.btn-primary:hover::after {
+  translate: 120% 0;
+}
+
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  -webkit-backdrop-filter: saturate(1.4) blur(10px);
+  backdrop-filter: saturate(1.4) blur(10px);
+  border-bottom: 1px dashed var(--guide);
+  transition: box-shadow 0.25s;
+}
+.site-nav.scrolled {
+  box-shadow: 0 10px 30px -22px rgba(15, 22, 48, 0.5);
+}
+.site-nav-bar {
+  max-width: 1272px;
+  margin: 0 auto;
+  padding: 0 16px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.site-nav-links {
+  display: flex;
+  gap: 4px;
+  margin: 0 auto;
+}
+.site-nav-links a,
+.site-nav-acct a,
+.site-nav-acct .nav-button {
+  display: inline-flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font: 500 15px var(--sans);
+  color: var(--text);
+  text-decoration: none;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: background-color var(--fast) var(--ease);
+}
+.site-nav-links a:hover,
+.site-nav-acct a:hover,
+.site-nav-acct .nav-button:hover {
+  background: var(--surface-2);
+}
+.site-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.site-nav-acct {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.menu-btn {
+  display: none;
+  flex: none;
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  cursor: pointer;
+}
+.menu-btn i {
+  position: absolute;
+  left: 11px;
+  right: 11px;
+  height: 1.6px;
+  border-radius: 2px;
+  background: var(--text);
+  transition:
+    transform 0.35s var(--ease),
+    top 0.35s var(--ease);
+}
+.menu-btn i:first-child {
+  top: 15px;
+}
+.menu-btn i:last-child {
+  top: 22px;
+}
+.menu-btn[aria-expanded="true"] i:first-child {
+  top: 18.5px;
+  transform: rotate(45deg);
+}
+.menu-btn[aria-expanded="true"] i:last-child {
+  top: 18.5px;
+  transform: rotate(-45deg);
+}
+.site-menu {
+  display: none;
+}
+@media (max-width: 860px) {
+  .site-nav-bar {
+    justify-content: space-between;
+  }
+  .site-nav-links,
+  .site-nav-acct {
+    display: none;
+  }
+  .menu-btn {
+    display: block;
+  }
+  .site-menu {
+    display: grid;
+    grid-template-rows: 0fr;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    background: var(--bg);
+    transition: grid-template-rows 0.45s var(--ease);
+  }
+  .site-menu.open {
+    grid-template-rows: 1fr;
+    border-top: 1px dashed var(--guide);
+    border-bottom: 1px solid var(--line);
+    box-shadow: 0 24px 40px -30px rgba(15, 22, 48, 0.5);
+  }
+  .site-menu > div {
+    overflow: hidden;
+    min-height: 0;
+  }
+  .site-menu nav {
+    display: grid;
+    padding: 6px 16px 18px;
+  }
+  .site-menu nav a {
+    padding: 14px 4px;
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    text-decoration: none;
+    border-bottom: 1px solid var(--line);
+    opacity: 0;
+    transform: translateY(-8px);
+    transition:
+      opacity 0.4s var(--ease),
+      transform 0.4s var(--ease);
+    transition-delay: calc(var(--i) * 40ms);
+  }
+  .site-menu nav a:last-child {
+    border-bottom: 0;
+  }
+  .site-menu.open nav a {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.site-foot {
+  max-width: 1272px;
+  margin: 0 auto;
+  padding: 48px 16px 32px;
+}
+.site-foot-grid {
+  display: grid;
+  grid-template-columns: 1.3fr repeat(4, 1fr);
+  gap: 32px;
+}
+.site-foot h2 {
+  margin: 0 0 14px;
+  font: 500 13px var(--sans);
+  letter-spacing: 0;
+  color: var(--text-3);
+}
+.site-foot nav {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  font-size: 15px;
+}
+.site-foot nav a {
+  color: var(--text);
+  text-decoration: none;
+}
+.site-foot nav a:hover {
+  color: var(--accent-ink);
+}
+.site-foot-addr {
+  overflow-wrap: anywhere;
+}
+.site-foot-blurb {
+  margin: 14px 0 0;
+  max-width: 32ch;
+  font-size: 14px;
+  color: var(--text-2);
+}
+.site-foot-bottom {
+  margin-top: 48px;
+  padding-top: 20px;
+  border-top: 1px dashed var(--guide);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px 24px;
+  font-size: 13px;
+  color: var(--text-3);
+}
+.site-foot-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.site-foot-live i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #1b7f4b;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #1b7f4b 20%, transparent);
+}
+@media (max-width: 860px) {
+  .site-foot-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .site-foot-grid > :first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+/* The redesign on the inner pages: lighter headings, pill buttons, hairline panels. */
+.page-title,
+.guide h2,
+.section-title {
+  font-weight: 500;
+  letter-spacing: -0.035em;
+}
+.page-title {
+  font-size: clamp(38px, 5.4vw, 60px);
+  line-height: 1.02;
+}
+.guide h2 {
+  font-size: 26px;
+}
+.guide h3 {
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+.btn {
+  border-radius: 999px;
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary:hover {
+  background: #3563ff;
+  border-color: #3563ff;
+}
+main.wrap {
+  max-width: 1104px;
+}
+
+/* Inner pages sit on the same framed sheet as the home page. */
+@media (min-width: 900px) {
+  main.wrap {
+    border-inline: 1px dashed var(--guide);
+    padding-inline: 40px;
+    padding-top: 8px;
+  }
+}
+.card {
+  border-radius: 6px;
+  transition:
+    transform 0.35s var(--ease),
+    box-shadow 0.35s var(--ease),
+    border-color var(--fast) var(--ease);
+}
+.card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+  box-shadow: 0 18px 36px -26px rgba(15, 22, 48, 0.45);
+}
+.card h2 {
+  letter-spacing: -0.02em;
+}
+.guide .card a {
+  text-decoration: none;
+}
+.guide .card a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.guide .card h2 a {
+  color: var(--text);
+}
+
+/* The closing call to action on catalog pages: the home page's blue panel, at a smaller size. */
+.guide-cta {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  padding: clamp(28px, 5vw, 48px);
+  border: 0;
+  border-radius: 20px;
+  color: #fff;
+  background:
+    radial-gradient(60% 70% at 50% 125%, rgba(214, 228, 255, 0.75) 0%, rgba(53, 99, 255, 0) 62%),
+    radial-gradient(120% 90% at 50% 0%, #3563ff 0%, #1f4bd8 55%, #1638a8 100%);
+}
+.guide-cta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.32;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.6) 0.8px, transparent 1.1px);
+  background-size: 7px 7px;
+  -webkit-mask-image: radial-gradient(90% 90% at 50% 100%, #000 20%, transparent 90%);
+  mask-image: radial-gradient(90% 90% at 50% 100%, #000 20%, transparent 90%);
+}
+.guide .guide-cta h2 {
+  font-size: clamp(26px, 3.4vw, 36px);
+  line-height: 1.08;
+}
+.guide-cta p {
+  color: rgba(255, 255, 255, 0.88);
+}
+.guide-cta .codeblock {
+  background: rgba(8, 16, 48, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+}
+.guide .guide-cta .btn-primary {
+  background: #fff;
+  border-color: #fff;
+  color: #0f1630;
+  min-height: 48px;
+  padding: 0 24px;
+}
+
+/* Pages ease in once on load; nothing waits on scroll. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes page-rise {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+  }
+  main.wrap > .page-title,
+  main.wrap > .page-lede,
+  main.wrap > .crumbs {
+    animation: page-rise 0.7s var(--ease) both;
+  }
+  main.wrap > .page-lede {
+    animation-delay: 0.08s;
+  }
+}
+main.wrap :is(h2, h3) {
+  font-weight: 500;
+  letter-spacing: -0.02em;
 }
