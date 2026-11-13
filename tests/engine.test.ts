@@ -233,6 +233,7 @@ describe("recipes beyond B2B SaaS", () => {
     ["marketplace", EVAL.dogs],
     ["internal-tool", EVAL.bakery],
     ["ai-docs-app", EVAL.pdfs],
+    ["consumer-web-app", "A habit tracker web app where people log daily habits, with a free tier and a $5/month pro plan"],
   ];
 
   for (const [slug, description] of AGREE) {
@@ -252,6 +253,16 @@ describe("recipes beyond B2B SaaS", () => {
     expect(route("An internal tool for our 12 warehouse staff to log shipments")).toBe("internal-tool");
     expect(route("A web app where users chat with their own PDFs, paid monthly")).toBe("ai-docs-app");
     expect(route("B2B SaaS for agencies with per-seat billing")).toBe("b2b-saas");
+    expect(route("A recipe sharing website where home cooks post recipes and follow each other")).toBe("consumer-web-app");
+    expect(route("A personal budgeting web app for individuals, $4 a month")).toBe("consumer-web-app");
+  });
+
+  it("the consumer recipe is the fallback for web products for people, not for companies or phones", () => {
+    const route = (d: string) => recommendStack(snap, { description: d, assumeDefaults: true }).productType.recipe;
+    expect(route("A client portal where agencies share files with their clients")).toBe("b2b-saas");
+    expect(route("An iPhone app for journaling with a yearly subscription")).toBe("mobile-subscription-app");
+    expect(route("A daily word puzzle in the browser with streaks")).toBe("daily-web-game");
+    expect(route("An internal tool for our staff to track returns")).toBe("internal-tool");
   });
 
   it("a mobile marketplace gets the marketplace recipe with a note on the phone parts", () => {

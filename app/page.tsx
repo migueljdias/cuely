@@ -411,7 +411,7 @@ export default function Home() {
           <section className="section" aria-labelledby="why-title">
             <div className="s-head" data-rv>
               <h2 id="why-title">Why builders run Cuely first</h2>
-              <p>Your agent knows how to write code. It doesn&apos;t know this week&apos;s prices, limits and outages.</p>
+              <p>Your agent knows how to write code. It doesn&apos;t know today&apos;s prices, limits and outages.</p>
             </div>
             <div className="split tick">
               <div className="chaos" data-rv>
@@ -579,7 +579,7 @@ export default function Home() {
                       </div>
                     ))}
                   </div>
-                  <h3>Measured every week, published without anyone touching it</h3>
+                  <h3>Measured every day, published without anyone touching it</h3>
                   <p>
                     A scheduled job reads each vendor&apos;s status page, security advisories, package downloads and pricing page
                     {measured ? `, last on ${measured}` : ""}. If a tool gets worse, Cuely stops recommending it.

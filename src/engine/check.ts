@@ -230,6 +230,6 @@ export function checkProject(catalog: CatalogSnapshot, input: CheckInput): Proje
     nextStep:
       n("switch") || n("add")
         ? "Tell the user each change and why, and let them decide; a switch costs real work. Call compare_tools for a side-by-side of any switch, and run check_project again after big changes to the product."
-        : "Nothing needs to change. Run check_project again when the product changes (new region, payments, health data, AI) or every few weeks; prices, outages and vendor terms are re-read weekly.",
+        : "Nothing needs to change. Run check_project again when the product changes (new region, payments, health data, AI) or every few weeks; prices, outages and vendor terms are re-read daily.",
   };
 }

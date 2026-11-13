@@ -20,8 +20,8 @@ const FACTS = [
   },
   {
     icon: CalendarClock,
-    title: "Checked every week",
-    text: "Prices, outages and advisories are measured weekly and published automatically.",
+    title: "Checked every day",
+    text: "Prices, outages and advisories are measured daily and published automatically.",
   },
   {
     icon: KeyRound,

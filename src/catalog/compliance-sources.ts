@@ -1,5 +1,5 @@
 /**
- * Where each vendor states its compliance facts: the pages the weekly job reads
+ * Where each vendor states its compliance facts: the pages the daily job reads
  * (scripts/collect-compliance.ts) for BAAs, DPAs, EU regions and SOC 2.
  *
  * Only the vendor's own pages, and only pages that load without a browser. Tools

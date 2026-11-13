@@ -215,7 +215,7 @@ if (noModel) {
       else confirmed.push(r.tool.name);
       for (const h of decision.held) held.push(`- **${r.tool.name}**, ${h}`);
     } catch (error) {
-      // Credentials or a bad request won't fix themselves on the next tool: stop. Anything else, skip this tool until next week.
+      // Credentials or a bad request won't fix themselves on the next tool: stop. Anything else, skip this tool until the next run.
       if (error instanceof Anthropic.AuthenticationError || error instanceof Anthropic.PermissionDeniedError || error instanceof Anthropic.BadRequestError) {
         stop = `- The Claude API refused the request (${error.status}): ${error.message}. No further tools were checked.`;
         return;
