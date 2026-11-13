@@ -5,8 +5,9 @@ import { authConfigured, currentUser } from "@/auth/server";
 import { checkoutOpen, paymentsConfig } from "@/billing/stripe";
 import { PLANS, planFor } from "@/plans";
 import { SITE_URL } from "@/site";
-import { SiteFooter, SiteHeader } from "../_components/chrome";
 import { NewKey } from "./_new-key";
+import { LogOutItem } from "./_log-out";
+import { AppShell } from "./_shell";
 import { checkoutAction, portalAction, revokeKeyAction } from "./actions";
 
 export const metadata: Metadata = { title: "Account · Cuely", robots: { index: false } };
@@ -33,11 +34,39 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const { checkout } = await searchParams;
 
   return (
-    <>
-      <SiteHeader />
-      <main id="main" className="wrap account">
-        <h1 className="page-title">Your account</h1>
-        <p className="page-lede">Signed in as {user.email}</p>
+    <AppShell email={user.email ?? ""} plan={plan.name} logOut={<LogOutItem />}>
+      <div className="account">
+        <div id="overview" className="app-section">
+          <h1 className="app-title">Your account</h1>
+          <p className="app-lede">Signed in as {user.email}</p>
+          <div className="app-stats">
+            <a className="app-stat" href="#usage">
+              <span className="app-stat-label">Tool calls today</span>
+              <span className="app-stat-value">
+                {today.toLocaleString("en-US")}
+                <small> / {plan.perDay.toLocaleString("en-US")}</small>
+              </span>
+              <span className="app-meter" aria-hidden="true">
+                <i style={{ width: `${Math.min(100, (today / plan.perDay) * 100)}%` }} />
+              </span>
+            </a>
+            <a className="app-stat" href="#keys">
+              <span className="app-stat-label">Active API keys</span>
+              <span className="app-stat-value">
+                {keys.length}
+                <small> / {plan.maxKeys}</small>
+              </span>
+              <span className="app-meter" aria-hidden="true">
+                <i style={{ width: `${Math.min(100, (keys.length / plan.maxKeys) * 100)}%` }} />
+              </span>
+            </a>
+            <a className="app-stat" href="#plan">
+              <span className="app-stat-label">Plan</span>
+              <span className="app-stat-value">{plan.name}</span>
+              <span className="app-stat-note">{plan.perMinute} requests a minute</span>
+            </a>
+          </div>
+        </div>
 
         {checkout === "soon" && (
           <p className="notice" role="status">
@@ -53,7 +82,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
           </p>
         )}
 
-        <section className="panel" aria-labelledby="plan-title">
+        <section id="plan" className="panel" aria-labelledby="plan-title">
           <div className="panel-head">
             <h2 id="plan-title">
               {plan.name} plan
@@ -94,7 +123,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
           )}
         </section>
 
-        <section className="panel" aria-labelledby="usage-title">
+        <section id="usage" className="panel" aria-labelledby="usage-title">
           <div className="panel-head">
             <h2 id="usage-title">Usage</h2>
             <p className="muted">Counted for your whole account. Days reset at 00:00 UTC.</p>
@@ -114,7 +143,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
           )}
         </section>
 
-        <section className="panel" aria-labelledby="keys-title">
+        <section id="keys" className="panel" aria-labelledby="keys-title">
           <div className="panel-head">
             <h2 id="keys-title">API keys</h2>
             <p className="muted">
@@ -147,8 +176,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
             Revoke it and make a new one. Step-by-step help: <a href={`${SITE_URL}/start`}>Get started</a>.
           </p>
         </section>
-      </main>
-      <SiteFooter />
-    </>
+      </div>
+    </AppShell>
   );
 }
