@@ -1,0 +1,77 @@
+{
+  "slug": "render",
+  "readOn": "2026-11-13",
+  "pages": [
+    {
+      "url": "https://render.com/security",
+      "lines": [
+        "HIPAA applications",
+        "HIPAA Compliance",
+        "ISO 27001",
+        "SOC 2 Type 2",
+        "GDPR-DPA",
+        "Protect the personal data and privacy of EU citizens for transactions that occur within EU member states",
+        "HIPAA",
+        "Certified under the EU-US Data Privacy Framework including the UK extension and Swiss-US DPF",
+        "Subprocessors",
+        "HIPAA on Render",
+        "DPA"
+      ]
+    },
+    {
+      "url": "https://render.com/docs/hipaa-compliance",
+      "lines": [
+        "Regions",
+        "HIPAA (US health data)",
+        "HIPAA best practices",
+        "HIPAA on Render",
+        "Run HIPAA-compliant apps and store protected health information.",
+        "HIPAA-enabled workspaces require a Scale or Enterprise plan.",
+        "HIPAA is a United States federal law that sets standards for protecting individuals' healthcare data. It defines administrative, physical, and technical safeguards for organizations that process or store protected health information (PHI).",
+        "Render provides HIPAA-enabled workspaces for organizations subject to HIPAA requirements. These workspaces run services and datastores on access-restricted hosts, helping to secure any PHI processed or stored by your applications. Access to these hosts by Render staff is subject to strict controls.",
+        "Click Get Started. This opens a confirmation flow to receive Render's Business Associate Agreement (BAA).",
+        "After you complete the confirmation flow, Render emails you a link to sign the BAA.",
+        "After you sign the BAA, return to the Compliance section of your workspace settings. After about a minute, your HIPAA Compliance status updates to Pending:",
+        "When you're ready, click Enable HIPAA to initiate the enablement process.",
+        "If you don't initiate the enablement process manually, Render initiates it automatically 72 hours after you sign the BAA.",
+        "After the process completes, your HIPAA Compliance status updates to Enabled:",
+        "Your workspace is now ready to host HIPAA-compliant applications.",
+        "Before upgrading to a HIPAA-enabled workspace, note all of the following:",
+        "Upgrading to a HIPAA-enabled workspace is an irreversible action.",
+        "An additional 20% fee applies to all usage (compute, storage, etc.) in a HIPAA-enabled workspace.",
+        "HIPAA-enabled workspaces cannot deploy or run services in Render's Singapore region at this time. All other regions are supported.",
+        "HIPAA-enabled workspaces cannot deploy or run free instances.",
+        "This is because free instances run on hosts that do not support restricted access for HIPAA compliance.",
+        "With a Scale or Enterprise plan, Render upgrades one of your workspaces to a HIPAA-enabled workspace.",
+        "You specify which workspace to upgrade in your BAA.",
+        "Your other workspaces are not HIPAA-enabled. All HIPAA-compliant workflows must run in the HIPAA-enabled workspace.",
+        "Even in a HIPAA-enabled workspace, you must not include PHI in certain resources.",
+        "A HIPAA-enabled workspace does not automatically make your applications HIPAA-compliant.",
+        "You are responsible for adhering to HIPAA regulations for all applications in your workspace.",
+        "Never process or store PHI on Render outside of a HIPAA-enabled workspace.",
+        "Not all resources in a HIPAA-enabled workspace support HIPAA-compliant processing and storing of PHI. See the following table for details:",
+        "Workflows are not available in HIPAA-enabled workspaces.",
+        "Your primary databases, read replicas, and high availability standby databases all support HIPAA-compliant workflows."
+      ]
+    },
+    {
+      "url": "https://render.com/docs/regions",
+      "lines": [
+        "Regions",
+        "HIPAA (US health data)",
+        "HIPAA best practices",
+        "You can deploy Render services to any of the following regions to minimize latency for your users:",
+        "Frankfurt, Germany",
+        "We'll continue to add regions over time. If you're interested in a particular region, vote for it at feedback.render.com.",
+        "Choosing a region",
+        "You don't choose a region for static sites, which are backed by a global CDN.",
+        "You choose a region for your service or datastore during the creation flow in the Render Dashboard:",
+        "The dashboard indicates the regions where you already have services (if any). To deploy elsewhere, click Deploy in a new region.",
+        "Changing a service's region",
+        "Render doesn't currently support changing the region for an existing service or database. Instead, create a new service or database in the desired region, then migrate your configuration and data as needed.",
+        "Each region provides a separate private network for your services. This means that services in different regions can't communicate directly over a private network.",
+        "To communicate between services across regions, you need to properly secure that communication for traversal over the public internet."
+      ]
+    }
+  ]
+}

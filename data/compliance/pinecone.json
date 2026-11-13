@@ -1,0 +1,19 @@
+{
+  "slug": "pinecone",
+  "readOn": "2026-11-13",
+  "pages": [
+    {
+      "url": "https://www.pinecone.io/security/",
+      "lines": [
+        "Request BAA",
+        "Pinecone is SOC2 Type II certified, HIPAA compliant (with BAA available upon request), and GDPR-ready."
+      ]
+    },
+    {
+      "url": "https://docs.pinecone.io/guides/production/security-overview",
+      "lines": [
+        "To enable and manage audit logs, you must be an organization owner. This feature is available only on Enterprise plans or with the HIPAA compliance add-on."
+      ]
+    }
+  ]
+}

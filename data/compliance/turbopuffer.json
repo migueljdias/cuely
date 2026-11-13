@@ -1,0 +1,54 @@
+{
+  "slug": "turbopuffer",
+  "readOn": "2026-11-13",
+  "pages": [
+    {
+      "url": "https://turbopuffer.com/docs/security",
+      "lines": [
+        "All customer data is hosted exclusively in the region you",
+        "select. Customer data inserted into one region remains in that",
+        "region, except when requested by the customer via the turbopuffer API. Customer",
+        "SOC2",
+        "You can request a copy of the latest SOC 2 report and Penetration Test",
+        "Data Protection (GDPR & CCPA)",
+        "turbopuffer provides a Data Processing Addendum (DPA) for all customers",
+        "to enable compliance with the General Data Protection Regulation (GDPR) and the",
+        "The DPA describes our commitment to policies that comply with the requirements",
+        "and subprocessor management policies.",
+        "HIPAA",
+        "may request a Business Associate Agreement (BAA) with turbopuffer, under which",
+        "turbopuffer commits to compliance with the requirements of HIPAA on business",
+        "Contact us if you require a BAA or have further questions.",
+        "and our multi-tenant regions. This feature is available to",
+        "AWS regions use AWS PrivateLink",
+        "GCP regions use GCP Private Service Connect",
+        "Subprocessors",
+        "infrastructure, platform, and optional feature subprocessors, on the dedicated",
+        "subprocessors page, along with a subscription for update"
+      ]
+    },
+    {
+      "url": "https://turbopuffer.com/docs/regions",
+      "lines": [
+        "Regions",
+        "regions for single-tenancy customers and in any region inside your VPC in AWS,",
+        "regions with demand.",
+        "gcp-us-central1 is compute-constrained. Please choose another region for",
+        "region='gcp-us-east4', # choose best region: https://turbopuffer.com/docs/regions",
+        "ns = tpuf.namespace(f'region-example-py')",
+        "To move data between regions, use copy_from_namespace with a cross-region source. For granular control, use the export and write APIs with a client for each region.",
+        "cloud provider's region is lower latency (< 1ms) than cross-cloud traffic",
+        "All Regions",
+        "Region",
+        "aws - eu-central-1",
+        "Frankfurt, Germany",
+        "aws - eu-west-1",
+        "Dublin, Ireland",
+        "aws - eu-west-2",
+        "London, UK",
+        "gcp - europe-west3",
+        "gcp - europe-west1"
+      ]
+    }
+  ]
+}

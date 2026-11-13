@@ -1,0 +1,20 @@
+{
+  "slug": "ably",
+  "readOn": "2026-11-13",
+  "pages": [
+    {
+      "url": "https://ably.com/security-and-compliance",
+      "lines": [
+        "Low TTLs on DNS routing means we can route real users away from data centres under attack.",
+        "SOC 2 Type 2",
+        "Ably regularly completes audits of our product, infrastructure, and policies to the satisfaction of the SOC 2 Type 2 standard.",
+        "HIPAA",
+        "Ably offers HIPAA BAA agreements to companies in the healthcare industry that must comply with regulations for safeguarding.",
+        "EU GDPR-compliant",
+        "Relevant processes are followed for transfers of personal data outside the European Union.",
+        "EU, US and AUS-only data storage options",
+        "Store data and realtime messages solely within the EU, US or AUS."
+      ]
+    }
+  ]
+}

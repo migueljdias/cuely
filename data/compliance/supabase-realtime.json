@@ -1,0 +1,90 @@
+{
+  "slug": "supabase-realtime",
+  "readOn": "2026-11-13",
+  "pages": [
+    {
+      "url": "https://supabase.com/security",
+      "lines": [
+        "SOC 2",
+        "Supabase is SOC 2 Type 2 compliant. This is an important security policy when handling sensitive customer data.",
+        "Enterprise and Team customers can access our SOC 2 Type 2 report on the dashboard.",
+        "HIPAA",
+        "Supabase is HIPAA compliant. You can store Protected Health Information (PHI) on our hosted platform once you enter into a Business Associate Agreement (BAA) with us and fulfill your HIPAA obligations under our shared responsibility model.",
+        "Enterprise and Team customers can request to sign our BAA on the dashboard.",
+        "ISO 27001",
+        "Supabase is ISO 27001 certified. ISO 27001 is an internationally recognized standard for information security management systems (ISMS), confirming that we maintain rigorous controls to protect customer data.",
+        "Enterprise and Team customers can access our ISO 27001 certificate on the dashboard.",
+        "GDPR & European Compliance",
+        "Supabase supports GDPR-compliant deployments. Projects hosted in EU regions keep your primary database data in-region, and a Data Processing Agreement (DPA) is available for customers who need a formal data processing contract under GDPR.",
+        "See how Markprompt uses Supabase for GDPR-compliant deployments.",
+        "Data Residency",
+        "When you create a project in an AWS region, your Postgres database, Auth service, and Storage objects are hosted in that region. Supabase offers regions across the US, EU, and Asia Pacific.",
+        "See the full list of available regions.",
+        "Data Processing Agreement",
+        "A Data Processing Agreement (DPA) is available for customers who need a formal GDPR data processing contract. Request or view the DPA.",
+        "SOC2 Type 2 Certified",
+        "HIPAA Compliant",
+        "ISO 27001 Certified",
+        "Regions",
+        "SOC2"
+      ]
+    },
+    {
+      "url": "https://supabase.com/docs/guides/security/hipaa-compliance",
+      "lines": [
+        "SOC 2",
+        "HIPAA",
+        "GDPR",
+        "HIPAA Compliance and Supabase",
+        "The Health Insurance Portability and Accountability Act (HIPAA)",
+        "is a comprehensive law that protects individuals' health information while ensuring the continuity of health insurance coverage. It sets standards for privacy and security that must be followed by all entities that handle Protected Health Information (PHI), also known as electronic PHI (ePHI). HIPAA is specific to the United States, however many countries have similar or laws already in place or u",
+        "Under HIPAA, both covered entities and business associates have distinct responsibilities to ensure the protection of PHI. Supabase acts as a business associate for customers (the covered entity) who wish to provide healthcare related services. As a business associate, Supabase has a number of obligations and has undergone auditing of the security and privacy controls that are in place to meet the",
+        "The hosted Supabase platform has the necessary controls to meet HIPAA requirements. These controls are not supported out of the box in self-hosted Supabase. HIPAA controls extend further than the Supabase product, encompassing legal agreements (BAAs) with providers, operating controls and policies. Achieving HIPAA compliance with self-hosted Supabase is out of scope for this documentation and you ",
+        "Compliance with HIPAA Rules: Covered entities must comply with the HIPAA Privacy Rule",
+        "Business Associate Agreements (BAAs): Customers must sign a BAA with Supabase. When the covered entity engages a business associate to help carry out its healthcare activities, it must have a written BAA. This agreement outlines the business associate's responsibilities and requires them to comply with HIPAA Rules.",
+        "Internal Compliance Programs: Customers must configure their HIPAA projects and follow the guidance given by the security advisor. Covered entities are responsible for implementing internal processes and compliance programs to ensure they meet HIPAA requirements.",
+        "Supabase as the business associate, and the vendors used by Supabase, are the entities that perform functions or activities on behalf of the customer.",
+        "Direct Liability: Supabase is directly liable for compliance with certain provisions of the HIPAA Rules. This means Supabase has to implement safeguards to protect ePHI and report breaches to the customer.",
+        "Compliance with BAAs: Supabase must comply with the terms of the BAA, which includes implementing appropriate administrative, physical, and technical safeguards to protect ePHI.",
+        "Vendor Management: Supabase must also ensure that our vendors, who may have access to ePHI, comply with HIPAA Rules. This is done through a BAA with each vendor.",
+        "Compliance is a continuous process and should not be treated as a point-in-time audit of controls. Supabase applies all the necessary privacy and security controls to ensure HIPAA compliance at audit time, but also has additional checks and monitoring in place to ensure those controls are not disabled or altered in between audit periods. Customers commit to doing the same in their HIPAA environmen",
+        "Our shared responsibility model document discusses both HIPAA and general data management best practices, how this responsibility is shared between customers and Supabase, and how to stay compliant.",
+        "What is the difference between SOC 2 and HIPAA?",
+        "SOC 2 is not industry-specific and can be applied to any service organization that handles customer data.",
+        "HIPAA is a federal regulation in the United States. HIPAA sets standards for the privacy and security of PHI/ePHI, ensuring that patient data is handled confidentially and securely.",
+        "Are Supabase HIPAA environments also SOC 2 compliant?",
+        "Yes. Supabase applies the same SOC 2 controls to all environments, with additional controls being applied to HIPAA environments.",
+        "No. Supabase sets Postgres log_connections to off by default for new projects. HIPAA and high-compliance projects should keep connection logging enabled. The Security Advisor warns if it is disabled.",
+        "Supabase undergoes annual audits. The HIPAA controls are audited during the same audit period as the SOC 2 controls.",
+        "Health Insurance Portability and Accountability Act (HIPAA)",
+        "HIPAA Privacy Rule",
+        "Configuring HIPAA projects on Supabase",
+        "HIPAA shared responsibility"
+      ]
+    },
+    {
+      "url": "https://supabase.com/docs/guides/platform/regions",
+      "lines": [
+        "Regions",
+        "HIPAA Projects",
+        "Available regions",
+        "Each Supabase project is deployed to one primary region. Choose the location closest to your users for the best performance.",
+        "Data residency",
+        "The region you choose also determines where your primary project data is stored. If your data residency requirements call for data to stay within a specific jurisdiction, choose a specific region rather than a general region grouping.",
+        "General regions deploy to an available AWS region within that broader area, which may not match a specific jurisdiction. For example, the \"Europe\" general region includes London and Zurich, which are not EU member states. Region selection is a data-location control, not proof of regulatory compliance. For GDPR considerations, see the GDPR compliance guide.",
+        "General regions",
+        "For most projects, we recommend choosing a general region. Supabase will deploy your project to an available AWS region within that area based on current infrastructure capacity.",
+        "EuropeCentral EU (Frankfurt)",
+        "Note: General regions aren’t yet supported for read replicas or management via the API.",
+        "Specific regions",
+        "If you prefer, you can choose an exact AWS region for your project.",
+        "West EU (Ireland)eu-west-1",
+        "West Europe (London)eu-west-2",
+        "West EU (Paris)eu-west-3",
+        "Central EU (Frankfurt)eu-central-1",
+        "Central Europe (Zurich)eu-central-2",
+        "North EU (Stockholm)eu-north-1"
+      ]
+    }
+  ]
+}

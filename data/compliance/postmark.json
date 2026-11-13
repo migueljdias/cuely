@@ -1,0 +1,68 @@
+{
+  "slug": "postmark",
+  "readOn": "2026-11-13",
+  "pages": [
+    {
+      "url": "https://postmarkapp.com/eu-privacy",
+      "lines": [
+        "EU Data Protection",
+        "GDPR",
+        "DPA",
+        "Sub-processors",
+        "When you use our services you entrust us with your valuable information. We have made it a priority to protect your data and to provide you with choices about controlling it. We understand that there are particular concerns from companies in the EU about how we use and protect your data, so we put this page together as a guide to answer some of the most common questions you may have.",
+        "The Security and Privacy page provides an overview of our data center and app security, as well as our data retention policy.",
+        "The GDPR page provides detailed information about how we have prepared our services for the GDPR.",
+        "The DPA page provides an executable copy of our Data Processing Addendum with our customers.",
+        "The Sub-processors page provides a list of our sub-processors under GDPR, and a way for you to get notified if/when we add a new sub-processor.",
+        "For detailed information about our security and privacy practices, you can view our privacy policy and data processing addendum. Below are some highlights.",
+        "Data centers and security measures",
+        "Data centers",
+        "Postmark's primary data and servers are hosted at Deft's data center (located outside of Chicago), and Amazon Web Services (AWS). We currently don't have plans to add servers in the EU (GDPR does not require physical servers in the EU).",
+        "A DuPont Fabros facility, the Deft data center is SOC 2 Type 2 accredited and includes keycard protocols, biometric scanning protocols and round-the-clock surveillance. Our environment is colocated, meaning we have full control of the physical environment and only our policies affect the access and use of the hardware, network and software. We provide multiple levels of backups and redundancy to e",
+        "Even though Postmark itself has not undergone a SOC audit, our data center has. We can provide a copy of the SOC report for the data center after completing an NDA.",
+        "The Amazon Web Services infrastructure puts strong safeguards in place to help protect customer privacy. All data is stored in highly secure AWS data centers. For a detailed overview of all security and privacy measures, see the AWS Cloud Security page. For a list of all current security accreditations, see the AWS Compliance Programs page.",
+        "Data center security: The data centers we use demonstrate ongoing compliance with rigorous international standards, such as ISO 27017 for cloud security, ISO 27018 for cloud privacy, SOC 1, SOC 2, and SOC 3, PCI DSS Level 1, and more.",
+        "Access control: We restrict access to personal data only to our employees, contractors, and agents who need to know this information in order to operate, develop, or improve our service. Only a select few have access to the servers where data is stored. We go to great lengths to ensure the right balance between support and secure infrastructure. Employees can only access accounts if they have expl",
+        "EU General Data Protection Regulation (GDPR)",
+        "What is GDPR?",
+        "In 2016, the European Commission approved and adopted the new General Data Protection Regulation (GDPR). GDPR is a significant change in data protection regulation in the EU and replaces the existing legal framework (the Data Protection Directive and the various member state laws). It came into effect on May 25, 2018.",
+        "Why is GDPR important?",
+        "GDPR adds some new requirements regarding how companies should protect individuals' data that they process. It also raises the stakes for compliance by increasing enforcement and imposing greater fines for breaches.",
+        "What has Postmark done to comply with GDPR?",
+        "Our compliance, data protection, and information security teams work hard to align our services with GDPR. In our role as the Data Processor of your customer and end user information, we have provided a Data Processing Agreement, meeting with the requirements of GDPR. You can find it here.",
+        "We have worked hard to meet our obligations as a processor under Article 28 of GDPR. To this end:",
+        "We have implemented appropriate technical and organizational measures to protect the data with which you entrust us. You can view a detailed description of our security controls in ANNEX II of our DPA.",
+        "We have provided a list of our sub-processors and will give you the opportunity to object if we engage a new one. You can access this list here.",
+        "We are able to inform you without delay in the event of a data breach (though we, and our sub-processors are working hard so that won't be needed).",
+        "As guidance about specific aspects of GDPR continues to be published, we will also continue our efforts to fine-tune and improve our compliance.",
+        "Like the Data Protection Directive that preceded it, GDPR includes provisions on international data transfer mechanisms. In order to comply with these provisions, we have worked with legal counsel to create a standard Data Processing Addendum (DPA), which meets with GDPR requirements for agreements between Data Controllers (you) and Data Processors (us).",
+        "Our DPA includes the new Standard Contractual Clauses (SCCs) for cross border transfers. It also outlines in detail our current security practices. To receive and sign a copy of our DPA, please visit the Data Processing Addendum tab on this page.",
+        "Does GDPR require that my information be stored in the EU?",
+        "No. Under GDPR a company is allowed to transfer personal data outside of the EU provided that it puts in place a mechanism, approved under GDPR, to make sure that personal data is adequately protected even when it is transferred outside of the EU. We offer a Data Processing Addendum (DPA) with updated Standard Contractual Clauses (SCCs) to all customers.",
+        "This request can include personal data of other individuals, like your employees or customers that you have provided to us and who have requested this of you. We will respond to these requests within 14 days or less, which is well within the GDPR requirement of 30 days.",
+        "Simplify this process even further by purchasing the Retention Add-On and deciding how long Postmark keeps your data. By default, Postmark stores message content and activity data for 45 days, but with this add-on, you can decrease your data retention and make sure Postmark will purge all customer data after 7 or 28 days. This is a great option for all senders who frequently deal with DSR requests",
+        "What happens when the UK leaves the EU?",
+        "We chose the UK as a reasonable location for GDPR enforcement. The UK is hoping for a unique status under GDPR and are working towards it. For the time being the UK has declared it will be GDPR compliant and its new data protection bill is in line with GDPR.",
+        "We are happy to answer any questions and address any concerns regarding how we protect your personal data in general, as well as specifically under GDPR. If you have any questions, please don't hesitate to contact us at privacy@activecampaign.com.",
+        "Data Processing Addendum",
+        "Please note that as of September 27, 2021, our updated Terms of Service incorporate our DPA with new SCCs. It is therefore no longer necessary to obtain a signed copy of our DPA. Drop us a line if you have any questions!",
+        "List of sub-processors",
+        "We share certain information with companies that may be considered our \"sub-processors\" under GDPR. This information is limited to the following:",
+        "We use Amazon Web Services (AWS) and Deft (formerly known as ServerCentral) to process our emails. These companies host the data on physical and cloud servers that we pay for. For more information about our security practices as it relates to our data centers, see this help article.",
+        "We use Zendesk as help desk software to communicate with our customers. Although Zendesk isn't a sub-processor used to deliver our services, sometimes these communications include the personal data of your customers' information, so we've added them here for transparency.",
+        "Below is a full list of our sub-processors.",
+        "Sub-processor updates",
+        "If you would like to be notified when we start working with a new company that may be considered a \"sub-processor\", you can sign up below. We will only use your email to send notifications about new sub-processors."
+      ]
+    },
+    {
+      "url": "https://postmarkapp.com/support/article/1041-is-postmark-hipaa-compliant",
+      "lines": [
+        "Is Postmark HIPAA Compliant?",
+        "If your business needs to be compliant with the Health Insurance Portability and Accountability Act, your emails typically need to be compliant as well. Postmark is not HIPAA-compliant so we do not recommend using our platform if you need to send HIPAA-compliant emails. We also cannot sign any Business Associate Agreements around HIPAA. HIPAA HQ has some recommended email providers that are HIPAA-",
+        "GDPR FAQ",
+        "EU Data Protection"
+      ]
+    }
+  ]
+}
