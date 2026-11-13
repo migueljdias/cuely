@@ -12,6 +12,7 @@ import {
   Menu,
   PanelLeft,
   Rocket,
+  UserRound,
   Wrench,
   X,
 } from "lucide-react";
@@ -172,7 +173,7 @@ export function AppShell({
               aria-current={onProfile ? "page" : undefined}
               title={rail ? "Profile" : undefined}
             >
-              <Avatar className="app-nav-avatar" imageUrl={imageUrl} label={label} />
+              <UserRound size={17} strokeWidth={1.8} aria-hidden="true" />
               <span>Profile</span>
             </a>
             <a href={`mailto:${SUPPORT_EMAIL}`} title={rail ? "Support" : undefined}>
