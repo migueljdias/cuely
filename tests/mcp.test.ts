@@ -37,6 +37,14 @@ describe("MCP over Streamable HTTP", () => {
     expect(client.getInstructions()).toMatch(/recommend_stack first/);
   });
 
+  it("names itself with a title, website and the Cuely logo", () => {
+    const info = client.getServerVersion();
+    expect(info?.title).toBe("Cuely");
+    expect(info?.websiteUrl).toBe("https://cuely.dev");
+    expect(info?.icons?.length).toBeGreaterThan(0);
+    for (const i of info?.icons ?? []) expect(i.src).toMatch(/^https:\/\/cuely\.dev\//);
+  });
+
   it("recommend_stack returns a stack and points to the recipe", async () => {
     const r: any = await client.callTool({
       name: "recommend_stack",

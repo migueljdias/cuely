@@ -1,0 +1,19 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.migueljdias/cuely",
+  "title": "Cuely",
+  "description": "Picks the stack, security and compliance setup for what you're building, with today's prices.",
+  "version": "0.4.0",
+  "websiteUrl": "https://cuely.dev",
+  "repository": {
+    "url": "https://github.com/migueljdias/cuely",
+    "source": "github"
+  },
+  "icons": [
+    { "src": "https://cuely.dev/brand/icon-512.png", "mimeType": "image/png", "sizes": ["512x512"] },
+    { "src": "https://cuely.dev/icon.svg", "mimeType": "image/svg+xml", "sizes": ["any"] }
+  ],
+  "remotes": [
+    { "type": "streamable-http", "url": "https://cuely.dev/api/mcp" }
+  ]
+}
