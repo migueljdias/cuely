@@ -11,6 +11,7 @@ Honest stack picks for coding agents. Cuely is a free, remote MCP server that an
 | Tool | Input | Returns |
 | --- | --- | --- |
 | `recommend_stack` | `description`, `answers?`, `assume_defaults?`, `detail?`, `categories?`, `already_using?`, `avoid?`, `needs?` | A summary first: the top picks, the monthly cost at 1,000 users and the 2-3 catches that matter. Then one pick per category the product needs, with a reason and an alternative (`detail: "full"` adds free plans, prices and sources). Returns up to 3 questions instead when a missing fact would change the picks, and `outside_coverage` for products Cuely doesn't cover |
+| `check_project` | `description`, `using`, `needs?`, `answers?` | A review of a stack that already exists: keep or change for each tool in use (with the tool to move to and why), core parts that are missing, things to watch, and the catches for this kind of product. Same rules and data as `recommend_stack`; a tool in use stays unless another scores more than 4 points higher or its vendor states it doesn't offer what the product's data requires |
 | `get_recipe` | `product_type` (slug or words), `include_steps?` | Stack with alternatives, cost at 1,000 users, dated catches, ordered steps with commands and starter files, best practices, pitfalls, compliance notes |
 | `compare_tools` | `a`, `b`, `context?` | Two tools in one category side by side, where they differ, and a verdict for the context |
 | `list_categories` | `category?` | Categories and tools, or one category's tools with facts |

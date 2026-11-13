@@ -1,6 +1,7 @@
 import type { Category, ComplianceTopic, Recipe, Tool } from "@/catalog";
 import { COST_PROFILE } from "@/catalog";
 import type { CompareResult } from "@/engine/compare";
+import { midSentence, type ProjectCheck } from "@/engine/check";
 import type { Recommendation } from "@/engine/recommend";
 import { TOPIC_LABELS, statedCompliance } from "@/freshness/compliance";
 
@@ -158,6 +159,44 @@ export function renderRecipe(r: Recipe, tools: Tool[], includeSteps = true): str
   L.push("## Pitfalls", ...r.pitfalls.map((x) => `- ${x}`), "");
   L.push("## Compliance notes (obligations to check, not guarantees)", ...r.complianceNotes.map((x) => `- ${x}`), "");
   L.push(`Verified ${r.verifiedOn}. Prices and limits: call compare_tools or list_categories for each tool's source page.`);
+  return L.join("\n");
+}
+
+export function renderCheck(c: ProjectCheck): string {
+  const L = [`# ${c.headline}`];
+  if (c.status !== "ok") {
+    if (c.notChecked.length) L.push(`Not in the catalog: ${c.notChecked.join(", ")}.`);
+    L.push("", `Next: ${c.nextStep}`);
+    return L.join("\n");
+  }
+  if (c.assumed.length) L.push(`Assumed: ${c.assumed.join("; ")}. Ask the user if any is wrong.`);
+  L.push("");
+  const section = (title: string, verdict: ProjectCheck["items"][number]["verdict"]) => {
+    const items = c.items.filter((i) => i.verdict === verdict);
+    if (!items.length) return;
+    L.push(`## ${title}`);
+    for (const i of items) {
+      const head =
+        verdict === "switch" ? `${i.categoryName}: ${i.current!.name} → ${i.suggestion!.name}`
+        : verdict === "add" ? `${i.categoryName}: add ${i.suggestion!.name}`
+        : `${i.categoryName}: ${i.current!.name}`;
+      L.push(`- ${head}. ${i.why}${verdict === "add" ? ` ${i.suggestion!.reason}` : ""}`);
+      for (const w of i.watch) L.push(`  - Watch: ${w}`);
+    }
+    L.push("");
+  };
+  section("Change", "switch");
+  section("Add", "add");
+  section("Keep", "keep");
+  if (c.catches.length) {
+    L.push("## Catches for this kind of product");
+    for (const x of c.catches) L.push(`- ${x.text} (read ${x.verifiedOn}, ${x.source})`);
+    L.push("");
+  }
+  if (c.optionalAdds.length) L.push(`Optional, not covered yet: ${c.optionalAdds.map((o) => `${midSentence(o.categoryName)} (${o.name})`).join(", ")}.`);
+  if (c.notChecked.length) L.push(`Not checked, because Cuely doesn't track them: ${c.notChecked.join(", ")}.`);
+  L.push(`Next: ${c.nextStep}`);
+  L.push(`Policy: ${c.policy} Method: ${c.method}`);
   return L.join("\n");
 }
 

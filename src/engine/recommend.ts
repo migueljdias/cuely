@@ -196,13 +196,16 @@ export function routeRecipe(recipes: Recipe[], profile: Profile, description: st
   return { recipe, note: notes.length ? notes.join(" ") : null };
 }
 
+/** What a tool has to beat a tool you already use by, before Cuely says to switch. */
+export const SWITCH_COST = 4;
+
 export function scoreTool(tool: Tool, needs: Need[], categorySize: number, alreadyUsing: boolean): number {
   const needScore = needs.reduce((sum, n) => sum + (tool.fit[n]?.weight ?? 0), 0);
   const baseline = (categorySize - tool.baseline + 1) * 0.4;
-  return needScore + baseline + (tool.health?.score ?? 0) + (complianceFor(tool, needs)?.score ?? 0) + (alreadyUsing ? 4 : 0);
+  return needScore + baseline + (tool.health?.score ?? 0) + (complianceFor(tool, needs)?.score ?? 0) + (alreadyUsing ? SWITCH_COST : 0);
 }
 
-function strongestReason(tool: Tool, needs: Need[]): string | null {
+export function strongestReason(tool: Tool, needs: Need[]): string | null {
   let best: { w: number; reason: string } | null = null;
   for (const n of needs) {
     const f = tool.fit[n];
@@ -289,7 +292,7 @@ export function categoriesFor(p: Profile, needs: Need[] = []): { pick: { slug: C
   return { pick, leftOut };
 }
 
-function productLabel(p: Profile, b2b: boolean): string {
+export function productLabel(p: Profile, b2b: boolean): string {
   if (p.audience === "internal") return "Staff tool";
   const parts: string[] = [];
   if (p.platform === "mobile") parts.push("Phone app");
@@ -317,7 +320,7 @@ function headlineOrder(p: Profile, b2b: boolean): CategorySlug[] {
   return [...new Set(o)];
 }
 
-function catchesFor(p: Profile, needs: Need[]): typeof CATCHES {
+export function catchesFor(p: Profile, needs: Need[]): typeof CATCHES {
   const flags: string[] = [];
   if (p.audience === "internal") {
     if (needs.includes("google_workspace")) flags.push("internal_workspace");
@@ -379,12 +382,23 @@ const ASSUMED_TEXT: Record<"platform" | "money" | "audience", (p: Profile) => st
   audience: (p) => (p.audience === "customers" ? "for customers, not your own staff" : "for your own staff"),
 };
 
-export function recommendStack(catalog: CatalogSnapshot, input: RecommendInput): Recommendation {
-  const { profile, unknown, vague } = detectProfile(input.description, input.answers);
-  const coverage = detectCoverage(input.description);
+export interface ProductRead {
+  profile: Profile;
+  /** Profile facts the description didn't settle. */
+  unknown: ("platform" | "money" | "audience")[];
+  vague: boolean;
+  coverage: Coverage;
+  detected: DetectedNeed[];
+  needs: Need[];
+  b2b: boolean;
+}
 
-  // Needs: words in the description, plus what the profile implies, plus explicit ones.
-  const detected: DetectedNeed[] = detectNeeds(input.description);
+/** Reads a description: the product profile, plus needs from its words, the profile and explicit ones. */
+export function readProduct(description: string, answers?: Answers, extraNeeds: Need[] = []): ProductRead {
+  const { profile, unknown, vague } = detectProfile(description, answers);
+  const coverage = detectCoverage(description);
+
+  const detected: DetectedNeed[] = detectNeeds(description);
   const addNeed = (need: Need, matched: string) => {
     if (!detected.some((d) => d.need === need)) detected.push({ need, matched });
   };
@@ -403,9 +417,27 @@ export function recommendStack(catalog: CatalogSnapshot, input: RecommendInput):
   if (profile.game) addNeed("counters", `${profile.matched.game} (scores and streaks)`);
   if (profile.shareable) addNeed("spiky", "players share results");
   if (!profile.rag) dropNeed("rag");
-  for (const n of input.needs ?? []) addNeed(n, "(requested)");
+  for (const n of extraNeeds) addNeed(n, "(requested)");
   const needs = detected.map((d) => d.need);
-  const b2b = needs.includes("b2b");
+  return { profile, unknown, vague, coverage, detected, needs, b2b: needs.includes("b2b") };
+}
+
+/** A category's tools ranked for a product, best first. `using` tools get the switching-cost bonus. */
+export function rankCategory(
+  tools: Tool[],
+  category: CategorySlug,
+  needs: Need[],
+  opts: { using?: Set<string>; avoid?: Set<string>; recipeTool?: string } = {},
+): { t: Tool; s: number }[] {
+  const inCat = tools.filter((t) => t.category === category);
+  return inCat
+    .filter((t) => !opts.avoid?.has(t.slug))
+    .map((t) => ({ t, s: scoreTool(t, needs, inCat.length, !!opts.using?.has(t.slug)) + (t.slug === opts.recipeTool ? RECIPE_BONUS : 0) }))
+    .sort((a, b) => b.s - a.s || a.t.baseline - b.t.baseline);
+}
+
+export function recommendStack(catalog: CatalogSnapshot, input: RecommendInput): Recommendation {
+  const { profile, unknown, vague, coverage, detected, needs, b2b } = readProduct(input.description, input.answers, input.needs);
 
   // The recipe follows the profile first (what kind of product it is), then plain words.
   const { recipe, note: recipeNote } = routeRecipe(catalog.recipes, profile, input.description, b2b);
@@ -488,14 +520,9 @@ export function recommendStack(catalog: CatalogSnapshot, input: RecommendInput):
   for (const { slug, role } of plan.pick) {
     const cat = catalog.categories.find((c) => c.slug === slug);
     if (!cat) continue;
-    const inCat = catalog.tools.filter((t) => t.category === cat.slug);
-    const candidates = inCat.filter((t) => !avoid.has(t.slug));
-    if (!candidates.length) continue;
-
     const recipeItem = recipe?.stack.find((s) => s.category === cat.slug);
-    const ranked = candidates
-      .map((t) => ({ t, s: scoreTool(t, needs, inCat.length, using.has(t.slug)) + (t.slug === recipeItem?.tool ? RECIPE_BONUS : 0) }))
-      .sort((a, b) => b.s - a.s || a.t.baseline - b.t.baseline);
+    const ranked = rankCategory(catalog.tools, cat.slug, needs, { using, avoid, recipeTool: recipeItem?.tool });
+    if (!ranked.length) continue;
 
     const top = ranked[0];
     // The tool that would have won on the rules alone, when measured health moved it down.

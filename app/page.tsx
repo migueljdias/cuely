@@ -36,6 +36,11 @@ const mcpTools = [
     what: "The picks that matter, the monthly cost at 1,000 users and the catches that change the plan, then one line per category. Asks a short question first when the answer would change the pick, and says so when a product is outside its coverage.",
   },
   {
+    name: "check_project",
+    sig: "description, using, needs?, answers?",
+    what: "For a project already under way: name the tools it uses and get keep, change or add for each part, with today's prices, outages and each vendor's compliance statements.",
+  },
+  {
     name: "get_recipe",
     sig: "product_type, include_steps?",
     what: "The full build: ordered steps, commands, starter files, best practices, pitfalls and compliance notes.",
