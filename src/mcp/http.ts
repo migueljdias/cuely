@@ -180,7 +180,7 @@ export function createMcpHandler(opts: HandlerOptions = {}) {
           name: "cuely",
           transport: "streamable-http",
           endpoint: new URL(req.url).pathname,
-          tools: ["recommend_stack", "check_project", "get_recipe", "compare_tools", "list_categories"],
+          tools: ["start_project", "recommend_stack", "check_project", "get_recipe", "compare_tools", "list_categories"],
           auth: {
             oauth: RESOURCE_METADATA_URL,
             api_key: `Send "Authorization: Bearer cuely_..." with a key from ${KEY_URL}`,

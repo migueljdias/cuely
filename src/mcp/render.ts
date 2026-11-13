@@ -2,6 +2,7 @@ import type { Category, ComplianceTopic, Recipe, Tool } from "@/catalog";
 import { COST_PROFILE } from "@/catalog";
 import type { CompareResult } from "@/engine/compare";
 import { midSentence, type ProjectCheck } from "@/engine/check";
+import type { ChecklistItem, ProjectStart } from "@/engine/start";
 import type { Recommendation } from "@/engine/recommend";
 import { TOPIC_LABELS, statedCompliance } from "@/freshness/compliance";
 
@@ -27,7 +28,7 @@ function complianceSection(r: Recommendation): string[] {
   return L;
 }
 
-export function renderRecommendation(r: Recommendation, detail: "summary" | "full" = "summary"): string {
+export function renderRecommendation(r: Recommendation, detail: "summary" | "full" = "summary", footer = true): string {
   const L: string[] = [];
   if (r.status === "outside_coverage") {
     L.push(`# Outside Cuely's coverage`);
@@ -92,8 +93,31 @@ export function renderRecommendation(r: Recommendation, detail: "summary" | "ful
     for (const l of r.leftOut) byReason.set(l.reason, [...(byReason.get(l.reason) ?? []), l.category]);
     L.push(`Left out: ${[...byReason].map(([why, cats]) => `${cats.join(", ")} (${why})`).join(" ")}`);
   }
-  L.push(`Next: ${r.nextStep}`);
-  L.push(`Policy: ${r.policy} Method: ${r.method}`);
+  if (footer) {
+    L.push(`Next: ${r.nextStep}`);
+    L.push(`Policy: ${r.policy} Method: ${r.method}`);
+  }
+  return L.join("\n");
+}
+
+const PHASE_TITLES: Record<ChecklistItem["phase"], string> = {
+  day_one: "Set up before real data goes in",
+  before_launch: "Finish before launch",
+};
+
+/** The stack, then the security and compliance to-do list as checkboxes. */
+export function renderStart(s: ProjectStart): string {
+  if (s.status !== "ok") return renderRecommendation(s.recommendation);
+  const r = s.recommendation;
+  const L = [renderRecommendation(r, "summary", false), "", "## Security and compliance checklist (points to obligations; not legal advice)"];
+  for (const phase of ["day_one", "before_launch"] as const) {
+    const items = s.checklist.filter((i) => i.phase === phase);
+    if (!items.length) continue;
+    L.push(`### ${PHASE_TITLES[phase]}`);
+    for (const i of items) L.push(`- [ ] **${i.title}.** ${i.detail} Why: ${i.why} (${i.source})`);
+    L.push("");
+  }
+  L.push(`Next: ${s.nextStep}`, `Policy: ${r.policy} Method: ${r.method}`);
   return L.join("\n");
 }
 
