@@ -196,7 +196,11 @@ export function detectProfile(text: string, answers: Answers = {}): ProfileResul
   // Money
   let money: Money = "none";
   const mk = any(t, MARKETPLACE) ?? (/\bkeep\s+\d+\s?%|\d+\s?%\s+(cut|fee|commission)/.test(raw) ? "a % cut" : null);
-  const you = any(t, PAY_YOU) ?? (/\$\s?\d+(\.\d+)?\s*(\/|a |per )\s*(month|mo|year|yr)/.test(raw) ? "a monthly price" : null);
+  const you =
+    any(t, PAY_YOU) ??
+    (/\$\s?\d+(\.\d+)?\s*(\/|a |per )\s*(month|mo|year|yr)/.test(raw) ? "a monthly price" : null) ??
+    // "patients pay monthly", "members pay a yearly fee": someone pays the product on a schedule.
+    (/\bpays?\s+(monthly|yearly|annually|weekly|(a|an)\s+(monthly|yearly|annual|weekly)\b|(a|an)\s+fee\b|per\s+(month|year|week|use))/.test(raw) ? "pays on a schedule" : null);
   const twoSided = any(t, TWO_SIDED);
   const noMoney = any(t, NO_MONEY);
   if (answers.money) {

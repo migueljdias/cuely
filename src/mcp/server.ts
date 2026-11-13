@@ -3,11 +3,12 @@ import { z } from "zod";
 import type { CategorySlug, Need } from "@/catalog";
 import { checkProject } from "@/engine/check";
 import { compareTools } from "@/engine/compare";
+import { startProject } from "@/engine/start";
 import { ALL_NEEDS, NEED_LABELS } from "@/engine/needs";
 import { detectCoverage } from "@/engine/profile";
 import { matchRecipe, recommendStack } from "@/engine/recommend";
 import type { Repository } from "@/repo";
-import { renderCategories, renderCategory, renderCheck, renderCompare, renderRecipe, renderRecommendation } from "./render";
+import { renderCategories, renderCategory, renderCheck, renderCompare, renderRecipe, renderRecommendation, renderStart } from "./render";
 
 /**
  * Shown by MCP clients next to the connector (Claude, VS Code, Cursor). Icons must be HTTPS and
@@ -16,7 +17,7 @@ import { renderCategories, renderCategory, renderCheck, renderCompare, renderRec
 export const SERVER_INFO = {
   name: "cuely",
   title: "Cuely",
-  version: "0.4.0",
+  version: "0.5.0",
   websiteUrl: "https://cuely.dev",
   icons: [
     { src: "https://cuely.dev/brand/icon-512.png", mimeType: "image/png", sizes: ["512x512"] },
@@ -31,7 +32,7 @@ const CATEGORY_SLUGS = [
 ] as const satisfies readonly CategorySlug[];
 
 export const INSTRUCTIONS = `Cuely recommends tools and setup steps for what a user is building: web apps, phone apps, marketplaces, AI apps, staff tools and casual web games.
-Use recommend_stack first with a one- or two-sentence description of the product (who it's for, what it does, any constraints such as budget, region, compliance, or tools already in use). The answer leads with the monthly cost at 1,000 users and the catches that matter.
+When the user is starting a new project, call start_project once: it returns the stack and the security and compliance checklist for it, without questions. Otherwise use recommend_stack first with a one- or two-sentence description of the product (who it's for, what it does, any constraints such as budget, region, compliance, or tools already in use). The answer leads with the monthly cost at 1,000 users and the catches that matter.
 If it returns questions, ask the user (or answer from the conversation) and call again with answers. If it says the product is outside Cuely's coverage, tell the user rather than forcing a stack.
 If it names a recipe, call get_recipe for full setup steps.
 Use check_project on a project that already exists: pass what it is and the tools it uses now (read them from package.json, config and env files), and it says what to keep, change or add with today's prices, outages and compliance facts. Run it again when the product changes.
@@ -115,6 +116,57 @@ export function createCuelyServer(ctx: ServerContext): McpServer {
         // Semgrep's MCP SSRF rule misfires here: this renders catalog text and makes no outbound request.
         content: [{ type: "text", text: renderRecommendation(rec, args.detail ?? "summary") }], // nosemgrep
         structuredContent: rec as unknown as Record<string, unknown>,
+      };
+    },
+  );
+
+  server.registerTool(
+    "start_project",
+    {
+      title: "Start a new project",
+      description:
+        "Everything a new build needs in one call: the stack for what the user is building (same picks, cost at 1,000 users and catches as recommend_stack), plus the security and compliance checklist for that product and stack, split into what to set up before real data goes in and what to finish before launch. Covers secrets, access control, payments, privacy, GDPR, HIPAA, business-customer reviews, AI and app-store rules, each with its source. Never asks questions: what the description leaves open is assumed and listed. Call it once at the start; use check_project later.",
+      inputSchema: {
+        description: z
+          .string()
+          .min(3)
+          .max(2000)
+          .describe("What the user is building, in plain words: who it's for, what it does, and constraints such as region, budget, health data or payments."),
+        answers: z
+          .object({
+            platform: z.enum(["web", "mobile", "both"]).optional(),
+            money: z.enum(["none", "users_pay_you", "users_pay_each_other"]).optional(),
+            audience: z.enum(["customers", "internal"]).optional(),
+          })
+          .optional()
+          .describe("Facts you know from the conversation: platform, who pays whom, customers or staff."),
+        needs: z
+          .array(z.enum(ALL_NEEDS as [Need, ...Need[]]))
+          .optional()
+          .describe("Explicit needs, added to those detected from the description. Same values as recommend_stack."),
+        already_using: z.array(z.string()).optional().describe("Tools the user has already chosen (names or slugs)."),
+        avoid: z.array(z.string()).optional().describe("Tools to leave out (names or slugs)."),
+      },
+      annotations: { title: "Start a new project", ...readOnly },
+    },
+    async (args) => {
+      const snap = await ctx.repo.snapshot();
+      const res = startProject(snap, {
+        description: args.description,
+        answers: args.answers,
+        needs: args.needs,
+        alreadyUsing: args.already_using,
+        avoid: args.avoid,
+      });
+      log(ctx, "start_project", {
+        recipe: res.recommendation.productType.recipe,
+        categories: res.recommendation.stack.map((s) => s.category),
+        needs: res.recommendation.detectedNeeds.map((d) => d.need),
+      });
+      return {
+        // Semgrep's MCP SSRF rule misfires here: this renders catalog text and makes no outbound request.
+        content: [{ type: "text", text: renderStart(res) }], // nosemgrep
+        structuredContent: res as unknown as Record<string, unknown>,
       };
     },
   );

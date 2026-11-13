@@ -30,9 +30,9 @@ describe("MCP over Streamable HTTP", () => {
     await srv.close();
   });
 
-  it("advertises the five tools, all read-only, with instructions", async () => {
+  it("advertises the six tools, all read-only, with instructions", async () => {
     const { tools } = await client.listTools();
-    expect(tools.map((t) => t.name).sort()).toEqual(["check_project", "compare_tools", "get_recipe", "list_categories", "recommend_stack"]);
+    expect(tools.map((t) => t.name).sort()).toEqual(["check_project", "compare_tools", "get_recipe", "list_categories", "recommend_stack", "start_project"]);
     for (const t of tools) expect(t.annotations?.readOnlyHint).toBe(true);
     expect(client.getInstructions()).toMatch(/recommend_stack first/);
   });
@@ -57,6 +57,16 @@ describe("MCP over Streamable HTTP", () => {
     expect(text(r)).toMatch(/## Cost/);
     expect(text(r)).toMatch(/- Auth: WorkOS AuthKit/);
     expect(text(r)).toMatch(/get_recipe/);
+  });
+
+  it("start_project returns the stack and a checklist without asking", async () => {
+    const r: any = await client.callTool({ name: "start_project", arguments: { description: "Clinic app with patient records, EU patients" } });
+    expect(r.isError).toBeFalsy();
+    expect(r.structuredContent.status).toBe("ok");
+    expect(r.structuredContent.checklist.map((c: any) => c.id)).toEqual(expect.arrayContaining(["hipaa-baas", "gdpr-dpas"]));
+    expect(text(r)).toMatch(/## Stack/);
+    expect(text(r)).toMatch(/- \[ \] \*\*Sign a BAA/);
+    expect(repo.events.some((e) => e.tool === "start_project")).toBe(true);
   });
 
   it("check_project reviews a stack in use without asking questions", async () => {
@@ -126,7 +136,7 @@ describe("HTTP behavior", () => {
   it("answers a plain GET with server info and handles CORS preflight", async () => {
     const srv = await serve(createMcpHandler({ repo: memoryRepository() }));
     const info = await fetch(srv.url).then((r) => r.json());
-    expect(info.tools).toHaveLength(5);
+    expect(info.tools).toHaveLength(6);
     expect(info.auth.oauth).toBe("https://cuely.dev/.well-known/oauth-protected-resource/api/mcp");
     const pre = await fetch(srv.url, { method: "OPTIONS" });
     expect(pre.status).toBe(204);
@@ -148,7 +158,7 @@ describe("HTTP behavior", () => {
     const get = await fetch(srv.url);
     expect(get.status).toBe(401);
     expect(get.headers.get("www-authenticate")).toMatch(/resource_metadata=/);
-    expect((await get.json()).tools).toHaveLength(5);
+    expect((await get.json()).tools).toHaveLength(6);
     const body = await res.json();
     expect(body.id).toBe(7);
     expect(body.error.message).toMatch(/app\.cuely\.dev\/account/);

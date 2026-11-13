@@ -12,6 +12,7 @@
     "db:sql": "tsx scripts/generate-sql.ts",
     "db:seed": "tsx scripts/seed.ts",
     "check:pricing": "tsx scripts/check-pricing.ts",
+    "check:practices": "tsx scripts/check-practices.ts",
     "collect:signals": "tsx scripts/collect-signals.ts",
     "update:facts": "tsx scripts/update-facts.ts",
     "collect:compliance": "tsx scripts/collect-compliance.ts",

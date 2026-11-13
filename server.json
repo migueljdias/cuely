@@ -3,7 +3,7 @@
   "name": "io.github.migueljdias/cuely",
   "title": "Cuely",
   "description": "Picks the stack, security and compliance setup for what you're building, with today's prices.",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "websiteUrl": "https://cuely.dev",
   "repository": {
     "url": "https://github.com/migueljdias/cuely",
