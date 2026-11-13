@@ -13,6 +13,8 @@ export interface SessionUser {
   id: string;
   email: string | null;
   name: string | null;
+  /** The profile picture the user uploaded (or brought from Google/GitHub); null when they have none. */
+  imageUrl: string | null;
 }
 
 /** The signed-in user, or null. Never throws. */
@@ -26,7 +28,7 @@ export async function currentUser(): Promise<SessionUser | null> {
       u.emailAddresses[0]?.emailAddress ??
       null;
     const name = [u.firstName, u.lastName].filter(Boolean).join(" ") || null;
-    return { id: u.id, email, name };
+    return { id: u.id, email, name, imageUrl: u.hasImage ? u.imageUrl : null };
   } catch (err) {
     console.warn("[auth] currentUser failed", err);
     return null;
