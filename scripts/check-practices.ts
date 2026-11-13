@@ -1,15 +1,16 @@
 /**
  * Loads every source page the start_project checklist cites (src/catalog/practices.ts)
- * and every catch's source, and fails when one no longer loads, so a moved or deleted
+ * every catch's source, and every source and docs link in the recipes, and fails when one no longer loads, so a moved or deleted
  * page is fixed instead of cited.
  *
  * Usage: npx tsx scripts/check-practices.ts
  */
-import { CATCHES } from "@/catalog";
+import { CATCHES, recipes } from "@/catalog";
 import { PRACTICES } from "@/catalog/practices";
 
 const USER_AGENT = "Mozilla/5.0 (compatible; CuelyFreshness/1.0; +https://cuely.dev)";
-const urls = [...new Set([...PRACTICES.map((p) => p.source), ...CATCHES.map((c) => c.source)])];
+const recipeUrls = recipes.flatMap((r) => [...(r.catches ?? []).map((c) => c.source), ...r.steps.flatMap((s) => s.docs ?? [])]);
+const urls = [...new Set([...PRACTICES.map((p) => p.source), ...CATCHES.map((c) => c.source), ...recipeUrls])];
 
 async function load(url: string): Promise<string | null> {
   for (let attempt = 0; attempt < 2; attempt++) {

@@ -159,11 +159,13 @@ export const RECIPE_FOR = {
   mobile: "mobile-subscription-app",
   ai: "ai-docs-app",
   game: "daily-web-game",
+  consumer: "consumer-web-app",
 } as const;
 
 /**
  * Picks the recipe for a product: staff tools, then marketplaces, then phone apps,
- * then web games, then AI apps, from the profile; otherwise the best keyword match among the rest.
+ * then web games, then AI apps, from the profile; otherwise the best keyword match among the rest,
+ * and a web product for individual people that nothing else matched gets the consumer recipe.
  * Returns a note when the recipe covers only part of the product.
  */
 export function routeRecipe(recipes: Recipe[], profile: Profile, description: string, b2b: boolean): { recipe: Recipe | null; note: string | null } {
@@ -191,7 +193,11 @@ export function routeRecipe(recipes: Recipe[], profile: Profile, description: st
   if (!recipe) {
     const routed = new Set<string>(Object.values(RECIPE_FOR));
     recipe = matchRecipe(recipes.filter((r) => !routed.has(r.slug)), description);
-    if (recipe && profile.ai) notes.push(`The ${recipe.slug} recipe covers the SaaS parts (organizations, billing, email) but not the AI parts; the AI picks are in this answer, and the ai-docs-app recipe has the steps.`);
+    // A web product for individual people that no other recipe claimed.
+    if (!recipe && !b2b && profile.platform === "web" && profile.audience === "customers" && profile.money !== "users_pay_each_other" && !profile.realtime) {
+      recipe = by(RECIPE_FOR.consumer);
+      if (recipe && profile.ai) notes.push("The AI parts aren't in this recipe: call the model API from your server, cap calls per user, and see the ai-docs-app recipe.");
+    } else if (recipe && profile.ai) notes.push(`The ${recipe.slug} recipe covers the SaaS parts (organizations, billing, email) but not the AI parts; the AI picks are in this answer, and the ai-docs-app recipe has the steps.`);
   }
   return { recipe, note: notes.length ? notes.join(" ") : null };
 }

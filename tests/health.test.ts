@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { categories, recipes, tools } from "@/catalog";
+import { categories, recipes as allRecipes, tools } from "@/catalog";
 import { SOURCES } from "@/catalog/sources";
 import { recommendStack, scoreTool } from "@/engine/recommend";
 import { countAdvisories, countIncidents, downloadWindows, healthFrom, normsOf, NO_NORMS, outageRivals, type ToolSignals } from "@/freshness/health";
@@ -152,6 +152,8 @@ describe("reading the sources", () => {
 
 describe("health in the ranking", () => {
   const description = "A web app for customers with a monthly subscription";
+  // Health on its own, without a recipe's pick: the consumer recipe would otherwise claim this description.
+  const recipes = allRecipes.filter((r) => r.slug !== "consumer-web-app");
   const withHealth = (slug: string, score: number, reason: string) =>
     tools.map((t) => (t.slug === slug ? { ...t, health: { score, reasons: [reason], measuredOn: "2026-11-12" } } : t));
 

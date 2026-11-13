@@ -6,6 +6,7 @@ on:
     paths:
       - src/catalog/practices.ts
       - src/catalog/catches.ts
+      - src/catalog/recipes/**
       - scripts/check-practices.ts
       - .github/workflows/practices.yml
   schedule:
