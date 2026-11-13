@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Create an account · Cuely", robots:
 
 export default function SignUpPage() {
   return (
-    <AuthShell title="Create an account">
+    <AuthShell title="Create your account" lede="A free account lets your AI tool use Cuely. It takes a few seconds.">
       <CuelySignUp />
     </AuthShell>
   );

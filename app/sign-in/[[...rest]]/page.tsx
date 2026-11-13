@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Sign in · Cuely", robots: { index: 
 
 export default function SignInPage() {
   return (
-    <AuthShell title="Sign in">
+    <AuthShell title="Welcome back" lede="Sign in to get your API key and see your usage.">
       <CuelySignIn />
     </AuthShell>
   );
