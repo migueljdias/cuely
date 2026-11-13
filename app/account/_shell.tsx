@@ -16,11 +16,15 @@ import {
   X,
 } from "lucide-react";
 import { SITE_URL, SUPPORT_EMAIL } from "@/site";
+import { Avatar } from "./_avatar";
 
 /*
   The signed-in app: a left sidebar instead of the site's top bar. On wide screens the sidebar
   can shrink to an icon rail (remembered in this browser); under 900px it becomes a drawer
   opened from the top bar. Styles: the "App shell" block in globals.css.
+
+  The account sections are anchors on /account; Profile is its own page (/account/profile),
+  reached from the sidebar item above Support or the avatar in the top bar.
 */
 
 const ACCOUNT = [
@@ -29,6 +33,8 @@ const ACCOUNT = [
   { href: "#usage", label: "Usage", icon: Gauge },
   { href: "#keys", label: "API keys", icon: KeyRound },
 ];
+
+const PROFILE_HREF = "/account/profile";
 
 const BUILD = [
   { href: `${SITE_URL}/start`, label: "Get started", icon: Rocket },
@@ -40,12 +46,20 @@ const RAIL_KEY = "cuely-sidebar-rail";
 
 export function AppShell({
   email,
+  name,
+  imageUrl,
   plan,
+  page = "account",
   logOut,
   children,
 }: {
   email: string;
+  name: string | null;
+  /** The user's profile picture, or null to show their initial. */
+  imageUrl: string | null;
   plan: string;
+  /** Which page is showing: the account sections, or the profile editor. */
+  page?: "account" | "profile";
   /** The sign-out item, passed in so the shell itself doesn't need Clerk. */
   logOut: ReactNode;
   children: ReactNode;
@@ -62,6 +76,7 @@ export function AppShell({
 
   // Highlights the section nearest the top of the window as the page scrolls.
   useEffect(() => {
+    if (page !== "account") return;
     const ids = ACCOUNT.map((a) => a.href.slice(1));
     const els = ids.map((id) => document.getElementById(id)).filter((e): e is HTMLElement => Boolean(e));
     const onScroll = () => {
@@ -73,7 +88,7 @@ export function AppShell({
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [page]);
 
   useEffect(() => {
     if (!open) return;
@@ -90,8 +105,9 @@ export function AppShell({
     } catch {}
   };
 
-  const current = ACCOUNT.find((a) => a.href === active)?.label ?? "Overview";
-  const initial = (email.trim()[0] ?? "?").toUpperCase();
+  const onProfile = page === "profile";
+  const current = onProfile ? "Profile" : (ACCOUNT.find((a) => a.href === active)?.label ?? "Overview");
+  const label = name || email;
 
   return (
     <div className={`app${rail ? " is-rail" : ""}${open ? " is-open" : ""}`}>
@@ -114,9 +130,7 @@ export function AppShell({
         </div>
 
         <div className="app-who">
-          <span className="app-avatar" aria-hidden="true">
-            {initial}
-          </span>
+          <Avatar className="app-avatar" imageUrl={imageUrl} label={label} />
           <span className="app-who-text">
             <span className="app-who-email">{email}</span>
             <span className="app-who-plan">{plan} plan</span>
@@ -127,9 +141,9 @@ export function AppShell({
           {ACCOUNT.map(({ href, label, icon: Icon }) => (
             <a
               key={href}
-              href={href}
-              className={active === href ? "is-active" : undefined}
-              aria-current={active === href ? "location" : undefined}
+              href={onProfile ? `/account${href}` : href}
+              className={!onProfile && active === href ? "is-active" : undefined}
+              aria-current={!onProfile && active === href ? "location" : undefined}
               onClick={() => setOpen(false)}
               title={rail ? label : undefined}
             >
@@ -152,6 +166,15 @@ export function AppShell({
 
         <div className="app-side-foot">
           <nav className="app-nav" aria-label="Help">
+            <a
+              href={PROFILE_HREF}
+              className={onProfile ? "is-active" : undefined}
+              aria-current={onProfile ? "page" : undefined}
+              title={rail ? "Profile" : undefined}
+            >
+              <Avatar className="app-nav-avatar" imageUrl={imageUrl} label={label} />
+              <span>Profile</span>
+            </a>
             <a href={`mailto:${SUPPORT_EMAIL}`} title={rail ? "Support" : undefined}>
               <LifeBuoy size={17} strokeWidth={1.8} aria-hidden="true" />
               <span>Support</span>
@@ -182,9 +205,9 @@ export function AppShell({
             <span aria-hidden="true">/</span>
             <strong>{current}</strong>
           </nav>
-          <span className="app-top-avatar" aria-hidden="true">
-            {initial}
-          </span>
+          <a className="app-top-avatar" href={PROFILE_HREF} aria-label="Your profile" title="Your profile">
+            <Avatar imageUrl={imageUrl} label={label} />
+          </a>
         </header>
         <main id="main" className="app-main">
           {children}

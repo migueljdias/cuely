@@ -34,7 +34,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const { checkout } = await searchParams;
 
   return (
-    <AppShell email={user.email ?? ""} plan={plan.name} logOut={<LogOutItem />}>
+    <AppShell email={user.email ?? ""} name={user.name} imageUrl={user.imageUrl} plan={plan.name} logOut={<LogOutItem />}>
       <div className="account">
         <div id="overview" className="app-section">
           <h1 className="app-title">Your account</h1>

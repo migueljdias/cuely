@@ -1,8 +1,8 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { SignIn, SignUp } from "@clerk/nextjs";
-import { clerkAppearance } from "@/auth/appearance";
+import { SignIn, SignUp, UserProfile } from "@clerk/nextjs";
+import { clerkAppearance, clerkProfileAppearance } from "@/auth/appearance";
 
 const QUERY = "(prefers-color-scheme: dark)";
 
@@ -47,4 +47,10 @@ export function CuelySignUp() {
       appearance={clerkAppearance(dark)}
     />
   );
+}
+
+/** The profile editor on /account/profile: picture, name, emails, password and connected accounts. */
+export function CuelyUserProfile() {
+  const dark = usePrefersDark();
+  return <UserProfile routing="path" path="/account/profile" appearance={clerkProfileAppearance(dark)} />;
 }

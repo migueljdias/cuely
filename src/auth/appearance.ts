@@ -95,3 +95,31 @@ export function clerkAppearance(isDark: boolean) {
     },
   };
 }
+
+/**
+ * Clerk's profile editor (picture, name, email addresses, password, connected accounts) on
+ * /account/profile, drawn as one of the account page's panels.
+ */
+export function clerkProfileAppearance(isDark: boolean) {
+  const line = isDark ? "#1e2538" : "#e6e9f0";
+  return {
+    variables: {
+      ...(isDark ? dark : light),
+      ...(isDark ? { colorBackground: "#0a0e1a" } : {}),
+      fontFamily: 'var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif',
+      fontSize: "14.5px",
+      borderRadius: "10px",
+    },
+    elements: {
+      rootBox: { width: "100%" },
+      cardBox: {
+        width: "100%",
+        maxWidth: "100%",
+        border: `1px solid ${line}`,
+        borderRadius: "16px",
+        boxShadow: "0 1px 2px rgba(15, 22, 48, 0.04)",
+      },
+      formButtonPrimary: { textTransform: "none", boxShadow: "none", background: isDark ? "#2f5bff" : "#1f4bd8" },
+    },
+  };
+}
