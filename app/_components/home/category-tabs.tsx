@@ -7,7 +7,7 @@ export interface CategoryTab {
   name: string;
   /** The current top tool's one-line pitch. */
   lead: string;
-  /** What moved the order this week, or what the tool is. */
+  /** What moved the order in the latest measurement, or what the tool is. */
   rest: string;
   free: string | null;
   tools: { slug: string; name: string }[];

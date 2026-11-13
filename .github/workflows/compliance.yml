@@ -10,7 +10,7 @@ name: Compliance
 # the listed pages load. No key is used and nothing is written.
 on:
   schedule:
-    - cron: "47 6 * * 1" # Mondays 06:47 UTC, after the pricing job
+    - cron: "47 6 * * *" # Every day 06:47 UTC, after the pricing job; Claude is called only for tools whose pages changed
   workflow_dispatch:
     inputs:
       recheck:

@@ -7,7 +7,7 @@
  *   eu_region  lets you keep the data in the EU
  *   soc2       has a SOC 2 report
  *
- * The weekly job (scripts/collect-compliance.ts) reads the pages listed in
+ * The daily job (scripts/collect-compliance.ts) reads the pages listed in
  * src/catalog/compliance-sources.ts and stores the lines that touch these topics
  * under data/compliance/<slug>.json. When a tool's lines change, a model answers
  * the four questions from them, and this file decides what is published to

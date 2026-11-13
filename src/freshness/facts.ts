@@ -1,5 +1,5 @@
 /**
- * Price and limit facts that the weekly job re-reads from each vendor's pricing page
+ * Price and limit facts that the daily job re-reads from each vendor's pricing page
  * (scripts/update-facts.ts) and stores in data/facts.json. The catalog lays them over
  * the hand-written entry, so a price change reaches every answer without a person
  * editing src/catalog.

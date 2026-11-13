@@ -1,6 +1,6 @@
 /**
  * Re-reads the price and limit facts of every tool whose pricing page changed, and
- * rewrites data/facts.json. Runs after scripts/check-pricing.ts in the weekly job.
+ * rewrites data/facts.json. Runs after scripts/check-pricing.ts in the daily job.
  *
  * Claude reads the page's price lines next to the catalog's current wording and
  * proposes the new wording; src/freshness/facts.ts decides whether it is published
