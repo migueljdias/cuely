@@ -24,7 +24,6 @@ export function serverCard() {
       apiKey: "Or send Authorization: Bearer cuely_... with a free key from https://app.cuely.dev/account",
     },
     tools: Object.entries(registered).map(([name, t]) => ({ name, title: t.title, description: t.description })),
-    repository: "https://github.com/migueljdias/cuely",
     homepage: "https://cuely.dev",
   };
 }
