@@ -9,7 +9,21 @@ import { matchRecipe, recommendStack } from "@/engine/recommend";
 import type { Repository } from "@/repo";
 import { renderCategories, renderCategory, renderCheck, renderCompare, renderRecipe, renderRecommendation } from "./render";
 
-export const SERVER_INFO = { name: "cuely", version: "0.3.0" };
+/**
+ * Shown by MCP clients next to the connector (Claude, VS Code, Cursor). Icons must be HTTPS and
+ * on the server's own domain, so they point at cuely.dev, which also serves /api/mcp.
+ */
+export const SERVER_INFO = {
+  name: "cuely",
+  title: "Cuely",
+  version: "0.4.0",
+  websiteUrl: "https://cuely.dev",
+  icons: [
+    { src: "https://cuely.dev/brand/icon-512.png", mimeType: "image/png", sizes: ["512x512"] },
+    { src: "https://cuely.dev/apple-icon.png", mimeType: "image/png", sizes: ["180x180"] },
+    { src: "https://cuely.dev/icon.svg", mimeType: "image/svg+xml", sizes: ["any"] },
+  ],
+};
 
 const CATEGORY_SLUGS = [
   "hosting", "database", "auth", "payments", "email", "secrets", "dns", "monitoring", "analytics", "storage",
