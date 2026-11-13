@@ -1,14 +1,15 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { CategorySlug, Need } from "@/catalog";
+import { checkProject } from "@/engine/check";
 import { compareTools } from "@/engine/compare";
 import { ALL_NEEDS, NEED_LABELS } from "@/engine/needs";
 import { detectCoverage } from "@/engine/profile";
 import { matchRecipe, recommendStack } from "@/engine/recommend";
 import type { Repository } from "@/repo";
-import { renderCategories, renderCategory, renderCompare, renderRecipe, renderRecommendation } from "./render";
+import { renderCategories, renderCategory, renderCheck, renderCompare, renderRecipe, renderRecommendation } from "./render";
 
-export const SERVER_INFO = { name: "cuely", version: "0.2.0" };
+export const SERVER_INFO = { name: "cuely", version: "0.3.0" };
 
 const CATEGORY_SLUGS = [
   "hosting", "database", "auth", "payments", "email", "secrets", "dns", "monitoring", "analytics", "storage",
@@ -19,6 +20,7 @@ export const INSTRUCTIONS = `Cuely recommends tools and setup steps for what a u
 Use recommend_stack first with a one- or two-sentence description of the product (who it's for, what it does, any constraints such as budget, region, compliance, or tools already in use). The answer leads with the monthly cost at 1,000 users and the catches that matter.
 If it returns questions, ask the user (or answer from the conversation) and call again with answers. If it says the product is outside Cuely's coverage, tell the user rather than forcing a stack.
 If it names a recipe, call get_recipe for full setup steps.
+Use check_project on a project that already exists: pass what it is and the tools it uses now (read them from package.json, config and env files), and it says what to keep, change or add with today's prices, outages and compliance facts. Run it again when the product changes.
 Use compare_tools when the user is choosing between two specific tools, and list_categories to browse the catalog.
 Picks come from published rules; no vendor pays for placement. Prices and limits were read from each vendor's own site on the date shown; confirm on the linked page before committing money.`;
 
@@ -99,6 +101,53 @@ export function createCuelyServer(ctx: ServerContext): McpServer {
         // Semgrep's MCP SSRF rule misfires here: this renders catalog text and makes no outbound request.
         content: [{ type: "text", text: renderRecommendation(rec, args.detail ?? "summary") }], // nosemgrep
         structuredContent: rec as unknown as Record<string, unknown>,
+      };
+    },
+  );
+
+  server.registerTool(
+    "check_project",
+    {
+      title: "Check an existing project",
+      description:
+        "Review the stack of a project that is already being built. Pass what the product is and the tools it uses now; returns, per tool, keep or change (with the tool to move to and why), plus core parts that are missing and the catches for this kind of product. Uses the same rules as recommend_stack with today's prices, measured outages and each vendor's compliance statements (HIPAA BAA, GDPR DPA, EU region, SOC 2). A tool in use is kept unless another scores more than 4 points higher or its vendor says it doesn't offer what the product's data requires. Never asks questions: what the description leaves open is assumed and listed.",
+      inputSchema: {
+        description: z
+          .string()
+          .min(3)
+          .max(2000)
+          .describe("What the project is, in plain words, including anything that has changed (new region, payments, health data, AI), e.g. 'Next.js app where therapists keep patient notes, now adding EU customers'."),
+        using: z
+          .array(z.string().min(1).max(100))
+          .min(1)
+          .max(40)
+          .describe("Tools the project uses now, names or slugs, e.g. ['Vercel', 'Supabase', 'Clerk', 'Stripe', 'Resend']. Read them from package.json, config and env files."),
+        needs: z
+          .array(z.enum(ALL_NEEDS as [Need, ...Need[]]))
+          .optional()
+          .describe("Explicit needs, added to those detected from the description. Same values as recommend_stack."),
+        answers: z
+          .object({
+            platform: z.enum(["web", "mobile", "both"]).optional(),
+            money: z.enum(["none", "users_pay_you", "users_pay_each_other"]).optional(),
+            audience: z.enum(["customers", "internal"]).optional(),
+          })
+          .optional()
+          .describe("Facts you know about the project: platform, who pays whom, customers or staff."),
+      },
+      annotations: { title: "Check an existing project", ...readOnly },
+    },
+    async (args) => {
+      const snap = await ctx.repo.snapshot();
+      const res = checkProject(snap, { description: args.description, using: args.using, needs: args.needs, answers: args.answers });
+      log(ctx, "check_project", {
+        categories: [...new Set(res.items.map((i) => i.category))],
+        needs: res.detectedNeeds.map((d) => d.need),
+      });
+      return {
+        // Semgrep's MCP SSRF rule misfires here: this renders catalog text and makes no outbound request.
+        content: [{ type: "text", text: renderCheck(res) }], // nosemgrep
+        structuredContent: res as unknown as Record<string, unknown>,
       };
     },
   );
