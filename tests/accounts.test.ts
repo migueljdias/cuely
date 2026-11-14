@@ -253,7 +253,7 @@ describe("MCP access and plan limits", () => {
     await srv.close();
   });
 
-  it("caps Free at 200 tool calls a day per account, across keys, with a reset time and upgrade link", async () => {
+  it("caps Free at its daily tool-call limit per account, across keys, with a reset time and upgrade link", async () => {
     let t = Date.UTC(2026, 10, 7, 18, 0, 0);
     const srv = await serve(make(() => t));
     for (let i = 0; i < PLANS.free.perDay; i++) {
@@ -268,7 +268,7 @@ describe("MCP access and plan limits", () => {
     expect(body.error.data.limit).toBe("day");
     expect(body.error.data.reset_at).toBe(new Date(nextUtcMidnight(t)).toISOString());
     expect(body.error.data.upgrade_url).toBe("https://app.cuely.dev/account");
-    expect(body.error.message).toMatch(/200 tool calls a day/);
+    expect(body.error.message).toContain(`${PLANS.free.perDay} tool calls a day`);
     expect(Number(over.headers.get("retry-after"))).toBeGreaterThan(0);
     // Listing tools still works, so the client can connect and show the error on the call.
     expect((await send(srv.url, list, "cuely_free")).status).toBe(200);
