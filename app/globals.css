@@ -1689,6 +1689,10 @@ section {
   margin: 0;
   color: var(--text-2);
 }
+.tool-ref dt span {
+  font-weight: 400;
+  font-size: 0.9em;
+}
 .connect-next {
   margin-top: 20px;
 }
