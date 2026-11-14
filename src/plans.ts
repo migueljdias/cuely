@@ -25,7 +25,7 @@ export interface Plan {
 
 const n = (v: number) => v.toLocaleString("en-US");
 
-const free = { perMinute: 30, perDay: 200, maxKeys: 1 };
+const free = { perMinute: 30, perDay: 50, maxKeys: 1 };
 const pro = { perMinute: 120, perDay: 5000, maxKeys: 10 };
 
 export const PLANS: Record<PlanId, Plan> = {

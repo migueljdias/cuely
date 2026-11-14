@@ -166,7 +166,7 @@ Limits are per account, across all its keys and connectors (`src/plans.ts`):
 
 | Plan | Tool calls a day (UTC) | Requests a minute | Keys |
 | --- | --- | --- | --- |
-| Free | 200 | 30 | 1 |
+| Free | 50 | 30 | 1 |
 | Pro | 5,000 | 120 | 10 |
 
 Only `tools/call` counts toward the day; connecting and `tools/list` count toward the minute only. Each request is one upsert into `api_usage`. Over a limit gets HTTP 429 with `Retry-After`, the reset time, and an upgrade link on Free; the instance then answers that account from memory until the reset. Responses carry `x-ratelimit-limit`, `x-ratelimit-remaining` and `x-ratelimit-reset` for the daily quota. Key and token lookups are cached for 60 s per instance, so a revoked key or a plan change can take up to a minute. The plan never reaches the recommendation engine, so money cannot touch a ranking.
