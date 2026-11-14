@@ -1,4 +1,5 @@
 import { ENDPOINT, KEY_PAGE, connectOptions } from "@/connect";
+import { MCP_TOOLS } from "@/mcp/tool-docs";
 import { PLANS } from "@/plans";
 import { pageMeta, breadcrumbLd } from "@/seo";
 import { SITE_URL } from "@/site";
@@ -126,6 +127,23 @@ export default function Start() {
             </p>
           </li>
         </ol>
+
+        <section className="panel" id="tools" aria-labelledby="tools-title">
+          <div className="panel-head">
+            <h2 id="tools-title">Tools</h2>
+            <p>Cuely&apos;s MCP server has six tools. All are read-only: they take a description and return advice.</p>
+          </div>
+          <dl className="faq tool-ref">
+            {MCP_TOOLS.map((t) => (
+              <div key={t.name}>
+                <dt>
+                  <code>{t.name}</code> <span className="muted">({t.sig})</span>
+                </dt>
+                <dd>{t.what}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
 
         <section className="panel" aria-labelledby="trouble-title">
           <div className="panel-head">
