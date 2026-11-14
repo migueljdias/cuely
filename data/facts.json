@@ -1,5 +1,20 @@
 {
   "tools": {
+    "neon": {
+      "verifiedOn": "2026-11-14"
+    },
+    "neon-auth": {
+      "verifiedOn": "2026-11-14"
+    },
+    "paddle": {
+      "verifiedOn": "2026-11-14"
+    },
+    "pgvector": {
+      "verifiedOn": "2026-11-14"
+    },
+    "render": {
+      "verifiedOn": "2026-11-14"
+    },
     "vercel": {
       "verifiedOn": "2026-11-12"
     }

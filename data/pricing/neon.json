@@ -1,9 +1,8 @@
 {
   "slug": "neon",
   "url": "https://neon.com/pricing",
-  "readOn": "2026-11-12",
+  "readOn": "2026-11-14",
   "lines": [
-    "Lakebase Postgres is built on object storage, but 99.99999% of reads are served from high-performance local caches",
     "23.3k",
     "$0",
     "100 projects",
