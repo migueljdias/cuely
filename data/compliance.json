@@ -335,18 +335,12 @@
       "facts": {
         "baa": {
           "answer": "yes",
-          "detail": "Requires an executed Business Associate and Healthcare Addendum and an org provisioned for Private Retention with Private Safety Processing; only BAA-eligible endpoints are covered, and Web Search with live internet access is excluded.",
+          "detail": "Requires an executed Business Associate and Healthcare Addendum, an org provisioned for Private Retention with Private Safety Processing, and BAA-eligible endpoints only; Web Search with live internet access is not covered.",
           "quote": "For customers who have executed an OpenAI Business Associate and Healthcare Addendum, once your org ID is provisioned with Private Retention with Private Safety Processing, BAA-eligible endpoints can be used for processing PHI",
-          "source": "https://platform.openai.com/docs/guides/your-data"
-        },
-        "eu_region": {
-          "answer": "plan",
-          "detail": "Europe (EEA + Switzerland) via eu.api.openai.com requires sales-approved eligibility, abuse monitoring approval and a Modified Retention amendment; newer models carry a 10% uplift, and system data and some features are excluded.",
-          "quote": "To use data residency with any region other than the United States, you must be approved for abuse monitoring controls, and execute a Modified Retention amendment.",
           "source": "https://platform.openai.com/docs/guides/your-data"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-14"
     },
     "pinecone": {
       "facts": {
