@@ -9,8 +9,12 @@
     the window to 1760px, so a large monitor is filled without going edge to edge.
     --t is the matching type bump: 0 on laptops, up to 2px on the widest screens.
   */
-  --page-w: clamp(1240px, 67vw, 1760px);
-  --t: clamp(0px, (100vw - 1850px) * 0.0028, 2px);
+  /* One window percent, corrected for the desktop zoom below so it always measures the real window. */
+  --zoom: 1;
+  --vw: calc(1vw / var(--zoom));
+  --dvh: calc(1dvh / var(--zoom));
+  --page-w: clamp(1240px, calc(67 * var(--vw)), 1760px);
+  --t: clamp(0px, (calc(100 * var(--vw)) - 1850px) * 0.0028, 2px);
 
   /* Accent: Cuely blue */
   --accent: #1f4bd8;
@@ -72,6 +76,21 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+}
+
+/*
+  Desktop scale. On wide screens the whole site renders at 80%, the way it looks with the
+  browser zoomed out to 80%: smaller type and controls, and more room at the sides.
+  Phones and small tablets stay at 100%. Anything sized in vw or dvh divides by --zoom so
+  it still measures the real window.
+*/
+@media (min-width: 1100px) {
+  :root {
+    --zoom: 0.8;
+  }
+  html {
+    zoom: var(--zoom);
+  }
 }
 
 body {
@@ -218,7 +237,7 @@ pre {
 h1 {
   font-family: var(--display);
   font-weight: 700;
-  font-size: clamp(44px, 6vw, 80px);
+  font-size: clamp(44px, calc(6 * var(--vw)), 80px);
   line-height: 1;
   letter-spacing: -0.03em;
   margin: 0 0 24px;
@@ -458,7 +477,7 @@ section {
 .section-title {
   font-family: var(--display);
   font-weight: 700;
-  font-size: clamp(36px, 4.2vw, 52px);
+  font-size: clamp(36px, calc(4.2 * var(--vw)), 52px);
   line-height: 1.04;
   letter-spacing: -0.025em;
   margin: 0 0 32px;
@@ -690,7 +709,7 @@ section {
 .method h2 {
   font-family: var(--display);
   font-weight: 700;
-  font-size: clamp(40px, 5vw, 64px);
+  font-size: clamp(40px, calc(5 * var(--vw)), 64px);
   line-height: 1;
   letter-spacing: -0.03em;
   margin: 0;
@@ -727,7 +746,7 @@ section {
 .page-title {
   font-family: var(--display);
   font-weight: 700;
-  font-size: clamp(36px, 5vw, 56px);
+  font-size: clamp(36px, calc(5 * var(--vw)), 56px);
   line-height: 1.04;
   letter-spacing: -0.03em;
   margin: 24px 0 12px;
@@ -1073,7 +1092,7 @@ section {
     display: none;
   }
   h1 {
-    font-size: clamp(36px, 10.4vw, 44px);
+    font-size: clamp(36px, calc(10.4 * var(--vw)), 44px);
     margin-bottom: 20px;
   }
   .lede {
@@ -2064,7 +2083,7 @@ section {
   letter-spacing: -0.035em;
 }
 .page-title {
-  font-size: clamp(38px, 5.4vw, 60px);
+  font-size: clamp(38px, calc(5.4 * var(--vw)), 60px);
   line-height: 1.02;
 }
 .guide h2 {
@@ -2126,7 +2145,7 @@ main.wrap {
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  padding: clamp(28px, 5vw, 48px);
+  padding: clamp(28px, calc(5 * var(--vw)), 48px);
   border: 0;
   border-radius: 20px;
   color: #fff;
@@ -2146,7 +2165,7 @@ main.wrap {
   mask-image: radial-gradient(90% 90% at 50% 100%, #000 20%, transparent 90%);
 }
 .guide .guide-cta h2 {
-  font-size: clamp(26px, 3.4vw, 36px);
+  font-size: clamp(26px, calc(3.4 * var(--vw)), 36px);
   line-height: 1.08;
 }
 .guide-cta p {
@@ -2189,7 +2208,7 @@ main.wrap :is(h2, h3) {
 
 /* Auth split: sign-in and sign-up. No site header; logo top left, form left, blue panel right. */
 .authx {
-  min-height: 100dvh;
+  min-height: calc(100 * var(--dvh));
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   background: var(--bg);
@@ -2197,8 +2216,8 @@ main.wrap :is(h2, h3) {
 .authx-side {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
-  padding: 28px clamp(20px, 4vw, 56px) 24px;
+  min-height: calc(100 * var(--dvh));
+  padding: 28px clamp(20px, calc(4 * var(--vw)), 56px) 24px;
 }
 .authx-logo {
   display: inline-flex;
@@ -2224,7 +2243,7 @@ main.wrap :is(h2, h3) {
   margin: 0 0 10px;
   font-family: var(--display);
   font-weight: 400;
-  font-size: clamp(38px, 4.4vw, 52px);
+  font-size: clamp(38px, calc(4.4 * var(--vw)), 52px);
   line-height: 1.04;
   letter-spacing: -0.045em;
 }
@@ -2253,7 +2272,7 @@ main.wrap :is(h2, h3) {
 .authx-panel {
   position: sticky;
   top: 16px;
-  height: calc(100dvh - 32px);
+  height: calc(calc(100 * var(--dvh)) - 32px);
   min-height: 560px;
   overflow: hidden;
   isolation: isolate;
@@ -2262,7 +2281,7 @@ main.wrap :is(h2, h3) {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: clamp(32px, 4vw, 56px);
+  padding: clamp(32px, calc(4 * var(--vw)), 56px);
   background:
     radial-gradient(60% 55% at 50% 118%, rgba(214, 228, 255, 0.9) 0%, rgba(214, 228, 255, 0.5) 22%, rgba(53, 99, 255, 0) 62%),
     radial-gradient(120% 90% at 50% 0%, #3563ff 0%, #1f4bd8 55%, #1638a8 100%);
@@ -2298,7 +2317,7 @@ main.wrap :is(h2, h3) {
 }
 .authx-big {
   margin: 0 0 16px;
-  font-size: clamp(34px, 3.6vw, 52px);
+  font-size: clamp(34px, calc(3.6 * var(--vw)), 52px);
   line-height: 1.04;
   letter-spacing: -0.04em;
   font-weight: 400;
@@ -2409,7 +2428,7 @@ main.wrap :is(h2, h3) {
 /* App shell: the signed-in pages. Left sidebar, slim top bar with a breadcrumb, content on a soft canvas. */
 .app {
   --side-w: 256px;
-  min-height: 100dvh;
+  min-height: calc(100 * var(--dvh));
   background: var(--surface-2);
 }
 .app-side {
@@ -2568,7 +2587,7 @@ main.wrap :is(h2, h3) {
 }
 .app-body {
   margin-left: var(--side-w);
-  min-height: 100dvh;
+  min-height: calc(100 * var(--dvh));
   transition: margin-left 0.25s var(--ease);
 }
 .app-top {
@@ -2579,7 +2598,7 @@ main.wrap :is(h2, h3) {
   align-items: center;
   gap: 10px;
   height: 60px;
-  padding: 0 clamp(16px, 3vw, 32px);
+  padding: 0 clamp(16px, calc(3 * var(--vw)), 32px);
   background: color-mix(in srgb, var(--bg) 88%, transparent);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
@@ -2619,7 +2638,7 @@ main.wrap :is(h2, h3) {
   display: none;
 }
 .app-main {
-  padding: clamp(24px, 4vw, 44px) clamp(16px, 3vw, 32px) 80px;
+  padding: clamp(24px, calc(4 * var(--vw)), 44px) clamp(16px, calc(3 * var(--vw)), 32px) 80px;
 }
 .app .account {
   max-width: 920px;
@@ -2634,7 +2653,7 @@ main.wrap :is(h2, h3) {
   margin: 0 0 6px;
   font-family: var(--display);
   font-weight: 400;
-  font-size: clamp(30px, 3.4vw, 40px);
+  font-size: clamp(30px, calc(3.4 * var(--vw)), 40px);
   letter-spacing: -0.04em;
   line-height: 1.1;
 }
@@ -2701,7 +2720,7 @@ main.wrap :is(h2, h3) {
 }
 .app .panel {
   margin-bottom: 20px;
-  padding: clamp(20px, 3vw, 28px);
+  padding: clamp(20px, calc(3 * var(--vw)), 28px);
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--bg);
