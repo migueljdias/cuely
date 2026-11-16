@@ -5,6 +5,7 @@ import { CATALOG_YEAR, breadcrumbLd, categoryBySlug, formatDate, pageMeta, toolB
 import { SITE_URL } from "@/site";
 import { SiteFooter, SiteHeader } from "../../_components/chrome";
 import { GuideCta } from "../../_components/guide-cta";
+import { ToolLogo } from "../../_components/tool-logo";
 import { Crumbs, JsonLd } from "../../_components/json-ld";
 
 export const dynamicParams = false;
@@ -133,7 +134,10 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                       {s.optional && <span className="tag">optional</span>}
                     </td>
                     <td>
-                      <strong>{toolLink(s.tool)}</strong>
+                      <strong className="with-logo">
+                        <ToolLogo slug={s.tool} name={toolBySlug.get(s.tool)?.name ?? s.tool} size={20} />
+                        {toolLink(s.tool)}
+                      </strong>
                     </td>
                     <td>{s.why}</td>
                     <td>

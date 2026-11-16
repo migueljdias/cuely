@@ -10,6 +10,7 @@ import { SiteFooter, SiteHeader } from "./_components/chrome";
 import { ConnectTabs } from "./_components/connect-tabs";
 import { CopyButton } from "./_components/copy";
 import { JsonLd } from "./_components/json-ld";
+import { ToolLogo } from "./_components/tool-logo";
 import { CategoryTabs, type CategoryTab } from "./_components/home/category-tabs";
 import { DotField } from "./_components/home/dot-field";
 import { HomeFx } from "./_components/home/fx";
@@ -198,7 +199,7 @@ export default function Home() {
     { a: "Prices", b: `${tools.length} vendor pricing pages`, c: "Checked" },
   ];
   const ticker = ["No vendor pays for placement", "Prices read from the vendor's own page", "Same answer for everyone", "Cost at 1,000 users up front", `${tools.length} tools across ${categories.length} categories`, `${recipes.length} step-by-step recipes`];
-  const marquee = tools.filter((t) => !t.name.includes("(")).map((t) => t.name);
+  const marquee = tools.filter((t) => !t.name.includes("(")).map((t) => ({ slug: t.slug, name: t.name }));
   const tiles = [ICON.db, ICON.shield, ICON.key, ICON.card, ICON.mail, ICON.globe];
 
   return (
@@ -277,6 +278,7 @@ export default function Home() {
                           <span className="cat">{s.categoryName}</span>
                           <span>
                             <a className="pk" href={`/tools/${s.pick.slug}`}>
+                              <ToolLogo slug={s.pick.slug} name={s.pick.name} size={18} />
                               {s.pick.name}
                             </a>
                             <span className="why">{firstSentence(s.pick.reason)}</span>
@@ -346,8 +348,11 @@ export default function Home() {
             <p className="marquee-note">And the rest of the catalog...</p>
             <div className="marquee" aria-hidden="true">
               <div className="marquee-track">
-                {[...marquee, ...marquee].map((name, i) => (
-                  <span key={i}>{name}</span>
+                {[...marquee, ...marquee].map((t, i) => (
+                  <span key={i}>
+                    <ToolLogo slug={t.slug} name={t.name} size={28} />
+                    {t.name}
+                  </span>
                 ))}
               </div>
             </div>
@@ -363,7 +368,10 @@ export default function Home() {
                     <ul>
                       {order.map((t) => (
                         <li key={t.slug}>
-                          <a href={`/tools/${t.slug}`}>{t.name}</a>
+                          <a className="with-logo" href={`/tools/${t.slug}`}>
+                            <ToolLogo slug={t.slug} name={t.name} size={16} />
+                            {t.name}
+                          </a>
                         </li>
                       ))}
                     </ul>

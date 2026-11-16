@@ -6,6 +6,7 @@ import { CATALOG_YEAR, breadcrumbLd, categoryBySlug, formatDate, money, pageMeta
 import { SITE_URL } from "@/site";
 import { SiteFooter, SiteHeader } from "../../_components/chrome";
 import { GuideCta } from "../../_components/guide-cta";
+import { ToolLogo } from "../../_components/tool-logo";
 import { Crumbs, JsonLd } from "../../_components/json-ld";
 
 export const dynamicParams = false;
@@ -66,7 +67,10 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
         <p className="eyebrow">
           {cat.name} · facts read {formatDate(t.verifiedOn)}
         </p>
-        <h1 className="page-title">{t.name}</h1>
+        <h1 className="page-title title-logo">
+          <ToolLogo slug={t.slug} name={t.name} size={44} />
+          {t.name}
+        </h1>
         <p className="page-lede">
           {t.summary} {t.pitch}
         </p>

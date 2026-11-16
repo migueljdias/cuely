@@ -364,6 +364,42 @@ h1 {
   color: var(--term-text-2);
 }
 
+/* Brand icons (Brandfetch): one rounded tile size per context, so no tool looks louder than another */
+.tlogo {
+  flex: none;
+  display: inline-block;
+  border-radius: calc(var(--logo-size, 20px) * 0.24);
+  outline: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
+  outline-offset: -1px;
+  object-fit: cover;
+  vertical-align: middle;
+}
+.tlogo-mono {
+  display: inline-grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  color: var(--text-2);
+  font: 700 calc(var(--logo-size, 20px) * 0.5) / 1 var(--display);
+}
+.with-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.title-logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.vs-logos {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 14px;
+  font: 400 13px var(--mono);
+  color: var(--text-3);
+}
+
 /* Tool marks: one size, current text colour, so no tool looks louder than another */
 .logo {
   flex: none;

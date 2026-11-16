@@ -5,6 +5,7 @@ import { NEED_SHORT } from "@/engine/needs";
 import { CATALOG_YEAR, allPairs, breadcrumbLd, categoryBySlug, formatDate, money, pageMeta, parsePair, toolsIn, pairSlug } from "@/seo";
 import { SiteFooter, SiteHeader } from "../../_components/chrome";
 import { GuideCta } from "../../_components/guide-cta";
+import { ToolLogo } from "../../_components/tool-logo";
 import { Crumbs, JsonLd } from "../../_components/json-ld";
 
 export const dynamicParams = false;
@@ -86,6 +87,11 @@ export default async function ComparePage({ params }: { params: Promise<{ pair: 
       <main id="main" className="wrap guide">
         <Crumbs items={crumbs} />
         <p className="eyebrow">Facts read {formatDate([a.verifiedOn, b.verifiedOn].sort()[0])}</p>
+        <div className="vs-logos" aria-hidden="true">
+          <ToolLogo slug={a.slug} name={a.name} size={44} />
+          <span>vs</span>
+          <ToolLogo slug={b.slug} name={b.name} size={44} />
+        </div>
         <h1 className="page-title">
           {a.name} vs {b.name}
         </h1>
@@ -103,10 +109,16 @@ export default async function ComparePage({ params }: { params: Promise<{ pair: 
                     <span className="sr-only">Fact</span>
                   </th>
                   <th scope="col">
-                    <a href={`/tools/${a.slug}`}>{a.name}</a>
+                    <a className="with-logo" href={`/tools/${a.slug}`}>
+                      <ToolLogo slug={a.slug} name={a.name} size={20} />
+                      {a.name}
+                    </a>
                   </th>
                   <th scope="col">
-                    <a href={`/tools/${b.slug}`}>{b.name}</a>
+                    <a className="with-logo" href={`/tools/${b.slug}`}>
+                      <ToolLogo slug={b.slug} name={b.name} size={20} />
+                      {b.name}
+                    </a>
                   </th>
                 </tr>
               </thead>

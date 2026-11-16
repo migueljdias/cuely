@@ -6,6 +6,7 @@ import { SITE_URL } from "@/site";
 import type { CategorySlug, Need } from "@/catalog";
 import { SiteFooter, SiteHeader } from "../../_components/chrome";
 import { GuideCta } from "../../_components/guide-cta";
+import { ToolLogo } from "../../_components/tool-logo";
 import { Crumbs, JsonLd } from "../../_components/json-ld";
 
 export const dynamicParams = false;
@@ -93,7 +94,10 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
                   <tr key={t.slug}>
                     <td>
                       <strong>
-                        <a href={`/tools/${t.slug}`}>{t.name}</a>
+                        <a className="with-logo" href={`/tools/${t.slug}`}>
+                          <ToolLogo slug={t.slug} name={t.name} size={22} />
+                          {t.name}
+                        </a>
                       </strong>
                       <div className="muted small">{t.pitch}</div>
                     </td>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { ToolLogo } from "../tool-logo";
 
 export interface CategoryTab {
   slug: string;
@@ -102,6 +103,7 @@ export function CategoryTabs({ tabs }: { tabs: CategoryTab[] }) {
           {c.tools.map((t, k) => (
             <li key={t.slug} className={k === 0 ? "top" : undefined} style={{ ["--i" as string]: k }}>
               <span className="pos">{String(k + 1).padStart(2, "0")}</span>
+              <ToolLogo slug={t.slug} name={t.name} size={22} />
               <a href={`/tools/${t.slug}`}>{t.name}</a>
               {k === 0 && <span className="badge">Default</span>}
             </li>

@@ -2,6 +2,7 @@ import { categories, tools } from "@/catalog";
 import { CATALOG_YEAR, breadcrumbLd, pageMeta, toolsIn } from "@/seo";
 import { SiteFooter, SiteHeader } from "../_components/chrome";
 import { GuideCta } from "../_components/guide-cta";
+import { ToolLogo } from "../_components/tool-logo";
 import { Crumbs, JsonLd } from "../_components/json-ld";
 
 export const metadata = pageMeta({
@@ -38,7 +39,10 @@ export default function Tools() {
                 <ul className="plain">
                   {toolsIn(c.slug).map((t) => (
                     <li key={t.slug}>
-                      <a href={`/tools/${t.slug}`}>{t.name}</a>
+                      <a className="with-logo" href={`/tools/${t.slug}`}>
+                        <ToolLogo slug={t.slug} name={t.name} size={18} />
+                        {t.name}
+                      </a>
                     </li>
                   ))}
                 </ul>
