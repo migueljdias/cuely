@@ -1,7 +1,7 @@
 {
   "slug": "revenuecat",
   "url": "https://www.revenuecat.com/pricing/",
-  "readOn": "2026-11-12",
+  "readOn": "2026-11-16",
   "lines": [
     "Pay nothing for up to $2,500 in monthly tracked revenue.",
     "Then pay 1% of what you track",
@@ -17,6 +17,9 @@
     "50%reduction in backend engineering hours",
     "3.6%of users won back with new Braze campaigns",
     "20%of data engineering capacity freed",
-    "If I'm on the Pro plan, what happens when I reach $2.5k MTR?"
+    "Nope! You will be asked for credit card details on sign-up but they are optional. However, if you don’t provide credit card details and you reach $2.5k in MTR (congratulations!), parts of the product will become unavailable until you do.",
+    "If I'm on the Pro plan, what happens when I reach $2.5k MTR?",
+    "Once you reach $2.5K MTR, you'll be charged 1%. For $2.5K, we'll charge you $25. No charges apply on months when you don't hit the $2.5K threshold.",
+    "For customers on Basic or Starter, you’ll be prompted to move to the new Pro plan so you can take advantage of all of the new features available to you. For customers on the old Pro plan, you’ll be migrated to the new Pro — if you make less than $2.5k MTR you will now pay us nothing, and if you make…"
   ]
 }

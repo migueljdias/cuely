@@ -1,5 +1,8 @@
 {
   "tools": {
+    "lemon-squeezy": {
+      "verifiedOn": "2026-11-16"
+    },
     "neon": {
       "verifiedOn": "2026-11-14"
     },
@@ -14,6 +17,9 @@
     },
     "render": {
       "verifiedOn": "2026-11-14"
+    },
+    "revenuecat": {
+      "verifiedOn": "2026-11-16"
     },
     "vercel": {
       "verifiedOn": "2026-11-12"
