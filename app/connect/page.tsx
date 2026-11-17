@@ -11,7 +11,7 @@ import { CopyButton } from "../_components/copy";
  */
 export const metadata: Metadata = {
   title: "Connect Cuely to your AI tool",
-  description: "Add Cuely's MCP server to Claude, Cursor, VS Code or Claude Code.",
+  description: "Add Cuely's MCP server to Claude, ChatGPT, Codex, Cursor, VS Code or Claude Code.",
   robots: { index: false, follow: true },
 };
 
@@ -49,7 +49,7 @@ export default function ConnectPage() {
               {free.perMinute} requests a minute.
             </p>
           </div>
-          <p>Claude signs you in when you connect. Cursor, VS Code and Claude Code use a key from your account.</p>
+          <p>The Claude and ChatGPT apps sign you in when you connect. Claude Code, Codex, Cursor and VS Code use a key from your account.</p>
           <a className="btn btn-primary" href={KEY_PAGE}>
             Get a free key
           </a>

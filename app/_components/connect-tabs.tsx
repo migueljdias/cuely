@@ -8,6 +8,7 @@ export interface ConnectOption {
   label: string;
   where: string;
   code: string;
+  oauth?: boolean;
 }
 
 export function ConnectTabs({ options }: { options: ConnectOption[] }) {
