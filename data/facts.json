@@ -1,5 +1,8 @@
 {
   "tools": {
+    "cached-polling": {
+      "verifiedOn": "2026-11-17"
+    },
     "lemon-squeezy": {
       "verifiedOn": "2026-11-16"
     },
@@ -15,6 +18,9 @@
     "pgvector": {
       "verifiedOn": "2026-11-14"
     },
+    "plausible": {
+      "verifiedOn": "2026-11-17"
+    },
     "render": {
       "verifiedOn": "2026-11-14"
     },
@@ -22,7 +28,7 @@
       "verifiedOn": "2026-11-16"
     },
     "vercel": {
-      "verifiedOn": "2026-11-12"
+      "verifiedOn": "2026-11-17"
     }
   }
 }
