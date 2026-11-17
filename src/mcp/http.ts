@@ -32,7 +32,7 @@ const defaultKeyLookup: KeyLookup = async (key) => {
   return value;
 };
 
-/** Verifies a Clerk OAuth token (from Claude's connector sign-in and other OAuth clients). */
+/** Verifies a Clerk OAuth token (from the Claude and ChatGPT app sign-ins and other OAuth clients). */
 export type OAuthLookup = (req: Request, token: string) => Promise<KeyOwner | null>;
 
 /** OAuth tokens are cached by hash for a minute too, with the owner's plan. */
@@ -227,7 +227,7 @@ export function createMcpHandler(opts: HandlerOptions = {}) {
       };
       if (!presented) {
         return refuse(
-          `Cuely needs a free account. Sign in when your AI tool asks (Claude's connectors do this for you), or get an API key at ${KEY_URL} and send it as "Authorization: Bearer cuely_...".`,
+          `Cuely needs a free account. Sign in when your AI tool asks (the Claude and ChatGPT apps do this for you), or get an API key at ${KEY_URL} and send it as "Authorization: Bearer cuely_...".`,
         );
       }
       const isKey = presented.startsWith("cuely_");

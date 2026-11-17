@@ -34,7 +34,7 @@ export function NewKey() {
           <div className="connect-next">
             <h3>Now add Cuely to your AI tool</h3>
             <p className="muted small">Your key is already filled in. Paste the one for your tool, then start a new chat.</p>
-            <ConnectTabs options={connectOptions(state.key).filter((o) => o.id !== "claude")} />
+            <ConnectTabs options={connectOptions(state.key).filter((o) => !o.oauth)} />
             <p className="muted small">
               Then ask: <q>Use Cuely to choose the stack for what I&apos;m building.</q>
             </p>
