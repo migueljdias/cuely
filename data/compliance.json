@@ -363,41 +363,41 @@
       "facts": {
         "dpa": {
           "answer": "yes",
-          "detail": "The DPA is an addendum to the Terms of Service and applies automatically to all customers; no separate signature is required.",
+          "detail": "DPA is an addendum to the Terms of Service, accepted by using the service; no separate signature required.",
           "quote": "This Data Processing Agreement (“DPA”) is an addendum to the Terms of Service between Plausible Analytics and the customer.",
           "source": "https://plausible.io/dpa"
         },
         "eu_region": {
           "answer": "yes",
-          "detail": "All visitor data is processed and stored in the EU on servers in Germany.",
+          "detail": "All visitor data is processed and stored in the EU: servers in Falkenstein, Germany (Hetzner) and database hosting in Finland (UpCloud).",
           "quote": "All visitor data is securely processed and stored in the EU on infrastructure owned by European companies.",
           "source": "https://plausible.io/data-policy"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-17"
     },
     "posthog": {
       "facts": {
         "baa": {
           "answer": "plan",
-          "detail": "BAA for PostHog Cloud only on Boost, Scale or Enterprise packages (custom BAA on Enterprise); managed reverse proxy and PostHog AI features are not covered.",
+          "detail": "BAA covers PostHog Cloud only on the Boost, Scale, or Enterprise package (custom BAA on Enterprise); the managed reverse proxy and PostHog AI features are not covered.",
           "quote": "PostHog only offers Business Associate Agreements (BAAs) for PostHog Cloud to users with the Boost, Scale, or Enterprise package.",
           "source": "https://posthog.com/docs/privacy/hipaa-compliance"
         },
         "dpa": {
           "answer": "yes",
-          "detail": "Self-serve DPA for all PostHog Cloud customers, including the free plan; redlines only with a long-term contract.",
+          "detail": "Self-serve DPA for all PostHog Cloud customers on any plan, including free; redlines generally only for long-term contracts.",
           "quote": "All PostHog Cloud customers can get a DPA, on any plan. This includes the free plan.",
           "source": "https://posthog.com/docs/privacy"
         },
         "eu_region": {
           "answer": "yes",
-          "detail": "PostHog Cloud EU is hosted on servers in Frankfurt.",
-          "quote": "we recommend using PostHog Cloud EU – a managed version of PostHog that's hosted on servers based in Frankfurt.",
+          "detail": "PostHog Cloud EU is hosted in Frankfurt.",
+          "quote": "If you require robust GDPR compliance, we recommend using PostHog Cloud EU – a managed version of PostHog that's hosted on servers based in Frankfurt.",
           "source": "https://posthog.com/docs/privacy/gdpr-compliance"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-17"
     },
     "postmark": {
       "facts": {
@@ -674,117 +674,93 @@
       "facts": {
         "baa": {
           "answer": "plan",
-          "detail": "BAA only for eligible Pro (paid HIPAA BAA add-on in Billing settings) and Enterprise (on request) customers.",
+          "detail": "BAA is for eligible Pro customers as a paid add-on bought in Billing settings, or Enterprise customers on request.",
           "quote": "Signing Business Associate Agreements (BAAs) with eligible Pro and Enterprise customers",
           "source": "https://vercel.com/docs/security/compliance"
         },
         "dpa": {
           "answer": "plan",
-          "detail": "The published Data Processing Addendum is tied to Vercel Enterprise terms and services on an Enterprise plan.",
+          "detail": "The published Data Processing Addendum is part of the Enterprise terms, covering services on an Enterprise plan.",
           "quote": "This Data Processing Addendum (\"Addendum\") forms part of Vercel Enterprise Terms and Conditions or other agreement executed between Vercel and Customer for Vercel's provision of Services on an Enterprise plan",
           "source": "https://vercel.com/legal/dpa"
         },
-        "eu_region": {
-          "answer": "no",
-          "detail": "Data is not stored permanently in EU regions; EU regions only hold ephemeral caches of static assets and function responses.",
-          "quote": "No data is stored permanently inside EU regions.",
-          "source": "https://vercel.com/security"
-        },
         "soc2": {
           "answer": "yes",
-          "detail": "SOC 2 Type 2 covering Security, Confidentiality and Availability; report available on request.",
+          "detail": "SOC 2 Type 2 attestation covering Security, Confidentiality, and Availability.",
           "quote": "Vercel has a SOC 2 Type 2 attestation for Security, Confidentiality, and Availability.",
           "source": "https://vercel.com/docs/security/compliance"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-17"
     },
     "vercel-blob": {
       "facts": {
         "baa": {
           "answer": "plan",
-          "detail": "Vercel signs BAAs with eligible Pro (paid HIPAA BAA add-on) and Enterprise (by request) customers; the lines do not name Blob specifically.",
+          "detail": "Vercel signs BAAs only with eligible Pro (as a paid HIPAA BAA add-on) and Enterprise customers; the lines do not say whether Blob is covered.",
           "quote": "Signing Business Associate Agreements (BAAs) with eligible Pro and Enterprise customers",
           "source": "https://vercel.com/docs/security/compliance"
         },
         "dpa": {
           "answer": "plan",
-          "detail": "The DPA text says it forms part of Enterprise terms for services on an Enterprise plan, though the security page mentions a DPA without a plan restriction.",
+          "detail": "The published Data Processing Addendum forms part of the Enterprise terms and covers services on an Enterprise plan.",
           "quote": "This Data Processing Addendum (\"Addendum\") forms part of Vercel Enterprise Terms and Conditions or other agreement executed between Vercel and Customer for Vercel's provision of Services on an Enterprise plan",
           "source": "https://vercel.com/legal/dpa"
         },
-        "eu_region": {
-          "answer": "no",
-          "detail": "Vercel says no data is stored permanently in EU regions; only ephemeral caching happens there, and primary processing is in the US.",
-          "quote": "No data is stored permanently inside EU regions.",
-          "source": "https://vercel.com/security"
-        },
         "soc2": {
           "answer": "yes",
-          "detail": "Vercel-wide SOC 2 Type 2 attestation covering Security, Confidentiality, and Availability; the report is available on request.",
+          "detail": "Vercel holds a SOC 2 Type 2 attestation covering Security, Confidentiality and Availability.",
           "quote": "Vercel has a SOC 2 Type 2 attestation for Security, Confidentiality, and Availability.",
           "source": "https://vercel.com/docs/security/compliance"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-17"
     },
     "vercel-global-config": {
       "facts": {
         "baa": {
           "answer": "plan",
-          "detail": "Vercel-wide terms, not specific to Global Config: Pro teams buy a paid HIPAA BAA add-on in Billing settings, and Enterprise teams request a BAA from sales.",
+          "detail": "BAAs are signed only with eligible Pro (paid HIPAA BAA add-on in Billing settings) and Enterprise (on request) customers; the pages do not say whether Global Config/Edge Config is covered.",
           "quote": "Signing Business Associate Agreements (BAAs) with eligible Pro and Enterprise customers",
           "source": "https://vercel.com/docs/security/compliance"
         },
         "dpa": {
           "answer": "plan",
-          "detail": "The published DPA forms part of Vercel's Enterprise terms for services on an Enterprise plan.",
+          "detail": "The published DPA is part of the Enterprise Terms or another executed agreement for Services on an Enterprise plan.",
           "quote": "This Data Processing Addendum (\"Addendum\") forms part of Vercel Enterprise Terms and Conditions or other agreement executed between Vercel and Customer for Vercel's provision of Services on an Enterprise plan",
           "source": "https://vercel.com/legal/dpa"
         },
-        "eu_region": {
-          "answer": "no",
-          "detail": "Vercel-wide statement: no data is stored permanently in EU regions, only ephemeral caching, and primary processing is in the US.",
-          "quote": "No data is stored permanently inside EU regions.",
-          "source": "https://vercel.com/security"
-        },
         "soc2": {
           "answer": "yes",
-          "detail": "SOC 2 Type 2 covers Security, Confidentiality and Availability; the report is available on request.",
+          "detail": "Vercel-wide SOC 2 Type 2 attestation covering Security, Confidentiality and Availability.",
           "quote": "Vercel has a SOC 2 Type 2 attestation for Security, Confidentiality, and Availability.",
           "source": "https://vercel.com/docs/security/compliance"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-17"
     },
     "vercel-web-analytics": {
       "facts": {
         "baa": {
           "answer": "plan",
-          "detail": "Vercel signs BAAs only with eligible Pro teams (paid HIPAA BAA add-on in Billing settings) and Enterprise customers; the lines don't say whether Web Analytics is covered.",
+          "detail": "Vercel signs BAAs only with eligible Pro (paid HIPAA BAA add-on) and Enterprise customers; the statement is platform-wide and does not name Web Analytics specifically.",
           "quote": "Signing Business Associate Agreements (BAAs) with eligible Pro and Enterprise customers",
           "source": "https://vercel.com/docs/security/compliance"
         },
         "dpa": {
           "answer": "plan",
-          "detail": "The DPA text says it forms part of Vercel's Enterprise terms for Services on an Enterprise plan, although the security page mentions a DPA without naming a plan.",
+          "detail": "The published Data Processing Addendum is framed as part of Vercel's Enterprise Terms or an agreement for services on an Enterprise plan.",
           "quote": "This Data Processing Addendum (\"Addendum\") forms part of Vercel Enterprise Terms and Conditions or other agreement executed between Vercel and Customer for Vercel's provision of Services on an Enterprise plan",
           "source": "https://vercel.com/legal/dpa"
         },
-        "eu_region": {
-          "answer": "no",
-          "detail": "Vercel says no data is stored permanently in EU regions; only ephemeral caching happens there, and primary processing is in the US.",
-          "quote": "No data is stored permanently inside EU regions.",
-          "source": "https://vercel.com/security"
-        },
         "soc2": {
           "answer": "yes",
-          "detail": "Vercel has a SOC 2 Type 2 attestation covering Security, Confidentiality and Availability; the report is available on request.",
+          "detail": "Vercel has a SOC 2 Type 2 attestation covering Security, Confidentiality, and Availability.",
           "quote": "Vercel has a SOC 2 Type 2 attestation for Security, Confidentiality, and Availability.",
           "source": "https://vercel.com/docs/security/compliance"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-17"
     },
     "workos-authkit": {
       "facts": {

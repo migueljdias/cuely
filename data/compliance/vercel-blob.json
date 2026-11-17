@@ -1,6 +1,6 @@
 {
   "slug": "vercel-blob",
-  "readOn": "2026-11-13",
+  "readOn": "2026-11-17",
   "pages": [
     {
       "url": "https://vercel.com/security",
@@ -9,18 +9,9 @@
         "SOC 2",
         "HIPAA",
         "GDPR",
-        "Is Vercel SOC 2 Type 2 compliant?",
-        "Yes, Vercel has a SOC 2 Type 2 attestation. Contact us for more details or to access the report.",
-        "Is Vercel GDPR compliant?",
-        "Yes. For more information, see our Privacy Policy. No data is stored permanently inside EU regions. Static assets and Serverless Functions responses can be cached in EU regions, but it is ephemeral. Vercel provides a Data Processing Addendum (DPA) which describe our Technical and Organizational Security Measures. For more information, our Privacy Policy explains how information is collected, used,",
-        "Is Vercel ISO 27001 certified?",
-        "Yes, Vercel is ISO 27001:2022 certified. Contact us for more details or to access the certificate.",
-        "Does Vercel support HIPAA compliance?",
-        "Vercel supports HIPAA compliance for enterprise customers. Our HIPAA report is available upon request at security.vercel.com. Contact us for more details if HIPAA is important for you.",
         "Does Vercel use subprocessors?",
         "Yes, a list of our current subprocessors can be found on our subprocessors page.",
-        "DPA",
-        "Deny traffic from Germany"
+        "DPA"
       ]
     },
     {
