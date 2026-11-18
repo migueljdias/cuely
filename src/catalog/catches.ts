@@ -10,6 +10,11 @@ export interface Catch {
   text: string;
   source: string;
   verifiedOn: string;
+  /**
+   * Phone apps only: "native_ios" for an iPhone app in Swift with no Android build,
+   * "cross_platform" for apps that ship on both stores. Absent means both.
+   */
+  platforms?: "native_ios" | "cross_platform";
 }
 
 const V = "2026-11-07";
@@ -35,6 +40,15 @@ export const CATCHES: Catch[] = [
     text: "The stores take a cut of in-app revenue: Apple 15% under the Small Business Program (up to $1M in proceeds a year), Google Play 10% + 5% billing fee on auto-renewing subscriptions for the first $1M in the US, EEA and UK.",
     source: "https://support.google.com/googleplay/android-developer/answer/112622",
     verifiedOn: V,
+    platforms: "cross_platform",
+  },
+  {
+    id: "app-store-fees",
+    when: "mobile_paid",
+    text: "Apple takes 15% of paid apps and in-app purchases under the App Store Small Business Program, for developers new to the store or with up to $1M in proceeds the prior calendar year; above that the standard rate applies.",
+    source: "https://developer.apple.com/app-store/small-business-program/",
+    verifiedOn: "2026-11-18",
+    platforms: "native_ios",
   },
   {
     id: "store-accounts",
@@ -42,6 +56,15 @@ export const CATCHES: Catch[] = [
     text: "Store accounts cost $99 a year for the Apple Developer Program and $25 once for Google Play.",
     source: "https://developer.apple.com/programs/",
     verifiedOn: V,
+    platforms: "cross_platform",
+  },
+  {
+    id: "ios-sdk-minimum",
+    when: "mobile",
+    text: "Since April 28, 2026, App Store Connect only accepts builds made with Xcode 26 or later and the iOS 26 SDK, so a Swift app needs a current Mac and Xcode (or Xcode Cloud). The Apple Developer Program is $99 a year.",
+    source: "https://developer.apple.com/news/upcoming-requirements/",
+    verifiedOn: "2026-11-18",
+    platforms: "native_ios",
   },
   {
     id: "sign-in-with-apple",

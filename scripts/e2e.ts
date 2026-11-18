@@ -21,7 +21,7 @@ await client.connect(
 check("initialize", client.getServerVersion()?.name === "cuely", JSON.stringify(client.getServerVersion()));
 
 const { tools } = await client.listTools();
-check("tools/list has 4 tools", tools.length === 4, tools.map((t) => t.name).join(", "));
+check("tools/list has 6 tools", tools.length === 6, tools.map((t) => t.name).join(", "));
 
 const rec: any = await client.callTool({
   name: "recommend_stack",
@@ -42,7 +42,28 @@ const cmp: any = await client.callTool({
 check("compare_tools gives a verdict", /fits better/.test(text(cmp)), cmp.structuredContent?.verdict);
 
 const cats: any = await client.callTool({ name: "list_categories", arguments: {} });
-check("list_categories lists 10", cats.structuredContent?.categories?.length === 10);
+check("list_categories lists 17", cats.structuredContent?.categories?.length === 17);
+
+// Phone apps: Swift goes to the native recipe and Apple's push service; Expo apps keep Expo.
+const swift: any = await client.callTool({
+  name: "recommend_stack",
+  arguments: { description: "A SwiftUI iPhone app for journaling with a yearly subscription and daily reminders", assume_defaults: true },
+});
+const swiftPick = (c: string) => swift.structuredContent?.stack?.find((x: any) => x.category === c);
+check("a Swift iPhone app routes to native-ios-app", swift.structuredContent?.productType?.recipe === "native-ios-app");
+check("it builds with Xcode Cloud and sends push through APNs", swiftPick("mobile_build")?.pick?.slug === "xcode-cloud" && swiftPick("push")?.pick?.slug === "apns-direct" && swiftPick("push")?.role === "core");
+check("its answer has no Google Play fees", !/Google Play/.test(JSON.stringify(swift.structuredContent?.summary?.catches ?? [])));
+const expo: any = await client.callTool({
+  name: "recommend_stack",
+  arguments: { description: "An iPhone and Android app that sends marketing campaigns to segments of gym members", assume_defaults: true },
+});
+check("a cross-platform campaign app gets Expo and OneSignal", expo.structuredContent?.productType?.recipe === "mobile-subscription-app"
+  && expo.structuredContent?.stack?.find((x: any) => x.category === "push")?.pick?.slug === "onesignal");
+const native: any = await client.callTool({ name: "get_recipe", arguments: { product_type: "swiftui app" } });
+check("get_recipe finds the native iOS recipe by words", native.structuredContent?.recipe?.slug === "native-ios-app", `${native.structuredContent?.recipe?.steps?.length} steps`);
+const start: any = await client.callTool({ name: "start_project", arguments: { description: "A SwiftUI iPhone app that sends daily reminders" } });
+const ids = JSON.stringify(start.structuredContent ?? {});
+check("start_project adds the iOS and push launch items", ["ios-privacy-manifest", "eu-trader-status", "push-consent"].every((id) => ids.includes(id)));
 
 await client.close();
 

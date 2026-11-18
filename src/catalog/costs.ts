@@ -80,6 +80,12 @@ export const COSTS: Record<string, ToolCost> = {
   // Mobile builds
   "expo-eas": { monthly: 19, basis: "Free updates reach 1,000 MAU, so you're at the limit; Starter is $19/month for 3,000. Builds fit the free 15 + 15 a month." },
   "native-toolchains": { monthly: 0, basis: "Tools are free; store fees are listed separately." },
+  // Push notifications
+  "expo-push": { monthly: 0, basis: "Expo states there's no cost to send through its push service." },
+  "firebase-cloud-messaging": { monthly: 0, basis: "Firebase lists Cloud Messaging as no-cost on Spark and Blaze." },
+  onesignal: { monthly: 31, basis: "Free covers up to 1,000 monthly active mobile users, so you're at the limit; Growth is $19/month + $0.012 × 1,000 MAU = $31." },
+  "apns-direct": { monthly: 0, basis: "Apple lists no per-notification price; the $99/year Apple Developer Program is listed with the store fees." },
+  "xcode-cloud": { monthly: 0, basis: "25 compute hours a month come with the Apple Developer Program, whose $99 a year is listed with the store fees; 100 hours a month is US$49.99." },
   // Internal tools: 10 staff
   retool: { monthly: 55, scale: "10_staff", basis: "Free stops at 5 users; Team for 1 builder ($10) + 9 staff ($5 each) = $55/month, billed annually." },
   appsheet: { monthly: 0, scale: "10_staff", basis: "$0 if your Workspace plan includes AppSheet Core; otherwise Starter at $5 × 10 staff = $50/month." },

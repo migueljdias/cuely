@@ -6,7 +6,7 @@ import type { Need } from "@/catalog";
  * published ranking method.
  *
  * Some needs also come from the product profile (src/engine/profile.ts): a phone
- * app adds "mobile", users paying each other adds "marketplace", a staff tool adds
+ * app adds "mobile" (and "native_ios" when it is written in Swift), users paying each other adds "marketplace", a staff tool adds
  * "internal". Those are not repeated here.
  */
 export const NEED_TRIGGERS: Record<Need, string[]> = {
@@ -38,6 +38,7 @@ export const NEED_TRIGGERS: Record<Need, string[]> = {
   high_volume: ["high volume", "high-volume", "millions", "at scale", "large scale", "heavy traffic",
     "lots of traffic", "bulk email", "video", "large files"],
   mobile: [],
+  native_ios: [],
   marketplace: [],
   internal: [],
   rag: ["rag", "pdf", "pdfs", "documents", "docs", "knowledge base", "handbook", "handbooks", "policies", "manuals",
@@ -52,6 +53,8 @@ export const NEED_TRIGGERS: Record<Need, string[]> = {
     "hacker news", "product hunt", "front page", "launch day", "surge", "surges", "flash crowd"],
   health_data: ["hipaa", "phi", "health", "healthcare", "medical", "patient", "patients", "clinic", "clinics", "therapy",
     "therapist", "therapists", "telehealth", "telemedicine", "doctor", "doctors", "mental health", "health records"],
+  campaigns: ["marketing campaigns", "marketing campaign", "campaigns", "re-engagement", "re-engage", "win-back", "win back",
+    "drip", "journeys", "segments", "segmented", "promotions", "promotional", "marketing pushes", "marketing messages"],
 };
 
 /**
@@ -116,6 +119,7 @@ export const NEED_LABELS: Record<Need, string> = {
   long_running: "background jobs or long-running servers",
   high_volume: "high volume",
   mobile: "native iOS or Android app",
+  native_ios: "an iPhone app in Swift with Xcode",
   marketplace: "users pay each other and you take a cut",
   rag: "answers over the user's own documents",
   usage_billing: "charges by usage",
@@ -124,6 +128,7 @@ export const NEED_LABELS: Record<Need, string> = {
   counters: "votes, scores, leaderboards or streaks (many writes to the same numbers)",
   spiky: "traffic comes in viral spikes",
   health_data: "stores patient or health information",
+  campaigns: "marketing or re-engagement campaigns to segments of users",
 };
 
 export const ALL_NEEDS = Object.keys(NEED_TRIGGERS) as Need[];
@@ -144,6 +149,7 @@ export const NEED_SHORT: Record<Need, string> = {
   long_running: "background jobs and long-running servers",
   high_volume: "high volume",
   mobile: "native mobile apps",
+  native_ios: "Swift iPhone apps",
   marketplace: "marketplaces that pay out to providers",
   rag: "answering from documents",
   usage_billing: "usage-based billing",
@@ -152,4 +158,5 @@ export const NEED_SHORT: Record<Need, string> = {
   counters: "votes, leaderboards and streaks",
   spiky: "viral traffic spikes",
   health_data: "patient and health data",
+  campaigns: "marketing and re-engagement campaigns",
 };

@@ -230,6 +230,7 @@ describe("questions, coverage and misroutes", () => {
 describe("recipes beyond B2B SaaS", () => {
   const AGREE: [string, string][] = [
     ["mobile-subscription-app", EVAL.habit],
+    ["native-ios-app", "A SwiftUI iPhone app for journaling with a yearly subscription"],
     ["marketplace", EVAL.dogs],
     ["internal-tool", EVAL.bakery],
     ["ai-docs-app", EVAL.pdfs],
@@ -265,6 +266,40 @@ describe("recipes beyond B2B SaaS", () => {
     expect(route("An internal tool for our staff to track returns")).toBe("internal-tool");
   });
 
+  it("a Swift iPhone app gets the native recipe; Android or React Native keeps the Expo one", () => {
+    const route = (d: string) => recommendStack(snap, { description: d, assumeDefaults: true }).productType.recipe;
+    expect(route("A native iOS app for runners to log workouts, free")).toBe("native-ios-app");
+    expect(route("An iPhone app in Swift with a monthly subscription")).toBe("native-ios-app");
+    expect(route("A SwiftUI app for iOS and Android with a monthly plan")).toBe("mobile-subscription-app");
+    expect(route("A React Native iPhone app with a subscription")).toBe("mobile-subscription-app");
+    expect(route("I'm an iOS developer building a habit app for iPhone and Android")).toBe("mobile-subscription-app");
+    // Asked for by need, not by words.
+    expect(recommendStack(snap, { description: "An iPhone app for journaling", needs: ["native_ios"], assumeDefaults: true }).productType.recipe).toBe("native-ios-app");
+  });
+
+  it("a Swift iPhone app's answer is about Apple only: no Google Play fees or accounts", () => {
+    const r = recommendStack(snap, { description: "A SwiftUI iPhone app for journaling with a yearly subscription" });
+    expect(pick(r, "mobile_build")).toBe("xcode-cloud");
+    const catches = [...r.summary!.catches, ...r.summary!.moreCatches].map((c) => c.text).join(" ");
+    expect(catches).toMatch(/Small Business Program/);
+    expect(catches).toMatch(/Xcode 26/);
+    expect(catches).not.toMatch(/Google Play/);
+    expect(r.summary!.cost!.text).not.toMatch(/Google Play \$25/);
+    const expo = recommendStack(snap, { description: EVAL.habit });
+    expect([...expo.summary!.catches, ...expo.summary!.moreCatches].map((c) => c.text).join(" ")).toMatch(/Google Play/);
+  });
+
+  it("phone apps get a push pick: core when they ask for it, Expo for Expo, APNs for Swift, OneSignal for campaigns", () => {
+    const push = (d: string) => recommendStack(snap, { description: d, assumeDefaults: true }).stack.find((s) => s.category === "push");
+    expect(push("An iPhone and Android habit app with a subscription that sends daily reminders")).toMatchObject({ role: "core", pick: { slug: "expo-push" } });
+    expect(push("An iPhone and Android habit app with a subscription")).toMatchObject({ role: "optional", pick: { slug: "expo-push" } });
+    expect(push("A SwiftUI iPhone app for journaling with push notifications")?.pick.slug).toBe("apns-direct");
+    expect(push("An iPhone and Android app for a gym that sends marketing campaigns to segments of members")?.pick.slug).toBe("onesignal");
+    expect(push("A web app for teams with push notifications")).toBeUndefined();
+    expect(recommendStack(snap, { description: "A web app for teams with push notifications", assumeDefaults: true }).coverage?.notes.join(" ")).toMatch(/web push/);
+    expect(recommendStack(snap, { description: "An iPhone app with push notifications", assumeDefaults: true }).coverage?.status).toBe("covered");
+  });
+
   it("a mobile marketplace gets the marketplace recipe with a note on the phone parts", () => {
     const r = recommendStack(snap, { description: "An iOS and Android app where owners book and pay dog walkers; we keep 15%", assumeDefaults: true });
     expect(r.productType.recipe).toBe("marketplace");
@@ -284,6 +319,7 @@ describe("recipes beyond B2B SaaS", () => {
 
   it("get_recipe finds each recipe by plain words", () => {
     expect(matchRecipe(recipes, "react native app with in-app purchases")?.slug).toBe("mobile-subscription-app");
+    expect(matchRecipe(recipes, "swiftui app with storekit and testflight")?.slug).toBe("native-ios-app");
     expect(matchRecipe(recipes, "two-sided marketplace with payouts")?.slug).toBe("marketplace");
     expect(matchRecipe(recipes, "chatbot over pdfs")?.slug).toBe("ai-docs-app");
     expect(matchRecipe(recipes, "internal tool for inventory")?.slug).toBe("internal-tool");

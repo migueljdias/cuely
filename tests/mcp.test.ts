@@ -113,7 +113,7 @@ describe("MCP over Streamable HTTP", () => {
 
   it("list_categories lists all and expands one", async () => {
     const all: any = await client.callTool({ name: "list_categories", arguments: {} });
-    expect(all.structuredContent.categories).toHaveLength(16);
+    expect(all.structuredContent.categories).toHaveLength(17);
     const one: any = await client.callTool({ name: "list_categories", arguments: { category: "email" } });
     expect(text(one)).toMatch(/Resend/);
     expect(text(one)).toMatch(/3,000 emails per month/);

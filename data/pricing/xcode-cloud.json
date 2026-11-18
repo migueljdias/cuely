@@ -1,0 +1,18 @@
+{
+  "slug": "xcode-cloud",
+  "url": "https://developer.apple.com/xcode-cloud/",
+  "readOn": "2026-11-18",
+  "lines": [
+    "To get started, configure a workflow in Xcode and start building your app in Xcode Cloud in just a few minutes.1 The build status is displayed in Xcode and reports show the results immediately after the build finishes.",
+    "25 compute hours/month",
+    "100 compute hours/month",
+    "US$49.99/month",
+    "250 compute hours/month",
+    "US$99.99/month",
+    "1,000 compute hours/month",
+    "US$399.99/month",
+    "10,000 compute hours/month",
+    "US$3,999.99/month",
+    "A compute hour is an hour of time used to execute a specific task in the cloud, such as building an app or running automated tests. For example, running 5 tests of 12 minutes each equals one compute hour. Xcode Cloud runs tests in parallel with other actions, such as analyzing, archiving, and buildi…"
+  ]
+}

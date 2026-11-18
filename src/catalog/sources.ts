@@ -77,6 +77,10 @@ export const SOURCES: Record<string, ToolSources> = {
   pusher: { status: "https://status.pusher.com", npm: "pusher-js" },
   // Mobile builds
   "expo-eas": { status: "https://status.expo.dev", npm: "eas-cli" },
+  // Push notifications
+  "expo-push": { status: "https://status.expo.dev", npm: "expo-notifications" },
+  "firebase-cloud-messaging": { npm: "@react-native-firebase/messaging" },
+  onesignal: { npm: "react-native-onesignal" },
   // Internal tool builders
   retool: { status: "https://status.retool.com" },
   airtable: { status: "https://status.airtable.com" },

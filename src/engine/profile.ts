@@ -32,9 +32,13 @@ export interface Profile {
   game: boolean;
   /** Players share results, so traffic can arrive in viral spikes. */
   shareable: boolean;
+  /** An iPhone or iPad app written in Swift with Xcode, with no Android or cross-platform build. */
+  nativeIos: boolean;
+  /** The description asks for push notifications or reminders. */
+  push: boolean;
   /** Where each value came from. */
   source: Record<"platform" | "money" | "audience", "described" | "answered" | "assumed">;
-  matched: Partial<Record<"platform" | "money" | "audience" | "ai" | "game", string>>;
+  matched: Partial<Record<"platform" | "money" | "audience" | "ai" | "game" | "nativeIos", string>>;
 }
 
 export interface Question {
@@ -54,9 +58,16 @@ export interface Coverage {
 const any = (text: string, words: string[]) => words.find((w) => wordPattern(w).test(text)) ?? null;
 
 const MOBILE = ["ios", "android", "iphone", "ipad", "mobile app", "mobile apps", "phone app", "app store",
-  "play store", "google play", "react native", "expo", "flutter", "swift", "swiftui", "kotlin", "native app"];
+  "play store", "google play", "react native", "expo", "flutter", "swift", "swiftui", "uikit", "xcode", "kotlin", "native app"];
 const WEB = ["web", "web app", "webapp", "website", "site", "saas", "dashboard", "browser", "next.js", "nextjs",
   "landing page", "portal", "web first", "web-first", "chrome extension", "pwa"];
+/** Words that ask for notifications sent to the phone. */
+export const PUSH = ["push", "push notification", "push notifications", "notification", "notifications", "notify", "notifies",
+  "reminder", "reminders", "remind", "reminds", "nudge", "nudges", "alert", "alerts"];
+/** Words that say the app is written natively for Apple platforms. */
+const NATIVE_IOS = ["swift", "swiftui", "uikit", "xcode", "native ios", "native iphone", "native ipad", "storekit", "cloudkit"];
+/** Words that say it also ships on Android or through a cross-platform framework, so the Expo recipe fits better. */
+const CROSS_PLATFORM = ["android", "react native", "expo", "flutter", "kotlin", "play store", "google play", "cross-platform", "cross platform"];
 const BOTH = ["web and mobile", "mobile and web", "web and ios", "ios and web", "web plus mobile", "cross-platform web"];
 const APP_WORDS = ["app", "apps", "application"];
 
@@ -108,7 +119,7 @@ const FAST_MULTIPLAYER = ["multiplayer", "real-time multiplayer", "realtime mult
 const ENGINE_NOTE = "Cuely doesn't cover game engines, console or 3D games; it covers casual and daily games that run in a web browser.";
 
 /** Things Cuely doesn't cover. "outside" means the core of the product is out of scope. */
-const OUTSIDE: { words: string[]; note: string; status: "partial" | "outside"; needs?: string[] }[] = [
+const OUTSIDE: { words: string[]; note: string; status: "partial" | "outside"; needs?: string[]; unless?: string[] }[] = [
   { words: GAME_ENGINE, status: "outside", note: ENGINE_NOTE },
   { words: GAME_3D, needs: GAME, status: "outside", note: ENGINE_NOTE },
   { words: PHONE_GAME, needs: GAME, status: "outside",
@@ -133,13 +144,13 @@ const OUTSIDE: { words: string[]; note: string; status: "partial" | "outside"; n
     note: "Apps that move or hold customer money need licensing review first; Cuely doesn't cover ledgers or banking partners." },
   { words: ["sms", "text messages", "phone calls", "voice calls"], status: "partial",
     note: "Cuely doesn't cover SMS or voice providers yet." },
-  { words: ["push notifications"], status: "partial",
-    note: "Cuely doesn't compare push-notification services yet (Expo and Firebase both include one)." },
+  { words: ["push notifications", "web push", "browser notifications"], status: "partial", unless: MOBILE,
+    note: "Cuely compares push services for phone apps, not browser (web push) notifications." },
 ];
 
 export function detectCoverage(text: string): Coverage {
   const t = maskText(text);
-  const hits = OUTSIDE.filter((o) => any(t, o.words) && (!o.needs || any(t, o.needs)));
+  const hits = OUTSIDE.filter((o) => any(t, o.words) && (!o.needs || any(t, o.needs)) && (!o.unless || !any(t, o.unless)));
   if (!hits.length) return { status: "covered", notes: [] };
   // When the core is out of scope, only the out-of-scope notes apply (there is no "stack below"),
   // and an engine game that is also a phone game gets one note, not two.
@@ -255,6 +266,11 @@ export function detectProfile(text: string, answers: Answers = {}): ProfileResul
   const game = !!gameWord && audience !== "internal";
   if (game) matched.game = gameWord!;
   const shareable = game && !!any(t, SHARE);
+  // Checked on the raw text: masking turns "React Native" into a placeholder, and it must still count as cross-platform.
+  const nativeWord = platform !== "web" ? any(raw, NATIVE_IOS) : null;
+  const nativeIos = !!nativeWord && !any(raw, CROSS_PLATFORM);
+  if (nativeIos) matched.nativeIos = nativeWord!;
+  const push = !!any(t, PUSH);
 
   // Unknown facts that would change the picks.
   const hasApp = !!any(t, APP_WORDS);
@@ -266,7 +282,7 @@ export function detectProfile(text: string, answers: Answers = {}): ProfileResul
   const vague = words.length < 4 && !web && !mob && !ai && !mk && !you && !internal && !game;
 
   return {
-    profile: { platform, money, audience, ai, rag, realtime, inPerson, socialLogin, game, shareable, source, matched },
+    profile: { platform, money, audience, ai, rag, realtime, inPerson, socialLogin, game, shareable, nativeIos, push, source, matched },
     unknown,
     vague,
   };
