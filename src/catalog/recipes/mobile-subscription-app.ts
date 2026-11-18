@@ -59,6 +59,16 @@ export const mobileSubscriptionApp: Recipe = {
       optional: true,
     },
     {
+      category: "push",
+      tool: "expo-push",
+      why: "One send API and one token format for both stores, delivered through APNs and FCM, at no cost.",
+      alternatives: [
+        { tool: "onesignal", when: "Non-developers will send marketing or re-engagement campaigns to segments of users." },
+        { tool: "firebase-cloud-messaging", when: "You'd rather send to FCM and APNs without Expo in between." },
+      ],
+      optional: true,
+    },
+    {
       category: "monitoring",
       tool: "sentry",
       why: "Crash and error reports from both platforms with readable stack traces, including errors from over-the-air updates.",
@@ -110,7 +120,7 @@ export const mobileSubscriptionApp: Recipe = {
         {
           path: "supabase/migrations/0001_init.sql",
           contents:
-            "create table profiles (\n  id uuid primary key references auth.users(id) on delete cascade,\n  display_name text,\n  created_at timestamptz not null default now()\n);\n\ncreate table habits (\n  id uuid primary key default gen_random_uuid(),\n  user_id uuid not null references auth.users(id) on delete cascade,\n  name text not null,\n  created_at timestamptz not null default now()\n);\ncreate index on habits (user_id);\n\n-- Written only by the RevenueCat webhook (service role). The app reads it.\ncreate table entitlements (\n  user_id uuid primary key references auth.users(id) on delete cascade,\n  entitlement text not null,          -- e.g. 'pro'\n  active boolean not null,\n  expires_at timestamptz,\n  store text,                         -- 'app_store' | 'play_store' | 'stripe'\n  updated_at timestamptz not null default now()\n);\n\ncreate table revenuecat_events (       -- webhook idempotency\n  id text primary key,\n  received_at timestamptz not null default now()\n);\n\nalter table profiles enable row level security;\nalter table habits enable row level security;\nalter table entitlements enable row level security;\nalter table revenuecat_events enable row level security; -- no policies: server only\n\ncreate policy \"own profile\" on profiles for all using (auth.uid() = id) with check (auth.uid() = id);\ncreate policy \"own habits\" on habits for all using (auth.uid() = user_id) with check (auth.uid() = user_id);\ncreate policy \"read own entitlement\" on entitlements for select using (auth.uid() = user_id);\n",
+            "create table profiles (\n  id uuid primary key references auth.users(id) on delete cascade,\n  display_name text,\n  created_at timestamptz not null default now()\n);\n\ncreate table habits (\n  id uuid primary key default gen_random_uuid(),\n  user_id uuid not null references auth.users(id) on delete cascade,\n  name text not null,\n  created_at timestamptz not null default now()\n);\ncreate index on habits (user_id);\n\n-- Written only by the RevenueCat webhook (service role). The app reads it.\ncreate table entitlements (\n  user_id uuid primary key references auth.users(id) on delete cascade,\n  entitlement text not null,          -- e.g. 'pro'\n  active boolean not null,\n  expires_at timestamptz,\n  store text,                         -- 'app_store' | 'play_store' | 'stripe'\n  updated_at timestamptz not null default now()\n);\n\ncreate table revenuecat_events (       -- webhook idempotency\n  id text primary key,\n  received_at timestamptz not null default now()\n);\n\nalter table profiles enable row level security;\nalter table habits enable row level security;\nalter table entitlements enable row level security;\nalter table revenuecat_events enable row level security; -- no policies: server only\n\ncreate policy \"own profile\" on profiles for all using (auth.uid() = id) with check (auth.uid() = id);\ncreate policy \"own habits\" on habits for all using (auth.uid() = user_id) with check (auth.uid() = user_id);\ncreate policy \"read own entitlement\" on entitlements for select using (auth.uid() = user_id);\n\n-- Optional: push notification tokens, one row per device.\ncreate table push_tokens (\n  token text primary key,\n  user_id uuid not null references auth.users(id) on delete cascade,\n  created_at timestamptz not null default now()\n);\nalter table push_tokens enable row level security;\ncreate policy \"own push tokens\" on push_tokens for all using (auth.uid() = user_id) with check (auth.uid() = user_id);\n",
         },
       ],
       check: "Signed in as user A, a query for user B's habits returns nothing, and an insert into entitlements from the app is refused.",
@@ -215,6 +225,37 @@ export const mobileSubscriptionApp: Recipe = {
       commands: ["eas build --profile preview --platform all"],
       check: "Every lifecycle event shows up in RevenueCat and in your entitlements table, on both platforms.",
       docs: ["https://developer.apple.com/help/app-store-connect/test-in-app-purchases/create-a-sandbox-apple-account", "https://developer.android.com/google/play/billing/test"],
+    },
+    {
+      title: "Optional: send push notifications",
+      detail:
+        "Reminders and replies bring people back, but the permission prompt shows once: ask when the user turns on something that needs it, not at first launch.",
+      actions: [
+        "Upload the APNs key and the FCM credentials to EAS (eas credentials) so Expo can deliver on both platforms.",
+        "Ask for permission when the user turns on reminders, get the Expo push token, and store it in a push_tokens table under row-level security.",
+        "Send from a Supabase edge function to Expo's push API, at most 100 messages per request and 600 a second per project.",
+        "Later, fetch push receipts for the tickets and delete tokens that come back DeviceNotRegistered.",
+        "Don't put private details in the notification text, and send marketing pushes only to people who opted in, with a way to opt out (Guideline 4.5.4).",
+      ],
+      commands: ["npx expo install expo-notifications expo-device expo-constants", "eas credentials"],
+      files: [
+        {
+          path: "lib/push.ts",
+          contents:
+            'import * as Notifications from "expo-notifications";\nimport * as Device from "expo-device";\nimport Constants from "expo-constants";\nimport { supabase } from "./supabase";\n\n// Call when the user turns on reminders, not at first launch.\nexport async function enablePush(userId: string): Promise<boolean> {\n  if (!Device.isDevice) return false; // simulators get no push token\n  const { status } = await Notifications.requestPermissionsAsync();\n  if (status !== "granted") return false;\n  const projectId = Constants.expoConfig?.extra?.eas?.projectId;\n  const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId });\n  await supabase.from("push_tokens").upsert({ token, user_id: userId });\n  return true;\n}\n',
+        },
+        {
+          path: "supabase/functions/send-push/index.ts",
+          contents:
+            '// Server only: called by your own jobs, never by the app.\nexport async function sendPush(messages: { to: string; title: string; body: string; data?: Record<string, unknown> }[]) {\n  const tickets = [];\n  for (let i = 0; i < messages.length; i += 100) { // at most 100 per request\n    const res = await fetch("https://exp.host/--/api/v2/push/send", {\n      method: "POST",\n      headers: { "Content-Type": "application/json", Accept: "application/json" },\n      body: JSON.stringify(messages.slice(i, i + 100)),\n    });\n    const { data } = await res.json();\n    tickets.push(...data); // keep ticket ids; fetch receipts later and drop DeviceNotRegistered tokens\n  }\n  return tickets;\n}\n',
+        },
+      ],
+      check: "A test user who turns on reminders gets a notification on both an iPhone and an Android phone, and a deleted app's token is removed after its receipt comes back.",
+      docs: [
+        "https://docs.expo.dev/push-notifications/push-notifications-setup/",
+        "https://docs.expo.dev/push-notifications/sending-notifications/",
+        "https://developer.apple.com/app-store/review/guidelines/",
+      ],
     },
     {
       title: "Add crash reporting and analytics",

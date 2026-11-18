@@ -289,6 +289,17 @@ describe("recipes beyond B2B SaaS", () => {
     expect([...expo.summary!.catches, ...expo.summary!.moreCatches].map((c) => c.text).join(" ")).toMatch(/Google Play/);
   });
 
+  it("phone apps get a push pick: core when they ask for it, Expo for Expo, APNs for Swift, OneSignal for campaigns", () => {
+    const push = (d: string) => recommendStack(snap, { description: d, assumeDefaults: true }).stack.find((s) => s.category === "push");
+    expect(push("An iPhone and Android habit app with a subscription that sends daily reminders")).toMatchObject({ role: "core", pick: { slug: "expo-push" } });
+    expect(push("An iPhone and Android habit app with a subscription")).toMatchObject({ role: "optional", pick: { slug: "expo-push" } });
+    expect(push("A SwiftUI iPhone app for journaling with push notifications")?.pick.slug).toBe("apns-direct");
+    expect(push("An iPhone and Android app for a gym that sends marketing campaigns to segments of members")?.pick.slug).toBe("onesignal");
+    expect(push("A web app for teams with push notifications")).toBeUndefined();
+    expect(recommendStack(snap, { description: "A web app for teams with push notifications", assumeDefaults: true }).coverage?.notes.join(" ")).toMatch(/web push/);
+    expect(recommendStack(snap, { description: "An iPhone app with push notifications", assumeDefaults: true }).coverage?.status).toBe("covered");
+  });
+
   it("a mobile marketplace gets the marketplace recipe with a note on the phone parts", () => {
     const r = recommendStack(snap, { description: "An iOS and Android app where owners book and pay dog walkers; we keep 15%", assumeDefaults: true });
     expect(r.productType.recipe).toBe("marketplace");

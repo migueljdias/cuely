@@ -281,6 +281,7 @@ export function categoriesFor(p: Profile, needs: Need[] = []): { pick: { slug: C
     add("hosting");
     if (p.platform === "both") add("mobile_build");
   }
+  if (isMobile(p)) add("push", p.push ? "core" : "optional");
   add("database");
   add("auth");
   if (p.money !== "none") add("payments");
@@ -555,8 +556,10 @@ export function recommendStack(catalog: CatalogSnapshot, input: RecommendInput):
       ? `${baseReason} Picked over ${demoted.name}, which measured worse on ${demoted.health!.measuredOn}: ${demoted.health!.reasons[0]}`
       : baseReason;
 
-    // The recipe says which parts are core for this product type; "only if you build it" stays.
-    const finalRole: StackRole = recipeItem && role !== "if_you_build" ? (recipeItem.optional ? "optional" : "core") : role;
+    // The recipe says which parts are core for this product type; "only if you build it" stays,
+    // and so does push the description asked for (the recipes list it as optional).
+    const asked = cat.slug === "push" && role === "core";
+    const finalRole: StackRole = recipeItem && role !== "if_you_build" && !asked ? (recipeItem.optional ? "optional" : "core") : role;
 
     stack.push({
       category: cat.slug,

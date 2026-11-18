@@ -128,4 +128,12 @@ export const categories: Category[] = [
       "Counters and leaderboards need atomic increments and sorted sets, which is Redis. A read-mostly cache can sit in an edge key-value store, but check its per-key write limit and how long a write takes to show everywhere.",
     order: 16,
   },
+  {
+    slug: "push",
+    name: "Push notifications",
+    description: "Notifications sent from your backend to the app on people's iPhones and Android phones: reminders, replies, alerts.",
+    howToChoose:
+      "Every service ends at Apple's APNs and Google's FCM, so the choice is how much sits in between. Pick by how the app is built (Expo, Swift or Firebase), then check what the free plan counts: sends, devices or monthly active users.",
+    order: 17,
+  },
 ];

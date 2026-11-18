@@ -23,6 +23,8 @@ export interface PracticeContext {
   tools: string[];
   /** Categories the stack covers. */
   categories: CategorySlug[];
+  /** The product sends push notifications (push is a core pick, not an optional one). */
+  push?: boolean;
 }
 
 export type Phase = "day_one" | "before_launch";
@@ -384,6 +386,16 @@ export const PRACTICES: Practice[] = [
     why: "Apple requires explicit permission through App Tracking Transparency to track users (Guideline 5.1.2(i)), and apps that track without it are rejected.",
     source: "https://developer.apple.com/app-store/user-privacy-and-data-use/",
     applies: (c) => mobile(c) && customers(c),
+  },
+  {
+    id: "push-consent",
+    area: "app_stores",
+    phase: "before_launch",
+    title: "Ask for notifications in context, and opt in to marketing pushes",
+    detail: "Ask for notification permission when the user turns on something that needs it, keep the app usable without it, keep private details out of the notification text, and send promotional pushes only to people who opted in through consent text in the app, with an in-app way to opt out.",
+    why: "App Review Guideline 4.5.4 says push must not be required for the app to work, shouldn't carry sensitive information, and needs explicit opt-in for promotions or marketing.",
+    source: "https://developer.apple.com/app-store/review/guidelines/",
+    applies: (c) => mobile(c) && !!c.push,
   },
   {
     id: "eu-trader-status",

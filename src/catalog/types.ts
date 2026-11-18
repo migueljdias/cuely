@@ -20,7 +20,8 @@ export type CategorySlug =
   | "realtime"
   | "mobile_build"
   | "internal_tools"
-  | "kv";
+  | "kv"
+  | "push";
 
 /**
  * Needs are what a builder's description can ask for. recommend_stack detects
@@ -50,7 +51,8 @@ export type Need =
   | "google_workspace" // the organization already runs on Google Workspace
   | "counters" // votes, scores, leaderboards, streaks: many small writes to the same numbers
   | "spiky" // traffic arrives in bursts (a viral share, a launch), not evenly
-  | "health_data"; // stores patient or health information (HIPAA in the US)
+  | "health_data" // stores patient or health information (HIPAA in the US)
+  | "campaigns"; // marketing or re-engagement messages sent by non-developers, to segments of users
 
 export interface Category {
   slug: CategorySlug;

@@ -6,7 +6,7 @@ export const nativeIosApp: Recipe = {
   slug: "native-ios-app",
   title: "Native iPhone app in Swift",
   summary:
-    "An iPhone (and iPad) app written in Swift and SwiftUI with Xcode, for teams that ship on Apple platforms only. Xcode Cloud builds every push and delivers it to TestFlight, Supabase's Swift SDK is the backend behind row-level security, Sign in with Apple is the login, and in-app purchase goes through RevenueCat (or StoreKit 2 directly) when the app charges.",
+    "An iPhone (and iPad) app written in Swift and SwiftUI with Xcode, for teams that ship on Apple platforms only. Xcode Cloud builds every push and delivers it to TestFlight, Supabase's Swift SDK is the backend behind row-level security, Sign in with Apple is the login, in-app purchase goes through RevenueCat (or StoreKit 2 directly) when the app charges, and notifications go straight to Apple's APNs.",
   matches: [
     "swift", "swiftui", "uikit", "xcode", "native ios", "native iphone", "native ipad", "swift app", "swiftui app",
     "ios only", "iphone only", "storekit", "testflight", "xcode cloud",
@@ -60,6 +60,16 @@ export const nativeIosApp: Recipe = {
       optional: true,
     },
     {
+      category: "push",
+      tool: "apns-direct",
+      why: "An iPhone-only app can send straight to Apple's APNs from an edge function with a token signing key: no push vendor, no SDK in the app, nothing to pay.",
+      alternatives: [
+        { tool: "firebase-cloud-messaging", when: "An Android app will follow, or the backend is already Firebase: one API for both." },
+        { tool: "onesignal", when: "Non-developers will send marketing or re-engagement campaigns to segments of users." },
+      ],
+      optional: true,
+    },
+    {
       category: "monitoring",
       tool: "sentry",
       why: "Crash reports with symbolicated Swift stack traces once dSYMs are uploaded from each build.",
@@ -104,7 +114,7 @@ export const nativeIosApp: Recipe = {
         {
           path: "supabase/migrations/0001_init.sql",
           contents:
-            "create table notes (\n  id uuid primary key default gen_random_uuid(),\n  user_id uuid not null references auth.users(id) on delete cascade default auth.uid(),\n  body text not null,\n  created_at timestamptz not null default now()\n);\ncreate index on notes (user_id);\n\n-- Written only by the RevenueCat webhook (service role). The app reads it.\ncreate table entitlements (\n  user_id uuid primary key references auth.users(id) on delete cascade,\n  entitlement text not null,\n  active boolean not null,\n  expires_at timestamptz,\n  updated_at timestamptz not null default now()\n);\n\nalter table notes enable row level security;\nalter table entitlements enable row level security;\n\ncreate policy \"own notes\" on notes for all using (auth.uid() = user_id) with check (auth.uid() = user_id);\ncreate policy \"read own entitlement\" on entitlements for select using (auth.uid() = user_id);\n",
+            "create table notes (\n  id uuid primary key default gen_random_uuid(),\n  user_id uuid not null references auth.users(id) on delete cascade default auth.uid(),\n  body text not null,\n  created_at timestamptz not null default now()\n);\ncreate index on notes (user_id);\n\n-- Written only by the RevenueCat webhook (service role). The app reads it.\ncreate table entitlements (\n  user_id uuid primary key references auth.users(id) on delete cascade,\n  entitlement text not null,\n  active boolean not null,\n  expires_at timestamptz,\n  updated_at timestamptz not null default now()\n);\n\nalter table notes enable row level security;\nalter table entitlements enable row level security;\n\ncreate policy \"own notes\" on notes for all using (auth.uid() = user_id) with check (auth.uid() = user_id);\ncreate policy \"read own entitlement\" on entitlements for select using (auth.uid() = user_id);\n\n-- Optional: APNs device tokens, one row per device. sandbox is true for builds run from Xcode.\ncreate table push_tokens (\n  token text primary key,\n  user_id uuid not null references auth.users(id) on delete cascade default auth.uid(),\n  sandbox boolean not null default false,\n  created_at timestamptz not null default now()\n);\nalter table push_tokens enable row level security;\ncreate policy \"own push tokens\" on push_tokens for all using (auth.uid() = user_id) with check (auth.uid() = user_id);\n\n-- The APNs provider token, reused for 20 to 60 minutes as Apple requires. Server only: no policies.\ncreate table apns_token (id int primary key, jwt text not null, issued_at timestamptz not null);\nalter table apns_token enable row level security;\n",
         },
         {
           path: "App/Backend.swift",
@@ -182,6 +192,36 @@ export const nativeIosApp: Recipe = {
       docs: ["https://www.revenuecat.com/docs/integrations/webhooks"],
     },
     {
+      title: "Optional: send push notifications through APNs",
+      detail:
+        "Your backend signs a short-lived token with an APNs key and sends each notification to Apple over HTTP/2. The permission prompt shows once, so ask when the user turns on something that needs it.",
+      actions: [
+        "Add the Push Notifications capability in Xcode, and create an APNs authentication key (.p8) in Certificates, Identifiers & Profiles; store it, its key id and your team id as edge function secrets.",
+        "Ask with UNUserNotificationCenter when the user turns on reminders, call registerForRemoteNotifications, and store the device token in push_tokens (sandbox for builds run from Xcode; TestFlight and App Store builds use production).",
+        "Send from an edge function: an ES256 token signed with the key, reused for 20 to 60 minutes (Apple rejects tokens refreshed more often than every 20 minutes or older than an hour), POSTed to /3/device/<token> with apns-topic set to your bundle id.",
+        "Delete a token when APNs answers 410; it means the app was removed or the token expired.",
+        "Don't put private details in the notification text, don't make the app require notifications, and send marketing pushes only to people who opted in, with a way to opt out (Guideline 4.5.4).",
+      ],
+      files: [
+        {
+          path: "App/Push.swift",
+          contents:
+            'import Supabase\nimport SwiftUI\nimport UserNotifications\n\n// In your App: @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate\nfinal class AppDelegate: NSObject, UIApplicationDelegate {\n  func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {\n    let token = deviceToken.map { String(format: "%02x", $0) }.joined()\n    #if DEBUG\n    let sandbox = true // builds run from Xcode use the APNs development server\n    #else\n    let sandbox = false\n    #endif\n    struct Row: Encodable { let token: String; let sandbox: Bool }\n    Task { try? await supabase.from("push_tokens").upsert(Row(token: token, sandbox: sandbox)).execute() }\n  }\n}\n\n// Call when the user turns on reminders, not at first launch.\nfunc enablePush() async -> Bool {\n  let granted = (try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound])) ?? false\n  if granted { await MainActor.run { UIApplication.shared.registerForRemoteNotifications() } }\n  return granted\n}\n',
+        },
+        {
+          path: "supabase/functions/send-push/apns.ts",
+          contents:
+            'import { createClient } from "npm:@supabase/supabase-js@2";\nimport { importPKCS8, SignJWT } from "npm:jose@5";\n\nconst admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);\nconst TEAM_ID = Deno.env.get("APNS_TEAM_ID")!;\nconst KEY_ID = Deno.env.get("APNS_KEY_ID")!;\nconst BUNDLE_ID = Deno.env.get("APNS_BUNDLE_ID")!;\n\n// APNs wants one token reused for 20 to 60 minutes, so it lives in the database between invocations.\nasync function providerToken(): Promise<string> {\n  const { data } = await admin.from("apns_token").select("jwt, issued_at").eq("id", 1).maybeSingle();\n  if (data && Date.now() - new Date(data.issued_at).getTime() < 50 * 60_000) return data.jwt;\n  const key = await importPKCS8(Deno.env.get("APNS_PRIVATE_KEY")!, "ES256");\n  const jwt = await new SignJWT({ iss: TEAM_ID }).setProtectedHeader({ alg: "ES256", kid: KEY_ID }).setIssuedAt().sign(key);\n  await admin.from("apns_token").upsert({ id: 1, jwt, issued_at: new Date().toISOString() });\n  return jwt;\n}\n\nexport async function sendToUser(userId: string, title: string, body: string) {\n  const jwt = await providerToken();\n  const { data: tokens } = await admin.from("push_tokens").select("token, sandbox").eq("user_id", userId);\n  for (const t of tokens ?? []) {\n    const host = t.sandbox ? "api.sandbox.push.apple.com" : "api.push.apple.com";\n    const res = await fetch(`https://${host}/3/device/${t.token}`, { // Deno\'s fetch speaks HTTP/2, which APNs requires\n      method: "POST",\n      headers: { authorization: `bearer ${jwt}`, "apns-topic": BUNDLE_ID, "apns-push-type": "alert", "apns-priority": "10" },\n      body: JSON.stringify({ aps: { alert: { title, body }, sound: "default" } }),\n    });\n    if (res.status === 410) await admin.from("push_tokens").delete().eq("token", t.token); // no longer active\n  }\n}\n',
+        },
+      ],
+      check: "A TestFlight build that turned on reminders gets a notification sent from the edge function, and deleting the app makes the next send remove its token.",
+      docs: [
+        "https://developer.apple.com/documentation/usernotifications/registering-your-app-with-apns",
+        "https://developer.apple.com/documentation/usernotifications/establishing-a-token-based-connection-to-apns",
+        "https://developer.apple.com/documentation/usernotifications/sending-notification-requests-to-apns",
+      ],
+    },
+    {
       title: "Write the privacy manifest and decide on tracking",
       detail:
         "Since May 1, 2024, uploads need approved reasons for certain APIs, including ones called by third-party SDKs. Tracking across other companies' apps needs the user's permission (Guideline 5.1.2(i)).",
@@ -257,6 +297,8 @@ export const nativeIosApp: Recipe = {
     "Forgetting the Paid Apps Agreement, so products never load in sandbox.",
     "Adding an analytics or ads SDK without updating the privacy manifest and privacy details.",
     "Shipping the Supabase service role key or any other secret inside the app bundle.",
+    "Sending pushes to the production APNs server from a build run in Xcode (or the reverse): sandbox tokens only work on the development server.",
+    "Making a new APNs token for every send: Apple rejects tokens refreshed more often than every 20 minutes.",
   ],
   complianceNotes: [
     "Apple's App Review Guidelines change often; read the current sections on payments (3.1), privacy (5.1) and login services (4.8) before you design sign-in and the paywall.",

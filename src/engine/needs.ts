@@ -53,6 +53,8 @@ export const NEED_TRIGGERS: Record<Need, string[]> = {
     "hacker news", "product hunt", "front page", "launch day", "surge", "surges", "flash crowd"],
   health_data: ["hipaa", "phi", "health", "healthcare", "medical", "patient", "patients", "clinic", "clinics", "therapy",
     "therapist", "therapists", "telehealth", "telemedicine", "doctor", "doctors", "mental health", "health records"],
+  campaigns: ["marketing campaigns", "marketing campaign", "campaigns", "re-engagement", "re-engage", "win-back", "win back",
+    "drip", "journeys", "segments", "segmented", "promotions", "promotional", "marketing pushes", "marketing messages"],
 };
 
 /**
@@ -126,6 +128,7 @@ export const NEED_LABELS: Record<Need, string> = {
   counters: "votes, scores, leaderboards or streaks (many writes to the same numbers)",
   spiky: "traffic comes in viral spikes",
   health_data: "stores patient or health information",
+  campaigns: "marketing or re-engagement campaigns to segments of users",
 };
 
 export const ALL_NEEDS = Object.keys(NEED_TRIGGERS) as Need[];
@@ -155,4 +158,5 @@ export const NEED_SHORT: Record<Need, string> = {
   counters: "votes, leaderboards and streaks",
   spiky: "viral traffic spikes",
   health_data: "patient and health data",
+  campaigns: "marketing and re-engagement campaigns",
 };

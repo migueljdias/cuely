@@ -7,8 +7,8 @@
  * covers one product (R2's data location) isn't read as covering another.
  *
  * Left out on purpose:
- * - payments, secrets, DNS and mobile builds: they don't hold the product's user
- *   data, so these facts don't change the pick (see DATA_CATEGORIES).
+ * - payments, secrets, DNS, mobile builds and push: they don't hold the product's user
+ *   data (push services hold device tokens and the messages you send), so these facts don't change the pick (see DATA_CATEGORIES).
  * - tools with no vendor behind them (Better Auth, pgvector, cached polling): the
  *   answer is whatever your own host and database say.
  *
