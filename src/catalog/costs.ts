@@ -80,6 +80,7 @@ export const COSTS: Record<string, ToolCost> = {
   // Mobile builds
   "expo-eas": { monthly: 19, basis: "Free updates reach 1,000 MAU, so you're at the limit; Starter is $19/month for 3,000. Builds fit the free 15 + 15 a month." },
   "native-toolchains": { monthly: 0, basis: "Tools are free; store fees are listed separately." },
+  "xcode-cloud": { monthly: 0, basis: "25 compute hours a month come with the Apple Developer Program, whose $99 a year is listed with the store fees; 100 hours a month is US$49.99." },
   // Internal tools: 10 staff
   retool: { monthly: 55, scale: "10_staff", basis: "Free stops at 5 users; Team for 1 builder ($10) + 9 staff ($5 each) = $55/month, billed annually." },
   appsheet: { monthly: 0, scale: "10_staff", basis: "$0 if your Workspace plan includes AppSheet Core; otherwise Starter at $5 × 10 staff = $50/month." },

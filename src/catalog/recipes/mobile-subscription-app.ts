@@ -19,6 +19,7 @@ export const mobileSubscriptionApp: Recipe = {
   notFor: [
     "Apps where users pay each other for real-world services (rides, walks, cleaning): those are paid outside in-app purchase. Use the marketplace recipe.",
     "Games with heavy 3D graphics: use a game engine instead of React Native.",
+    "iPhone-only apps written in Swift and SwiftUI: use the native-ios-app recipe.",
     "Apps that must work fully offline with large local data: plan local storage and sync before picking a hosted backend.",
   ],
   stack: [
@@ -27,7 +28,7 @@ export const mobileSubscriptionApp: Recipe = {
       tool: "expo-eas",
       why: "React Native with cloud builds for both stores, store submission, and over-the-air updates for JavaScript fixes. No Mac needed to build for iOS.",
       alternatives: [
-        { tool: "native-toolchains", when: "Your team already writes Swift and Kotlin, or the app leans on platform features React Native doesn't wrap." },
+        { tool: "native-toolchains", when: "Your team already writes Swift and Kotlin, or the app leans on platform features React Native doesn't wrap. For an iPhone-only Swift app, see the native-ios-app recipe." },
       ],
     },
     {

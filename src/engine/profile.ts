@@ -32,9 +32,11 @@ export interface Profile {
   game: boolean;
   /** Players share results, so traffic can arrive in viral spikes. */
   shareable: boolean;
+  /** An iPhone or iPad app written in Swift with Xcode, with no Android or cross-platform build. */
+  nativeIos: boolean;
   /** Where each value came from. */
   source: Record<"platform" | "money" | "audience", "described" | "answered" | "assumed">;
-  matched: Partial<Record<"platform" | "money" | "audience" | "ai" | "game", string>>;
+  matched: Partial<Record<"platform" | "money" | "audience" | "ai" | "game" | "nativeIos", string>>;
 }
 
 export interface Question {
@@ -54,9 +56,13 @@ export interface Coverage {
 const any = (text: string, words: string[]) => words.find((w) => wordPattern(w).test(text)) ?? null;
 
 const MOBILE = ["ios", "android", "iphone", "ipad", "mobile app", "mobile apps", "phone app", "app store",
-  "play store", "google play", "react native", "expo", "flutter", "swift", "swiftui", "kotlin", "native app"];
+  "play store", "google play", "react native", "expo", "flutter", "swift", "swiftui", "uikit", "xcode", "kotlin", "native app"];
 const WEB = ["web", "web app", "webapp", "website", "site", "saas", "dashboard", "browser", "next.js", "nextjs",
   "landing page", "portal", "web first", "web-first", "chrome extension", "pwa"];
+/** Words that say the app is written natively for Apple platforms. */
+const NATIVE_IOS = ["swift", "swiftui", "uikit", "xcode", "native ios", "native iphone", "native ipad", "storekit", "cloudkit"];
+/** Words that say it also ships on Android or through a cross-platform framework, so the Expo recipe fits better. */
+const CROSS_PLATFORM = ["android", "react native", "expo", "flutter", "kotlin", "play store", "google play", "cross-platform", "cross platform"];
 const BOTH = ["web and mobile", "mobile and web", "web and ios", "ios and web", "web plus mobile", "cross-platform web"];
 const APP_WORDS = ["app", "apps", "application"];
 
@@ -255,6 +261,10 @@ export function detectProfile(text: string, answers: Answers = {}): ProfileResul
   const game = !!gameWord && audience !== "internal";
   if (game) matched.game = gameWord!;
   const shareable = game && !!any(t, SHARE);
+  // Checked on the raw text: masking turns "React Native" into a placeholder, and it must still count as cross-platform.
+  const nativeWord = platform !== "web" ? any(raw, NATIVE_IOS) : null;
+  const nativeIos = !!nativeWord && !any(raw, CROSS_PLATFORM);
+  if (nativeIos) matched.nativeIos = nativeWord!;
 
   // Unknown facts that would change the picks.
   const hasApp = !!any(t, APP_WORDS);
@@ -266,7 +276,7 @@ export function detectProfile(text: string, answers: Answers = {}): ProfileResul
   const vague = words.length < 4 && !web && !mob && !ai && !mk && !you && !internal && !game;
 
   return {
-    profile: { platform, money, audience, ai, rag, realtime, inPerson, socialLogin, game, shareable, source, matched },
+    profile: { platform, money, audience, ai, rag, realtime, inPerson, socialLogin, game, shareable, nativeIos, source, matched },
     unknown,
     vague,
   };

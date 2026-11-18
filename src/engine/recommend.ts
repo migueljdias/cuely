@@ -23,6 +23,8 @@ export const METHOD_URL = "https://cuely.dev/#method";
 
 /** Read 2026-11-07 from developer.apple.com/programs and Google Play Console help (answer 6112435). */
 const STORE_ACCOUNTS = "Apple Developer Program $99 a year, Google Play $25 once";
+/** Read 2026-11-18 from developer.apple.com/programs and developer.apple.com/xcode-cloud. */
+const APPLE_ACCOUNT = "Apple Developer Program $99 a year, which includes 25 Xcode Cloud compute hours a month";
 
 export interface RecommendInput {
   description: string;
@@ -157,6 +159,7 @@ export const RECIPE_FOR = {
   internal: "internal-tool",
   marketplace: "marketplace",
   mobile: "mobile-subscription-app",
+  nativeIos: "native-ios-app",
   ai: "ai-docs-app",
   game: "daily-web-game",
   consumer: "consumer-web-app",
@@ -176,10 +179,14 @@ export function routeRecipe(recipes: Recipe[], profile: Profile, description: st
     recipe = by(RECIPE_FOR.internal);
   } else if (profile.money === "users_pay_each_other") {
     recipe = by(RECIPE_FOR.marketplace);
-    if (isMobile(profile)) notes.push("It's also a phone app: payments for real-world services stay outside in-app purchase, and the mobile-subscription-app recipe's build, sign-in and store steps still apply.");
+    if (isMobile(profile)) {
+      const phone = profile.nativeIos ? RECIPE_FOR.nativeIos : RECIPE_FOR.mobile;
+      notes.push(`It's also a phone app: payments for real-world services stay outside in-app purchase, and the ${phone} recipe's build, sign-in and store steps still apply.`);
+    }
   } else if (isMobile(profile)) {
-    recipe = by(RECIPE_FOR.mobile);
+    recipe = by(profile.nativeIos ? RECIPE_FOR.nativeIos : RECIPE_FOR.mobile);
     if (profile.money === "none") notes.push("Nothing here is paid, so skip the recipe's purchase, paywall and webhook steps.");
+    if (profile.nativeIos && profile.platform === "both") notes.push("The recipe covers the iPhone app; the web app shares its Supabase project, and the consumer-web-app recipe has the hosting steps.");
     if (profile.ai) notes.push("The AI parts aren't in this recipe: call the model API from a backend function, never from the app, and see the ai-docs-app recipe for retrieval and usage caps.");
   } else if (profile.game) {
     recipe = by(RECIPE_FOR.game);
@@ -301,7 +308,7 @@ export function categoriesFor(p: Profile, needs: Need[] = []): { pick: { slug: C
 export function productLabel(p: Profile, b2b: boolean): string {
   if (p.audience === "internal") return "Staff tool";
   const parts: string[] = [];
-  if (p.platform === "mobile") parts.push("Phone app");
+  if (p.platform === "mobile") parts.push(p.nativeIos ? "iPhone app in Swift" : "Phone app");
   else if (p.platform === "both") parts.push("Web and phone app");
   else if (p.game) parts.push("Web game");
   else parts.push(b2b ? "B2B web app" : "Web app");
@@ -343,7 +350,8 @@ export function catchesFor(p: Profile, needs: Need[]): typeof CATCHES {
     if (p.realtime && !p.game) flags.push("realtime");
   }
   if (needs.includes("health_data")) flags.unshift("health_data");
-  return flags.flatMap((f) => CATCHES.filter((c) => c.when === f));
+  const platform = p.nativeIos ? "native_ios" : "cross_platform";
+  return flags.flatMap((f) => CATCHES.filter((c) => c.when === f && (!c.platforms || c.platforms === platform)));
 }
 
 const money = (n: number) => (n === 0 ? "$0" : n < 1 ? "under $1" : `$${Math.round(n).toLocaleString("en-US")}`);
@@ -413,6 +421,7 @@ export function readProduct(description: string, answers?: Answers, extraNeeds: 
     if (i >= 0) detected.splice(i, 1);
   };
   if (isMobile(profile)) addNeed("mobile", profile.matched.platform ?? "(answered)");
+  if (profile.nativeIos) addNeed("native_ios", profile.matched.nativeIos!);
   if (profile.platform === "mobile") dropNeed("nextjs");
   if (profile.money === "users_pay_each_other") addNeed("marketplace", profile.matched.money ?? "(answered)");
   if (profile.audience === "internal") {
@@ -425,6 +434,8 @@ export function readProduct(description: string, answers?: Answers, extraNeeds: 
   if (!profile.rag) dropNeed("rag");
   for (const n of extraNeeds) addNeed(n, "(requested)");
   const needs = detected.map((d) => d.need);
+  // Asked for by name: a Swift iPhone app routes to the native recipe even when the description doesn't say Swift.
+  if (needs.includes("native_ios") && isMobile(profile)) profile.nativeIos = true;
   return { profile, unknown, vague, coverage, detected, needs, b2b: needs.includes("b2b") };
 }
 
@@ -598,7 +609,7 @@ export function recommendStack(catalog: CatalogSnapshot, input: RecommendInput):
     summary.cost.text += " Workers is priced at Paid because Free stops at 100,000 requests a day.";
   }
   if (summary.cost && isMobile(profile) && !explicit) {
-    summary.cost.text += ` Plus store accounts: ${STORE_ACCOUNTS}.`;
+    summary.cost.text += profile.nativeIos ? ` Plus the store account: ${APPLE_ACCOUNT}.` : ` Plus store accounts: ${STORE_ACCOUNTS}.`;
   }
 
   const nextStep = recipe

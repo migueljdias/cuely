@@ -293,6 +293,7 @@ export const moreTools: Tool[] = [
     fit: {
       mobile: { weight: 3, reason: "React Native with cloud builds and store submission for both stores." },
       nextjs: { weight: 1, reason: "Uses React, so web React skills carry over." },
+      native_ios: { weight: -2, reason: "Builds React Native apps; a Swift app built in Xcode doesn't use it." },
       low_cost: { weight: 1, reason: "15 iOS and 15 Android builds a month free." },
     },
     verifiedOn: V,
@@ -316,8 +317,36 @@ export const moreTools: Tool[] = [
     fit: {
       mobile: { weight: 2, reason: "The native toolchains; nothing in between." },
       nextjs: { weight: -2, reason: "Swift and Kotlin don't reuse web React skills." },
+      native_ios: { weight: 2, reason: "Xcode is where a Swift app is written, signed and uploaded." },
     },
     verifiedOn: V,
+  },
+  {
+    slug: "xcode-cloud",
+    name: "Xcode Cloud",
+    category: "mobile_build",
+    website: "https://developer.apple.com/xcode-cloud/",
+    pricingUrl: "https://developer.apple.com/xcode-cloud/",
+    summary: "Apple's build service for Xcode projects: builds, tests and sends each build to TestFlight from Apple's cloud.",
+    pitch: "Builds and tests every push and delivers it to TestFlight, with 25 compute hours a month in the Apple Developer Program.",
+    bestFor: ["Native Swift apps for iPhone and iPad", "Automatic TestFlight builds on every push", "Signing handled by Apple instead of on one laptop"],
+    watchOut: [
+      "You still write and debug the app in Xcode on a Mac; Xcode Cloud only builds, tests and delivers.",
+      "Builds only Apple platforms; an Android app needs another build service.",
+    ],
+    freeTier: "25 compute hours a month, included with Apple Developer Program membership ($99 a year).",
+    paidStartsAt: "100 compute hours a month for US$49.99/month.",
+    freeTierCommercialUse: null,
+    openSource: false,
+    selfHostable: false,
+    baseline: 3,
+    fit: {
+      mobile: { weight: 1, reason: "Builds and ships the iOS app; Android needs another build service." },
+      native_ios: { weight: 3, reason: "Apple's own build service for Xcode projects, with signing and TestFlight delivery built in." },
+      low_cost: { weight: 1, reason: "25 compute hours a month come with the $99 Apple Developer Program." },
+      nextjs: { weight: -2, reason: "Builds Xcode projects; React Native apps need extra build scripts." },
+    },
+    verifiedOn: "2026-11-18",
   },
 
   // ───────────────────────────── Internal tool builders ─────────────────────────────

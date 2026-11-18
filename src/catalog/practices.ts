@@ -365,6 +365,36 @@ export const PRACTICES: Practice[] = [
     source: "https://support.google.com/googleplay/android-developer/answer/10787469",
     applies: mobile,
   },
+  {
+    id: "ios-privacy-manifest",
+    area: "app_stores",
+    phase: "before_launch",
+    title: "Add an iOS privacy manifest with approved reasons",
+    detail: "Add PrivacyInfo.xcprivacy to the iOS app (Expo: ios.privacyManifests in app config) with an approved reason for each required-reason API the app or its SDKs call, such as UserDefaults and file timestamps, and use SDK versions that ship their own manifests.",
+    why: "Since May 1, 2024, App Store Connect doesn't accept a new app or update without approved reasons for those APIs, including ones used by third-party SDKs.",
+    source: "https://developer.apple.com/documentation/bundleresources/privacy-manifest-files",
+    applies: mobile,
+  },
+  {
+    id: "ios-tracking-permission",
+    area: "privacy",
+    phase: "before_launch",
+    title: "Ask before tracking, or don't track",
+    detail: "If the app or an SDK links its data with other companies' data for advertising or shares it with data brokers, ask with App Tracking Transparency first and set NSPrivacyTracking in the privacy manifest. Analytics you keep to yourself isn't tracking. Don't make the app's features depend on saying yes.",
+    why: "Apple requires explicit permission through App Tracking Transparency to track users (Guideline 5.1.2(i)), and apps that track without it are rejected.",
+    source: "https://developer.apple.com/app-store/user-privacy-and-data-use/",
+    applies: (c) => mobile(c) && customers(c),
+  },
+  {
+    id: "eu-trader-status",
+    area: "app_stores",
+    phase: "before_launch",
+    title: "Declare your EU trader status in App Store Connect",
+    detail: "Declare whether you're a trader under the EU Digital Services Act. A trader (anyone selling or running the app as a business) gives Apple an address, phone number and email to show on the App Store product page.",
+    why: "Apps without a trader status were removed from the App Store in the EU from February 17, 2025, and new apps ask for it at submission.",
+    source: "https://developer.apple.com/help/app-store-connect/manage-compliance-information/manage-european-union-digital-services-act-trader-requirements",
+    applies: (c) => mobile(c) && customers(c),
+  },
 ];
 
 const PHASE_ORDER: Phase[] = ["day_one", "before_launch"];

@@ -5,6 +5,7 @@ import { gameTools } from "./tools-games";
 import { COSTS, COST_PROFILE } from "./costs";
 import { b2bSaas } from "./recipes/b2b-saas";
 import { mobileSubscriptionApp } from "./recipes/mobile-subscription-app";
+import { nativeIosApp } from "./recipes/native-ios-app";
 import { marketplace } from "./recipes/marketplace";
 import { aiDocsApp } from "./recipes/ai-docs-app";
 import { internalTool } from "./recipes/internal-tool";
@@ -53,7 +54,7 @@ export const tools: Tool[] = allTools.map((t) => {
 export { categories };
 
 /** Sorted by slug, the same order the Postgres repository returns. */
-export const recipes: Recipe[] = [b2bSaas, mobileSubscriptionApp, marketplace, aiDocsApp, internalTool, dailyWebGame, consumerWebApp].sort((a, b) => a.slug.localeCompare(b.slug));
+export const recipes: Recipe[] = [b2bSaas, mobileSubscriptionApp, nativeIosApp, marketplace, aiDocsApp, internalTool, dailyWebGame, consumerWebApp].sort((a, b) => a.slug.localeCompare(b.slug));
 
 /** One statement every answer carries, so agents can repeat it to users. */
 export const POLICY =

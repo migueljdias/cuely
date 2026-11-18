@@ -41,9 +41,13 @@ describe("start_project", () => {
     const market = ids(startProject(snap, { description: "A marketplace where dog owners pay walkers and we keep 15%" }));
     expect(market).toContain("marketplace-kyc");
     const phone = ids(startProject(snap, { description: "An iPhone and Android app for habit tracking with a subscription" }));
-    expect(phone).toEqual(expect.arrayContaining(["mobile-no-secrets", "store-privacy-forms", "delete-and-export", "verify-webhooks"]));
+    expect(phone).toEqual(expect.arrayContaining(["mobile-no-secrets", "store-privacy-forms", "delete-and-export", "verify-webhooks",
+      "ios-privacy-manifest", "ios-tracking-permission", "eu-trader-status"]));
     expect(phone).not.toContain("hosted-card-entry");
     expect(phone).not.toContain("ai-keys-server");
+    const web = ids(startProject(snap, { description: "A habit tracker web app with a $5/month plan" }));
+    expect(web).not.toContain("ios-privacy-manifest");
+    expect(web).not.toContain("eu-trader-status");
   });
 
   it("follows the stack: Supabase gets row level security, Firebase gets security rules", () => {
