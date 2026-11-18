@@ -1,7 +1,7 @@
 {
   "slug": "vercel",
   "url": "https://vercel.com/pricing",
-  "readOn": "2026-11-17",
+  "readOn": "2026-11-18",
   "lines": [
     "$0/mo.",
     "$20/mo.",
@@ -105,6 +105,6 @@
     "Starting at $0.15 per GB",
     "$350 / month",
     "Our limits are listed here. Pro plans have a $20 included credit to use across resources. Finally, check out our Fair Use Policy.",
-    "All new teams have a default on-demand usage budget of $200 (which can be customized) and receive email, web, and SMS notifications as you reach that amount. When reaching 100%, you can optionally configure Vercel to automatically pause all projects with a hard limit."
+    "New Pro teams have a default on-demand usage budget of $200 (which can be customized) and receive email, web, and SMS notifications as you reach that amount. When reaching 100%, you can optionally configure Vercel to automatically pause all projects with a hard limit."
   ]
 }

@@ -1,0 +1,23 @@
+{
+  "slug": "onesignal",
+  "url": "https://onesignal.com/pricing",
+  "readOn": "2026-11-18",
+  "lines": [
+    "$0/mo",
+    "$19/mo",
+    "Starts at $19/mo",
+    "500k emails monthly\">20,000 free sends / month, then $1.50 / 1,000 sends",
+    "For organizations with up to 1,000 monthly active users",
+    "$0.012 per monthly active user",
+    "$0.004 per web push subscriber",
+    "30 days",
+    "60 days",
+    "90 days",
+    "Up to 30 days",
+    "Up to 90 days",
+    "Mobile users active in the last 30 days",
+    "$19.00",
+    "$0.00",
+    "A monthly active user is a mobile subscription record that has been active in your mobile app within the last 30 days, regardless of whether it has opted in for mobile push notifications."
+  ]
+}

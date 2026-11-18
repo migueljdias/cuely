@@ -1,7 +1,10 @@
 {
   "tools": {
+    "amazon-s3": {
+      "verifiedOn": "2026-11-18"
+    },
     "cached-polling": {
-      "verifiedOn": "2026-11-17"
+      "verifiedOn": "2026-11-18"
     },
     "lemon-squeezy": {
       "verifiedOn": "2026-11-16"
@@ -11,6 +14,9 @@
     },
     "neon-auth": {
       "verifiedOn": "2026-11-14"
+    },
+    "netlify": {
+      "verifiedOn": "2026-11-18"
     },
     "paddle": {
       "verifiedOn": "2026-11-14"
@@ -27,8 +33,11 @@
     "revenuecat": {
       "verifiedOn": "2026-11-16"
     },
+    "upstash-redis": {
+      "verifiedOn": "2026-11-18"
+    },
     "vercel": {
-      "verifiedOn": "2026-11-17"
+      "verifiedOn": "2026-11-18"
     }
   }
 }
