@@ -41,26 +41,38 @@ the hosted endpoint, kept fresh every day, with Pro limits.
 - [x] Workflows: none that run on pull requests use secrets, so PRs from forks can't reach
       `ANTHROPIC_API_KEY`; no `pull_request_target`
 
-## Phase 4: Flip to public (you, in this order)
+## Phase 4: Go public without exposing your email
 
-1. [ ] **Decide about your email in history.** Every commit is authored by your personal Gmail
-       address, which becomes public. Either accept it, or before flipping set GitHub's
-       "Keep my email addresses private" and use the `noreply` address for new commits.
-       Rewriting old history is possible but breaks every existing clone; not recommended.
-2. [ ] Run one more secret scan with a dedicated tool: `npx gitleaks detect` or GitHub's
-       secret scanning, which turns on for free once public.
-3. [ ] Rotate anything that was ever pasted into an issue, PR or Actions log (they become
-       public too). Check Settings → Secrets: keys there stay private.
-4. [ ] Merge this branch to `main`.
-5. [ ] Settings → General → Danger zone → **Change visibility → Public**.
-6. [ ] Right after: turn on secret scanning + push protection, private vulnerability
-       reporting (Settings → Security), Dependabot alerts; protect `main` (require PR + CI);
-       Actions → "Require approval for all outside collaborators" for fork PRs.
-7. [ ] Add repo topics (`mcp`, `mcp-server`, `developer-tools`), a description and
-       `https://cuely.dev` as the website.
-8. [ ] Check the links on cuely.dev/trust and the footer open the public repo.
+Your personal email is on 23 commits. Rewriting history in this repo and flipping it public
+would not hide it: GitHub keeps every merged pull request's original commits under
+`refs/pull/*`, which only GitHub Support can remove. So the public repo is a **new repo** with
+the history rewritten to your GitHub no-reply address; this one is renamed and stays private.
+(Dry run done on Nov 19: all 93 commits kept, 0 copies of the personal email left, none in
+files or commit messages either.)
 
-Steps 4 and 5 go together: `/trust` links to files on GitHub that 404 while the repo is private.
+1. [ ] github.com → Settings → Emails: tick **Keep my email addresses private** and **Block
+       command line pushes that expose my email**. This stops new leaks, including merges made
+       on github.com, which is how most of the 23 got in.
+2. [ ] Rename this repo: Settings → General → `cuely` → `cuely-private`. Leave it private.
+3. [ ] Create a new **empty, private** repo named `cuely` (no README, license or .gitignore).
+       The old name then points at the new repo, so `server.json` and every link stay right.
+4. [ ] Tell Claude it exists. Claude rewrites the history with
+       `git filter-repo --mailmap` (personal email → `14091229+migueljdias@users.noreply.github.com`),
+       checks that nothing is left, and pushes `main` and this branch to the new repo.
+5. [ ] On the new repo: add the Actions secrets again (Settings → Secrets → Actions; at least
+       `ANTHROPIC_API_KEY`), install the Claude GitHub App on it, and in Vercel point the
+       project's Git connection at the new repo.
+6. [ ] Merge this branch on the new repo (the email setting from step 1 keeps the merge clean)
+       and check the daily workflows run.
+7. [ ] Run `npx gitleaks detect` once more, then Settings → **Change visibility → Public**.
+8. [ ] Right after: turn on secret scanning + push protection, private vulnerability reporting
+       and Dependabot alerts; protect `main` (require PR + CI); require approval for Actions
+       runs from outside contributors' forks.
+9. [ ] Add topics (`mcp`, `mcp-server`, `developer-tools`), a description and the website, and
+       check the links on cuely.dev/trust open the public repo.
+
+Issues and pull request discussions from the private repo don't move over; they stay in
+`cuely-private`.
 
 ## Phase 5: Tell people
 
