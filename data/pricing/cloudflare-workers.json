@@ -1,10 +1,8 @@
 {
   "slug": "cloudflare-workers",
   "url": "https://developers.cloudflare.com/workers/platform/pricing/",
-  "readOn": "2026-11-12",
+  "readOn": "2026-11-19",
   "lines": [
-    "1. Migrate webpack projects",
-    "2. Update to Wrangler v2",
     "The Workers Paid plan includes Workers, Pages Functions, Workers KV, Hyperdrive, and Durable Objects usage for a minimum charge of $5 USD per month for an account. The plan includes increased initial usage allotments, with clear charges for usage that exceeds the base plan. There are no additional c…",
     "100,000 per day",
     "10 million included per month",
@@ -12,7 +10,7 @@
     "30 million CPU milliseconds included per month",
     "+$0.02 per additional million CPU milliseconds",
     "Max of 5 minutes of CPU time per invocation (default: 30 seconds)",
-    "Max of 15 minutes of CPU time per Cron Trigger or Queue Consumer invocation",
+    "Max of 15 minutes of CPU time per Cron Trigger invocation for intervals of 1 hour or more",
     "1 Inbound requests to your Worker. Cloudflare does not bill for",
     "2 WebSocket connections made to a Worker are charged as a request,",
     "3 Requests to static assets are free and unlimited.",
@@ -119,6 +117,8 @@
     "1 TB",
     "$0.05",
     "500 GB",
-    "$0.04"
+    "$0.04",
+    "1. Migrate webpack projects",
+    "2. Update to Wrangler v2"
   ]
 }

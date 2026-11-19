@@ -1,10 +1,19 @@
 {
   "tools": {
+    "amazon-route-53": {
+      "verifiedOn": "2026-11-19"
+    },
     "amazon-s3": {
       "verifiedOn": "2026-11-18"
     },
     "cached-polling": {
       "verifiedOn": "2026-11-18"
+    },
+    "claude-api": {
+      "verifiedOn": "2026-11-19"
+    },
+    "cloudflare-workers": {
+      "verifiedOn": "2026-11-19"
     },
     "lemon-squeezy": {
       "verifiedOn": "2026-11-16"
