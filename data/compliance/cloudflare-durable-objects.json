@@ -1,6 +1,6 @@
 {
   "slug": "cloudflare-durable-objects",
-  "readOn": "2026-11-13",
+  "readOn": "2026-11-19",
   "pages": [
     {
       "url": "https://www.cloudflare.com/trust-hub/compliance-resources/",
@@ -99,8 +99,8 @@
     {
       "url": "https://developers.cloudflare.com/durable-objects/reference/data-location/",
       "lines": [
-        "Data location",
         "/Data location",
+        "Data location",
         "that only run and store data within a region to comply with local regulations such as the GDPR ↗︎ or FedRAMP ↗︎.",
         "Workers may still access Durable Objects constrained to a jurisdiction from anywhere in the world. The jurisdiction constraint only controls where the Durable Object itself runs and persists data. Consider using Regional Services to control the regions from which Cloudflare responds to requests.",
         "const euSubnamespace = env.MY_DURABLE_OBJECT.jurisdiction(\"eu\");",

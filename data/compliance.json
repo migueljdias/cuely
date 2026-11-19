@@ -147,24 +147,24 @@
       "facts": {
         "dpa": {
           "answer": "yes",
-          "detail": "Cloudflare's Data Processing Addendum forms part of both the Enterprise and Self-Serve Subscription Agreements and includes the EU SCCs and UK and Swiss transfer terms.",
-          "quote": "This Data Processing Addendum, including the appendices",
+          "detail": "Cloudflare's DPA forms part of both Enterprise and Self-Serve subscription agreements and includes the EU SCCs for transfers.",
+          "quote": "This Data Processing Addendum, including the appendices (the “DPA ”) , forms part of the Main Agreement.",
           "source": "https://www.cloudflare.com/cloudflare-customer-dpa/"
         },
         "eu_region": {
           "answer": "yes",
-          "detail": "Create the namespace or object ID with jurisdiction(\"eu\") so it runs and stores data only in the EU; location hints such as Western Europe are best effort, not a guarantee.",
+          "detail": "Use jurisdiction(\"eu\") on a namespace or object ID to make a Durable Object run and store its data only in the EU; location hints alone are not a guarantee.",
           "quote": "that only run and store data within a region to comply with local regulations such as the GDPR",
           "source": "https://developers.cloudflare.com/durable-objects/reference/data-location/"
         },
         "soc2": {
           "answer": "yes",
-          "detail": "Cloudflare states it holds an AICPA SOC 2 Type II certification.",
+          "detail": "The DPA states Cloudflare holds an AICPA SOC 2 Type II certification.",
           "quote": "Cloudflare has undertaken other certifications such as the AICPA SOC 2 Type II certification in accordance with the AICPA Trust Service Criteria",
           "source": "https://www.cloudflare.com/cloudflare-customer-dpa/"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-19"
     },
     "cloudflare-kv": {
       "facts": {
@@ -187,24 +187,24 @@
       "facts": {
         "dpa": {
           "answer": "yes",
-          "detail": "Cloudflare's DPA forms part of both Enterprise and Self-Serve Subscription Agreements, with EU SCCs and the UK Addendum for transfers.",
+          "detail": "Cloudflare's DPA forms part of both Enterprise and Self-Serve subscription agreements and includes EU SCCs for transfers.",
           "quote": "This Data Processing Addendum, including the appendices (the “DPA ”) , forms part of the Main Agreement.",
           "source": "https://www.cloudflare.com/cloudflare-customer-dpa/"
         },
         "eu_region": {
           "answer": "yes",
-          "detail": "Create buckets in the 'eu' jurisdiction to keep data stored and processed in the EU; Western and Eastern Europe are also location choices.",
-          "quote": "The example below shows how to create an R2 bucket in the eu jurisdiction using the @aws-sdk/client-s3 ↗︎ package for JavaScript.",
+          "detail": "R2 buckets can be created in the EU jurisdiction, which restricts storage and processing to the EU; Western and Eastern Europe location hints are also listed.",
+          "quote": "The example below shows how to create an R2 bucket in the eu jurisdiction",
           "source": "https://developers.cloudflare.com/r2/reference/data-location/"
         },
         "soc2": {
           "answer": "yes",
-          "detail": "Cloudflare states a company-level SOC 2 Type II; the lines don't say whether R2 is in scope.",
+          "detail": "Cloudflare states it holds an AICPA SOC 2 Type II report company-wide; the lines do not name R2 specifically.",
           "quote": "Cloudflare has undertaken other certifications such as the AICPA SOC 2 Type II certification in accordance with the AICPA Trust Service Criteria",
           "source": "https://www.cloudflare.com/cloudflare-customer-dpa/"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-19"
     },
     "cloudflare-workers": {
       "facts": {

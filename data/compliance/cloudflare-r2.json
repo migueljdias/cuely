@@ -1,6 +1,6 @@
 {
   "slug": "cloudflare-r2",
-  "readOn": "2026-11-13",
+  "readOn": "2026-11-19",
   "pages": [
     {
       "url": "https://www.cloudflare.com/trust-hub/compliance-resources/",
@@ -99,8 +99,8 @@
     {
       "url": "https://developers.cloudflare.com/r2/reference/data-location/",
       "lines": [
-        "Data location",
         "/Data location",
+        "Data location",
         "When you create a new bucket, the data location is set to Automatic by default. Currently, this option chooses a bucket location in the closest available region to the create bucket request based on the location of the caller.",
         "You can choose to automatically create your bucket in the closest available region based on your location or choose a specific location from the list.",
         "Under Location, leave None selected for automatic selection or choose a region from the list.",
