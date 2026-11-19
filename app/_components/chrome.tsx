@@ -1,5 +1,5 @@
 import { authConfigured } from "@/auth/server";
-import { APP_URL, SITE_URL, SUPPORT_EMAIL } from "@/site";
+import { APP_URL, REPO_URL, SITE_URL, SUPPORT_EMAIL } from "@/site";
 import { HeaderAccount } from "./header-account";
 import { NavMenu } from "./nav-menu";
 
@@ -84,6 +84,8 @@ export function SiteFooter() {
         <div>
           <h2>Resources</h2>
           <nav aria-label="Resources">
+            <a href={`${SITE_URL}/trust`}>What Cuely receives</a>
+            <a href={REPO_URL}>Source on GitHub</a>
             <a href={`${SITE_URL}/llms.txt`}>llms.txt</a>
             <a href={`${SITE_URL}/privacy`}>Privacy</a>
             <a href={`${SITE_URL}/terms`}>Terms</a>

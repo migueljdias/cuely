@@ -113,6 +113,7 @@ export function publicPaths(): { path: string; lastModified?: string; priority: 
     })),
     { path: "/pricing", priority: 0.5, changeFrequency: "monthly" },
     { path: "/llms.txt", priority: 0.4, changeFrequency: "weekly" },
+    { path: "/trust", priority: 0.4, changeFrequency: "monthly" },
     { path: "/privacy", priority: 0.2, changeFrequency: "yearly" },
     { path: "/terms", priority: 0.2, changeFrequency: "yearly" },
   ];

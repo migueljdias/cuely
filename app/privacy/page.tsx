@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { OPERATOR, SUPPORT_EMAIL } from "@/site";
+import { OPERATOR, REPO_URL, SUPPORT_EMAIL } from "@/site";
 import { LegalPage } from "../_components/legal";
 
 export const metadata: Metadata = {
@@ -27,9 +27,11 @@ export default function Privacy() {
 
       <h2>Using the MCP server</h2>
       <p>
-        The MCP server needs a free account. For each call Cuely records which tool was used and which categories or
-        recipe were asked about, so it can see what builders need. It does not store the description your agent sends,
-        and it does not store your IP address. It counts your account&apos;s calls per day and per minute to apply your
+        The MCP server needs a free account. Your agent sends a plain description of the product and the names of the
+        tools it uses; Cuely never receives your code, files or secrets (<a href="/trust">what Cuely receives</a> shows a
+        real example). For each call Cuely records which tool was used and which categories, needs or recipe the answer
+        covered, so it can see what builders need. It does not store the description or tool list your agent sends, and
+        it does not store your IP address. It counts your account&apos;s calls per day and per minute to apply your
         plan&apos;s limits, and keeps those daily counts so you can see your usage. Requests without a valid key or
         sign-in are limited by IP address, in memory only.
       </p>
@@ -81,6 +83,12 @@ export default function Privacy() {
         </li>
       </ul>
       <p>These services process data only to run Cuely. Cuely doesn&apos;t sell or rent your data to anyone.</p>
+
+      <h2>Checking these claims</h2>
+      <p>
+        The code that runs Cuely is public at <a href={REPO_URL}>{REPO_URL}</a>, including the database schema and the
+        code that writes each usage record, so you can check this policy against what the server does.
+      </p>
 
       <h2>Cookies</h2>
       <p>
