@@ -1,5 +1,12 @@
 # Opening up Cuely
 
+> **Status (Nov 20, 2026): paused.** The repo stays private for now. Shipped from this plan:
+> the `/trust` page, agent guidance on what to send, and the test that proves free text isn't
+> stored. The license files, contributor files and public-source links were taken out until
+> the repo goes public; they're in this branch's history (commit "Open up Cuely") to restore
+> later. When resuming, go public through a new repo with rewritten history (Phase 4) so the
+> personal email on old commits stays private.
+
 Why: builders asked what repo data Cuely receives before pointing it at real projects
 (Maurice, @KI_Vater, Nov 18 2026). Trust comes from saying exactly what Cuely receives,
 making that claim testable, and publishing the code so anyone can check it.

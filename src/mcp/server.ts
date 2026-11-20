@@ -37,7 +37,7 @@ If it returns questions, ask the user (or answer from the conversation) and call
 If it names a recipe, call get_recipe for full setup steps.
 Use check_project on a project that already exists: pass what it is and the tools it uses now (read the names from package.json, config files and env variable names, never their values), and it says what to keep, change or add with today's prices, outages and compliance facts. Run it again when the product changes.
 Use compare_tools when the user is choosing between two specific tools, and list_categories to browse the catalog.
-Send only what the tools ask for: the product in plain words and tool names. Never send source code, file contents, environment values, secrets, or the names of people, customers or companies; Cuely doesn't need them. Cuely doesn't store descriptions or tool lists (cuely.dev/trust).
+Send only what the tools ask for: the product in plain words and tool names. Never send source code, file contents, environment values, secrets, or the names of people, customers or companies; Cuely doesn't need them. Cuely doesn't store descriptions or tool lists (https://cuely.dev/trust).
 Picks come from published rules; no vendor pays for placement. Prices and limits were read from each vendor's own site on the date shown; confirm on the linked page before committing money.`;
 
 const readOnly = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false } as const;

@@ -38,13 +38,6 @@ export default function Terms() {
         MCP server as your own product. Cuely may limit or suspend access that does.
       </p>
 
-      <h2>Source code and catalog data</h2>
-      <p>
-        Cuely&apos;s source code is public under the Functional Source License (FSL-1.1-ALv2) and its catalog data under
-        CC BY-NC 4.0; the LICENSE and LICENSE-DATA files in the repository set out what each allows. These terms cover
-        the hosted service at cuely.dev. Using Cuely&apos;s answers in your own projects, commercial or not, is fine.
-      </p>
-
       <h2>Pro plan</h2>
       <ul>
         <li>
