@@ -109,7 +109,7 @@ export const COSTS: Record<string, ToolCost> = {
   "postgres-full-text": { monthly: 0, basis: "No separate bill; 10,000 records with a GIN index is a few MB in the Postgres you already have." },
   algolia: { monthly: 20, basis: "Grow: 50,000 searches − 10,000 included = 40,000 × $0.50 per 1,000 = $20; 10,000 records fit the 100,000 included. Debounce search-as-you-type or it multiplies." },
   typesense: { monthly: 21.6, basis: "Smallest Cloud configuration at $0.03/hr × 720 hrs = $21.60; searches aren't metered. The first 720 hours are free once per account." },
-  meilisearch: { monthly: 20, basis: "Cloud XS: $14.88 instance + $5.28 for the 32 GiB minimum disk = $20/month (US East), unlimited searches." },
+  meilisearch: { monthly: 20.16, basis: "Cloud XS: $14.88 instance + $5.28 for the 32 GiB minimum disk = $20.16/month (US East), unlimited searches." },
   // CMS
   sanity: { monthly: 0, basis: "3 editors and 500 entries fit Free (20 seats, 10k documents); editors get the Administrator role there. Editor roles need Growth: 3 × $15 = $45/month." },
   payload: { monthly: 0, basis: "MIT-licensed, no license or seat fees; it runs in your app and database, whose bills are counted already." },
