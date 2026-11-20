@@ -97,6 +97,44 @@ export default function Privacy() {
         are kept to improve the catalog and can&apos;t be linked back to you.
       </p>
 
+      <h2>Where your data is stored</h2>
+      <p>
+        Cuely is run from the United States, and the services listed above store and process data in the United States.
+        If you use Cuely from the European Union, the United Kingdom or elsewhere, your data is transferred to the United
+        States. Where a service offers them, Cuely relies on the safeguards in its data processing terms for these
+        transfers, such as the European Commission&apos;s Standard Contractual Clauses.
+      </p>
+
+      <h2>If you&apos;re in the EU or UK</h2>
+      <p>Under the GDPR and the UK GDPR, Cuely uses your data on these grounds:</p>
+      <ul>
+        <li>
+          <strong>To provide the service you signed up for:</strong> your account, sign-in, API keys, plan limits and,
+          if you subscribe, billing.
+        </li>
+        <li>
+          <strong>Legitimate interests:</strong> anonymous usage counts to improve the catalog, and protecting the service
+          from abuse. These are kept minimal and can&apos;t be linked back to you.
+        </li>
+        <li>
+          <strong>Legal obligations:</strong> payment and tax records that the law requires to be kept.
+        </li>
+      </ul>
+      <p>You have the right to:</p>
+      <ul>
+        <li>see the data Cuely holds about you and get a copy of it</li>
+        <li>have it corrected if it&apos;s wrong</li>
+        <li>have it deleted</li>
+        <li>restrict or object to how it&apos;s used, including the anonymous usage counts</li>
+        <li>receive it in a format you can take to another service</li>
+        <li>complain to the data protection authority where you live or work</li>
+      </ul>
+      <p>
+        To use any of these rights, email <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>. You&apos;ll get an
+        answer within one month. Cuely doesn&apos;t sell your data, doesn&apos;t use it for advertising, and doesn&apos;t
+        make automated decisions about you that have legal or similar effects.
+      </p>
+
       <h2>Children</h2>
       <p>Cuely is for builders and isn&apos;t meant for anyone under 13.</p>
 
