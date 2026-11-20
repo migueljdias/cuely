@@ -40,6 +40,14 @@ export async function createKeyAction(_prev: KeyState, form: FormData): Promise<
   return { key };
 }
 
+/** Saves the product-updates checkbox. Unchecked (or missing) means off. */
+export async function productUpdatesAction(form: FormData): Promise<void> {
+  const { user, store } = await requireUser();
+  await store.setProductUpdates(user.id, form.get("product_updates") === "on");
+  revalidatePath("/account");
+  redirect("/account?updates=saved#email");
+}
+
 export async function revokeKeyAction(form: FormData): Promise<void> {
   const { user, store } = await requireUser();
   const id = Number(form.get("id"));

@@ -44,7 +44,7 @@ export default function Privacy() {
           basic profile with Clerk, and Cuely asks for nothing more.
         </li>
         <li>
-          <strong>Account record:</strong> Cuely stores your user ID, email, plan, and, if you subscribe, your Stripe customer
+          <strong>Account record:</strong> Cuely stores your user ID, email, plan, whether you chose to get product update emails (and when), and, if you subscribe, your Stripe customer
           and subscription IDs and renewal date.
         </li>
         <li>
@@ -79,7 +79,8 @@ export default function Privacy() {
           <strong>Stripe</strong> handles payments.
         </li>
         <li>
-          <strong>Resend</strong> sends account and billing email, if Cuely sends you any.
+          <strong>Resend</strong> sends account and billing email, if Cuely sends you any, and product updates only if you
+          turn them on in your account.
         </li>
       </ul>
       <p>These services process data only to run Cuely. Cuely doesn&apos;t sell or rent your data to anyone.</p>

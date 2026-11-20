@@ -144,6 +144,19 @@ describe("Accounts and the Stripe webhook", () => {
     expect(cols.some((c) => /card|pan|cvc|number/.test(c))).toBe(false);
   });
 
+  it("keeps product-update emails off until the account holder turns them on", async () => {
+    const a = await store.ensure("user_optin", "o@example.com");
+    expect(a.productUpdates).toBe(false);
+    await store.setProductUpdates("user_optin", true);
+    expect((await store.get("user_optin"))?.productUpdates).toBe(true);
+    const [row] = await query("select product_updates_at from accounts where user_id = 'user_optin'");
+    expect(row.product_updates_at).not.toBeNull();
+    await store.setProductUpdates("user_optin", false);
+    expect((await store.get("user_optin"))?.productUpdates).toBe(false);
+    // Signing in again never turns it back on.
+    expect((await store.ensure("user_optin", "o@example.com")).productUpdates).toBe(false);
+  });
+
   it("turns Pro on and off from subscription events, once per event", async () => {
     const sub = (status: string, id: string, type = "customer.subscription.updated") => ({
       id,
