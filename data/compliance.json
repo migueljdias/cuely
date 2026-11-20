@@ -466,30 +466,30 @@
       "facts": {
         "baa": {
           "answer": "no",
-          "detail": "Resend is not HIPAA compliant and will not sign a BAA.",
+          "detail": "Resend does not sign BAAs and says it is not HIPAA compliant.",
           "quote": "Resend is not HIPAA compliant and cannot sign a Business Associate Agreement.",
           "source": "https://resend.com/security"
         },
         "dpa": {
           "answer": "yes",
-          "detail": "A pre-signed standard DPA with EU SCCs applies to every account on any plan; country-specific DPAs are not signed.",
+          "detail": "A standard DPA with EU SCCs is pre-signed for every account on any plan and downloadable from Settings → Documents; country-specific DPAs are not signed.",
           "quote": "Our standard DPA applies to every account on any plan.",
           "source": "https://resend.com/security"
         },
         "eu_region": {
           "answer": "no",
-          "detail": "Email can be sent from Ireland (eu-west-1), but all account data, metadata and logs are stored in the US.",
+          "detail": "An Ireland (eu-west-1) sending region exists, but all account data, metadata and logs are stored in the US.",
           "quote": "All account data, including email metadata, logs, and API records, is stored in the United States regardless of the sending region you select.",
           "source": "https://resend.com/docs/dashboard/domains/regions"
         },
         "soc2": {
           "answer": "yes",
-          "detail": "SOC 2 Type II report.",
+          "detail": "SOC 2 Type II, audited by Advantage Partners via Vanta.",
           "quote": "Yes, Resend is SOC 2 Type II compliant.",
           "source": "https://resend.com/security"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-20"
     },
     "retool": {
       "facts": {

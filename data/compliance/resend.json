@@ -1,6 +1,6 @@
 {
   "slug": "resend",
-  "readOn": "2026-11-13",
+  "readOn": "2026-11-20",
   "pages": [
     {
       "url": "https://resend.com/security",
@@ -29,7 +29,7 @@
         "Is Resend HIPAA and ISO 27001 compliant?",
         "Resend is not HIPAA compliant and cannot sign a Business Associate Agreement. Resend holds SOC 2 Type II, not an ISO 27001 certificate.",
         "Do AI subprocessors receive my email content?",
-        "Anthropic receives content only when you use an AI feature in the dashboard, such as the AI Editor, AI features in Inboxes, or the in-app AI Support Agent. Normal sending through the Emails API is not sent to Anthropic. TypeSafe processes a sample of the emails you send, to detect spam and phishing. TypeSafe has zero data retention: it does not store your content, and does not use it to train mode",
+        "Anthropic receives content when you use an AI feature in the dashboard, such as the AI Editor, the in-app AI Support Agent, or AI features in Inboxes such as inbox agents. Anthropic also receives the messages that arrive in an Inbox, even if you use no AI feature there: they are classified automatically to power filters, attention flags, and one-time code detection. For this classification, one-ti",
         "Where can I find the list of data subprocessors?",
         "A list of subprocessors can be viewed at resend.com/legal/subprocessors. We give at least 14 days' notice before adding or replacing a sub-processor. See the GDPR overview for notice and objection details."
       ]
