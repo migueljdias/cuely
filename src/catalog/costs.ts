@@ -113,5 +113,8 @@ export const COSTS: Record<string, ToolCost> = {
   // CMS
   sanity: { monthly: 0, basis: "3 editors and 500 entries fit Free (20 seats, 10k documents); editors get the Administrator role there. Editor roles need Growth: 3 × $15 = $45/month." },
   payload: { monthly: 0, basis: "MIT-licensed, no license or seat fees; it runs in your app and database, whose bills are counted already." },
+  // Store platform (orders on top: card fees are per sale)
+  shopify: { monthly: 39, basis: "Basic at $39/month billed monthly ($29 billed yearly).", variable: "2.9% + 30¢ per online card sale with Shopify Payments; plus 2% per sale on Basic with any other payment provider" },
+  medusa: { monthly: 29, basis: "Medusa Cloud Develop from $29/month with a 0% GMV fee; self-hosting is $0 plus your own hosting and database.", variable: "your payment provider's fees (for example Stripe's 2.9% + 30¢ per card charge)" },
   contentful: { monthly: 0, basis: "500 entries and 3 editors fit Free (hard caps: 100K API calls/month); the next plan, Lite, is $300/month." },
 };

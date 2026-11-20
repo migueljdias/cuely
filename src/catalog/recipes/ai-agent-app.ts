@@ -145,7 +145,7 @@ export const aiAgentApp: Recipe = {
         },
       ],
       check: "A run that needs 10 tool calls finishes even though no single function call lasts more than a few seconds, and redeploying mid-run doesn't lose it.",
-      docs: ["https://www.inngest.com/docs/features/inngest-functions/steps-workflows", "https://www.inngest.com/docs/reference/functions/step-wait-for-event"],
+      docs: ["https://www.inngest.com/docs/durable-execution/primitives", "https://www.inngest.com/docs/reference/typescript/v4/functions/step-wait-for-event"],
     },
     {
       title: "Pause for a person before risky actions",

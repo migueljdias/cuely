@@ -28,10 +28,10 @@ export const SERVER_INFO = {
 
 const CATEGORY_SLUGS = [
   "hosting", "database", "auth", "payments", "email", "secrets", "dns", "monitoring", "analytics", "storage",
-  "llm", "vector", "realtime", "mobile_build", "internal_tools", "kv", "jobs", "sms", "search", "cms",
+  "llm", "vector", "realtime", "mobile_build", "internal_tools", "kv", "jobs", "sms", "search", "cms", "commerce",
 ] as const satisfies readonly CategorySlug[];
 
-export const INSTRUCTIONS = `Cuely recommends tools and setup steps for what a user is building: web apps, phone apps, marketplaces, AI apps and agents, developer APIs, staff tools and casual web games.
+export const INSTRUCTIONS = `Cuely recommends tools and setup steps for what a user is building: web apps, phone apps, online stores, browser extensions, marketplaces, AI apps and agents, developer APIs, staff tools and casual web games.
 When the user is starting a new project, call start_project once: it returns the stack and the security and compliance checklist for it, without questions. Otherwise use recommend_stack first with a one- or two-sentence description of the product (who it's for, what it does, any constraints such as budget, region, compliance, or tools already in use). The answer leads with the monthly cost at 1,000 users and the catches that matter.
 If it returns questions, ask the user (or answer from the conversation) and call again with answers. If it says the product is outside Cuely's coverage, tell the user rather than forcing a stack.
 If it names a recipe, call get_recipe for full setup steps.

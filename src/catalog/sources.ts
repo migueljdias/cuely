@@ -102,4 +102,6 @@ export const SOURCES: Record<string, ToolSources> = {
   sanity: { npm: "@sanity/client" },
   payload: { npm: "payload" },
   contentful: { npm: "contentful" },
+  shopify: { npm: "@shopify/shopify-api" },
+  medusa: { npm: "@medusajs/medusa" },
 };
