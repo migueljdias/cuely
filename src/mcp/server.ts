@@ -35,8 +35,9 @@ export const INSTRUCTIONS = `Cuely recommends tools and setup steps for what a u
 When the user is starting a new project, call start_project once: it returns the stack and the security and compliance checklist for it, without questions. Otherwise use recommend_stack first with a one- or two-sentence description of the product (who it's for, what it does, any constraints such as budget, region, compliance, or tools already in use). The answer leads with the monthly cost at 1,000 users and the catches that matter.
 If it returns questions, ask the user (or answer from the conversation) and call again with answers. If it says the product is outside Cuely's coverage, tell the user rather than forcing a stack.
 If it names a recipe, call get_recipe for full setup steps.
-Use check_project on a project that already exists: pass what it is and the tools it uses now (read them from package.json, config and env files), and it says what to keep, change or add with today's prices, outages and compliance facts. Run it again when the product changes.
+Use check_project on a project that already exists: pass what it is and the tools it uses now (read the names from package.json, config files and env variable names, never their values), and it says what to keep, change or add with today's prices, outages and compliance facts. Run it again when the product changes.
 Use compare_tools when the user is choosing between two specific tools, and list_categories to browse the catalog.
+Send only what the tools ask for: the product in plain words and tool names. Never send source code, file contents, environment values, secrets, or the names of people, customers or companies; Cuely doesn't need them. Cuely doesn't store descriptions or tool lists (https://cuely.dev/trust).
 Picks come from published rules; no vendor pays for placement. Prices and limits were read from each vendor's own site on the date shown; confirm on the linked page before committing money.`;
 
 const readOnly = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false } as const;
@@ -65,7 +66,7 @@ export function createCuelyServer(ctx: ServerContext): McpServer {
           .string()
           .min(3)
           .max(2000)
-          .describe("What the user is building, in plain words, e.g. 'B2B SaaS for fintech startups, EU customers, small budget'."),
+          .describe("What the user is building, in plain words, e.g. 'B2B SaaS for fintech startups, EU customers, small budget'. Plain words only: no code, secrets, or names of people, customers or companies."),
         categories: z.array(z.enum(CATEGORY_SLUGS)).optional().describe("Only these categories. Omit for all."),
         already_using: z.array(z.string()).optional().describe("Tools the project already uses (names or slugs)."),
         avoid: z.array(z.string()).optional().describe("Tools to leave out (names or slugs)."),
@@ -131,7 +132,7 @@ export function createCuelyServer(ctx: ServerContext): McpServer {
           .string()
           .min(3)
           .max(2000)
-          .describe("What the user is building, in plain words: who it's for, what it does, and constraints such as region, budget, health data or payments."),
+          .describe("What the user is building, in plain words: who it's for, what it does, and constraints such as region, budget, health data or payments. Plain words only: no code, secrets, or names of people, customers or companies."),
         answers: z
           .object({
             platform: z.enum(["web", "mobile", "both"]).optional(),
@@ -182,12 +183,12 @@ export function createCuelyServer(ctx: ServerContext): McpServer {
           .string()
           .min(3)
           .max(2000)
-          .describe("What the project is, in plain words, including anything that has changed (new region, payments, health data, AI), e.g. 'Next.js app where therapists keep patient notes, now adding EU customers'."),
+          .describe("What the project is, in plain words, including anything that has changed (new region, payments, health data, AI), e.g. 'Next.js app where therapists keep patient notes, now adding EU customers'. Plain words only: no code, secrets, or names of people, customers or companies."),
         using: z
           .array(z.string().min(1).max(100))
           .min(1)
           .max(40)
-          .describe("Tools the project uses now, names or slugs, e.g. ['Vercel', 'Supabase', 'Clerk', 'Stripe', 'Resend']. Read them from package.json, config and env files."),
+          .describe("Tools the project uses now, names or slugs, e.g. ['Vercel', 'Supabase', 'Clerk', 'Stripe', 'Resend']. Read the names from package.json and config files and the variable names in env files; never send file contents or env values."),
         needs: z
           .array(z.enum(ALL_NEEDS as [Need, ...Need[]]))
           .optional()
@@ -273,7 +274,7 @@ export function createCuelyServer(ctx: ServerContext): McpServer {
       inputSchema: {
         a: z.string().min(1).describe("First tool, name or slug (e.g. 'Clerk')."),
         b: z.string().min(1).describe("Second tool, name or slug (e.g. 'WorkOS AuthKit')."),
-        context: z.string().max(2000).optional().describe("What the user is building, to get a verdict for their case."),
+        context: z.string().max(2000).optional().describe("What the user is building, to get a verdict for their case. Plain words only: no code, secrets, or names of people, customers or companies."),
       },
       annotations: { title: "Compare two tools", ...readOnly },
     },

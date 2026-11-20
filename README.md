@@ -6,6 +6,19 @@ Honest stack picks for coding agents. Cuely is a free, remote MCP server that an
 - Landing page: `https://cuely.dev`
 - Agent summary: `https://cuely.dev/llms.txt`
 
+## What Cuely receives
+
+Cuely never sees your code. It's a remote MCP server: it can't open files or run commands, and only sees what the agent puts in a call. For "check my stack" the agent reads `package.json` and config files locally and sends:
+
+```json
+{
+  "description": "Next.js app where therapists keep patient notes, now adding EU customers",
+  "using": ["Vercel", "Supabase", "Clerk", "Stripe", "Resend"]
+}
+```
+
+For each call Cuely stores one row: the tool, the matched recipe, the categories and detected needs, and a hash of the account that changes daily (`db/schema.sql`, `log()` in `src/mcp/server.ts`). It doesn't store the description, the tool list or IP addresses, and error logs leave out request bodies (`instrumentation.ts`). `tests/mcp.test.ts` calls every tool with marked text and fails if any of it is stored. The server's instructions tell agents never to send code, file contents, env values, secrets or names of people, customers or companies. Your MCP client shows the exact arguments before each call. More at [cuely.dev/trust](https://cuely.dev/trust).
+
 ## Tools
 
 | Tool | Input | Returns |
@@ -67,6 +80,18 @@ data/signals.json       Measured incidents, advisories and downloads per tool (w
 scripts/                e2e check, SQL generation, seeding a database, pricing check
 tests/                  Vitest: catalog integrity, engine, Postgres (PGlite), MCP over HTTP
 ```
+
+## Run your own copy
+
+Running Cuely yourself keeps every call on your own machine or network. Without `DATABASE_URL` it serves the bundled catalog and needs no sign-in (outside a Vercel production deployment):
+
+```sh
+npm install
+npm run build && npm start -- -p 3100
+claude mcp add --transport http cuely-local http://localhost:3100/api/mcp
+```
+
+The catalog you get is the one in this checkout. Run `git pull` for the latest prices, measurements and compliance facts, which the scheduled workflows commit every day.
 
 ## Develop
 

@@ -84,6 +84,7 @@ export function SiteFooter() {
         <div>
           <h2>Resources</h2>
           <nav aria-label="Resources">
+            <a href={`${SITE_URL}/trust`}>What Cuely receives</a>
             <a href={`${SITE_URL}/llms.txt`}>llms.txt</a>
             <a href={`${SITE_URL}/privacy`}>Privacy</a>
             <a href={`${SITE_URL}/terms`}>Terms</a>

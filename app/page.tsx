@@ -198,7 +198,7 @@ export default function Home() {
     { a: "Adoption", b: `${measuredTools.filter((t) => t.downloads).length} packages tracked`, c: "Measured" },
     { a: "Prices", b: `${tools.length} vendor pricing pages`, c: "Checked" },
   ];
-  const ticker = ["No vendor pays for placement", "Prices read from the vendor's own page", "Same answer for everyone", "Cost at 1,000 users up front", `${tools.length} tools across ${categories.length} categories`, `${recipes.length} step-by-step recipes`];
+  const ticker = ["No vendor pays for placement", "Never sees your code", "Prices read from the vendor's own page", "Same answer for everyone", "Cost at 1,000 users up front", `${tools.length} tools across ${categories.length} categories`, `${recipes.length} step-by-step recipes`];
   const marquee = tools.filter((t) => !t.name.includes("(")).map((t) => ({ slug: t.slug, name: t.name }));
   const tiles = [ICON.db, ICON.shield, ICON.key, ICON.card, ICON.mail, ICON.globe];
 
@@ -468,6 +468,11 @@ export default function Home() {
                 <p>
                   Claude signs you in when you connect. For other tools, <a href={KEY_PAGE}>get a free key</a> with Google or GitHub. Free includes{" "}
                   {free.perDay.toLocaleString("en-US")} tool calls a day.
+                </p>
+                <h3>It never sees your code</h3>
+                <p>
+                  Your agent reads your project locally and sends a sentence about the product and the names of the tools it
+                  uses. Cuely keeps neither. <a href="/trust">See exactly what Cuely receives</a>.
                 </p>
                 <dl className="spec">
                   {mcpTools.map((t) => (
