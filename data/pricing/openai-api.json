@@ -1,7 +1,7 @@
 {
   "slug": "openai-api",
   "url": "https://developers.openai.com/api/docs/pricing",
-  "readOn": "2026-11-18",
+  "readOn": "2026-11-20",
   "lines": [
     "Prices per 1M tokens.",
     "30m write",
@@ -54,7 +54,8 @@
     "For GPT‑6.2 Astra, GPT‑6.2 Sol, GPT‑6.1 Terra, and GPT‑6 Luna, model token rates for eligible background requests are 30% below Standard for the 2‑hour completion window and 40% below Standard for the 8‑hour completion window.",
     "Regional processing (data residency) endpoints are charged a 10% uplift for models released on or after March 5, 2026. FedRAMP endpoints are also charged a 10% uplift. Priority processing was renamed Fast mode on July 30, 2026. GPT-5.6 Sol’s promotional pricing is available until November 30, 2026.",
     "Prices per 1M tokens unless noted.",
-    "GPT-Live-1 voice sessions are billed per second,",
+    "$0.05 / minute",
+    "$0.02 / minute",
     "$32.00",
     "$64.00",
     "$0.06",

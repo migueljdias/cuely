@@ -1,7 +1,7 @@
 {
   "slug": "stripe-connect",
   "url": "https://stripe.com/connect/pricing",
-  "readOn": "2026-11-12",
+  "readOn": "2026-11-20",
   "lines": [
     "$2",
     "0.25% + 25¢",
@@ -9,7 +9,6 @@
     "0.25% + 25¢ per payout",
     "1% of payout volume",
     "Starting at 0.25% of payout volume",
-    "0.25% of payout volume",
     "1% of transaction volume",
     "$2.99 per 1099 e-filed with IRS",
     "$1.49 per 1099 e-filed with states",

@@ -19,13 +19,16 @@
       "verifiedOn": "2026-11-16"
     },
     "neon": {
-      "verifiedOn": "2026-11-14"
+      "verifiedOn": "2026-11-20"
     },
     "neon-auth": {
-      "verifiedOn": "2026-11-14"
+      "verifiedOn": "2026-11-20"
     },
     "netlify": {
       "verifiedOn": "2026-11-18"
+    },
+    "openai-api": {
+      "verifiedOn": "2026-11-20"
     },
     "paddle": {
       "verifiedOn": "2026-11-14"
@@ -41,6 +44,12 @@
     },
     "revenuecat": {
       "verifiedOn": "2026-11-16"
+    },
+    "supabase-auth": {
+      "verifiedOn": "2026-11-20"
+    },
+    "supabase-realtime": {
+      "verifiedOn": "2026-11-20"
     },
     "upstash-redis": {
       "verifiedOn": "2026-11-18"
