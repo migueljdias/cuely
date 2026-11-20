@@ -6,7 +6,7 @@
 export interface Catch {
   id: string;
   /** Profile flag that triggers it. */
-  when: "mobile_paid" | "mobile" | "mobile_social_login" | "marketplace" | "in_person" | "ai" | "rag" | "usage_billing" | "internal" | "internal_workspace" | "realtime" | "game" | "health_data";
+  when: "mobile_paid" | "mobile" | "mobile_social_login" | "marketplace" | "in_person" | "ai" | "rag" | "usage_billing" | "internal" | "internal_workspace" | "realtime" | "game" | "health_data" | "sms";
   text: string;
   source: string;
   verifiedOn: string;
@@ -149,5 +149,19 @@ export const CATCHES: Catch[] = [
     text: "Show live percentages by polling one cached results endpoint every few seconds instead of a realtime service: Supabase Realtime Free allows 200 concurrent connections, Ably Free 500 monthly users and Pusher's Sandbox 100 connections, and a viral day passes those in minutes.",
     source: "https://supabase.com/pricing",
     verifiedOn: "2026-11-09",
+  },
+  {
+    id: "sms-10dlc",
+    when: "sms",
+    text: "Texts to US phones from a normal 10-digit number must go through a registered A2P 10DLC campaign, or carriers block them. Register before launch: Twilio lists a $4.50 one-time brand fee (low volume), a $15 campaign vetting fee and $1.50 to $10 a month per campaign. Toll-free numbers need their own verification.",
+    source: "https://help.twilio.com/articles/1260803965530-What-pricing-and-fees-are-associated-with-the-A2P-10DLC-service-",
+    verifiedOn: "2026-11-20",
+  },
+  {
+    id: "sms-carrier-fees",
+    when: "sms",
+    text: "US carriers add their own fee to every text on top of the provider's rate, for example $0.0035 on AT&T and $0.0045 on T-Mobile, so budget roughly double the advertised per-text price for low-cost providers.",
+    source: "https://telnyx.com/pricing/messaging",
+    verifiedOn: "2026-11-20",
   },
 ];

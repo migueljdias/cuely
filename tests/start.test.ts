@@ -91,7 +91,7 @@ describe("practices", () => {
   it("every practice applies to at least one product", () => {
     const base = { platform: "web" as const, money: "none" as const, audience: "customers" as const, ai: false, rag: false, game: false, needs: [], tools: [], categories: [] };
     const all = { platform: "both" as const, money: "users_pay_each_other" as const, audience: "customers" as const, ai: true, rag: true, game: true,
-      needs: ["eu", "health_data", "b2b", "regulated"] as const, tools: ["supabase", "firebase"], categories: ["database", "auth"] as const };
+      needs: ["eu", "health_data", "b2b", "regulated"] as const, tools: ["supabase", "firebase"], categories: ["database", "auth", "sms"] as const };
     const hit = new Set([...practicesFor({ ...all, needs: [...all.needs], categories: [...all.categories], push: true }), ...practicesFor({ ...base, platform: "web", needs: ["eu"], money: "users_pay_you" }), ...practicesFor({ ...base, audience: "internal" })].map((p) => p.id));
     for (const p of PRACTICES) expect(hit.has(p.id), p.id).toBe(true);
   });

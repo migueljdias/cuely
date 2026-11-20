@@ -20,7 +20,7 @@ describe("Postgres schema and seed", () => {
     const [c] = await query("select count(*)::int as n from categories");
     const [t] = await query("select count(*)::int as n from tools");
     const [r] = await query("select count(*)::int as n from recipe_tools where recipe_slug = 'b2b-saas'");
-    expect(c.n).toBe(17);
+    expect(c.n).toBe(21);
     expect(t.n).toBeGreaterThanOrEqual(20);
     expect(r.n).toBe(10);
   });

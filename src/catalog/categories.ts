@@ -136,4 +136,36 @@ export const categories: Category[] = [
       "Every service ends at Apple's APNs and Google's FCM, so the choice is how much sits in between. Pick by how the app is built (Expo, Swift or Firebase), then check what the free plan counts: sends, devices or monthly active users.",
     order: 17,
   },
+  {
+    slug: "jobs",
+    name: "Background jobs",
+    description: "Work that runs outside a web request: queues, retries, scheduled tasks, long multi-step workflows and AI calls that outlast a serverless timeout.",
+    howToChoose:
+      "On serverless hosting, pick a service that calls your existing routes and saves progress between steps, so nothing dies at the function timeout. Check what the free plan counts (runs, steps, messages or compute) and whether retries count too.",
+    order: 18,
+  },
+  {
+    slug: "sms",
+    name: "SMS and voice",
+    description: "Sending and receiving text messages and calls: one-time codes, alerts, reminders and two-way texting.",
+    howToChoose:
+      "Price per message is only part of the bill: US carriers add a fee to every text, and texting from a normal 10-digit number needs A2P 10DLC registration (brand and campaign fees) before anything is delivered. Compare the per-message rate plus those fees.",
+    order: 19,
+  },
+  {
+    slug: "search",
+    name: "Search",
+    description: "Full-text search over the product's own records: a search bar with typo tolerance, filters and facets.",
+    howToChoose:
+      "Postgres full-text search covers a search bar over tens of thousands of rows with no new vendor. Move to a search engine when you need typo tolerance, instant results as people type or facet counts, and check whether it bills per search, per record or per server.",
+    order: 20,
+  },
+  {
+    slug: "cms",
+    name: "CMS",
+    description: "Where non-developers write and edit the site's content: blog posts, marketing pages, docs and product copy.",
+    howToChoose:
+      "If editors only touch a blog or a few pages, a CMS that runs inside your app and database avoids another vendor. A hosted CMS gives editors a polished studio without hosting it. Check seats, roles and API request limits on the free plan.",
+    order: 21,
+  },
 ];

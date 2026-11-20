@@ -21,7 +21,11 @@ export type CategorySlug =
   | "mobile_build"
   | "internal_tools"
   | "kv"
-  | "push";
+  | "push"
+  | "jobs"
+  | "sms"
+  | "search"
+  | "cms";
 
 /**
  * Needs are what a builder's description can ask for. recommend_stack detects
