@@ -98,7 +98,7 @@ export const COSTS: Record<string, ToolCost> = {
   // at $1.50/month); search: 10,000 records and 50,000 searches a month; CMS: 3 editors and
   // about 500 entries, with pages cached by your host.
   // Background jobs
-  inngest: { monthly: 0, basis: "30,000 single-step runs fits the free 50,000 executions; multi-step workflows use more executions per run. Pro is $99/month." },
+  inngest: { monthly: 0, basis: "Executions = runs × (steps + 1): 30,000 runs with no step.run calls is 30,000, inside the free 50,000; 30,000 single-step runs is 60,000, past it, so Pro at $99/month." },
   "trigger-dev": { monthly: 0, basis: "30,000 runs × 2 s × $0.0000338/s (Small 1x) = $2.03 compute + 30,000 × $0.000025 = $0.75 per-run fees, inside the free $5 credit." },
   "upstash-qstash": { monthly: 0.3, basis: "30,000 messages is about 1,000 a day, the Free cap, so retries would push past it; Pay as You Go at $1 per 100K = $0.30." },
   // SMS (US)

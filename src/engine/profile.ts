@@ -42,6 +42,10 @@ export interface Profile {
   search: boolean;
   /** Non-developers write or edit content: a blog, marketing pages, articles. */
   cms: boolean;
+  /** An AI agent: the model takes multi-step actions with tools, not just answers. */
+  agent: boolean;
+  /** The product is an API or developer tool that other developers call with keys. */
+  api: boolean;
   /** Where each value came from. */
   source: Record<"platform" | "money" | "audience", "described" | "answered" | "assumed">;
   matched: Partial<Record<"platform" | "money" | "audience" | "ai" | "game" | "nativeIos", string>>;
@@ -132,7 +136,19 @@ export const SEARCH = ["search bar", "search box", "full-text search", "full tex
   "faceted", "facets", "typo-tolerant", "typo tolerance", "instant search", "search-as-you-type", "search as you type"];
 /** Content written by non-developers: the CMS category. */
 export const CMS = ["cms", "headless cms", "blog", "blog posts", "content site", "marketing site", "marketing pages",
-  "content editors", "content team", "editors publish", "articles", "publish articles", "landing pages", "help center articles"];
+  "content editors", "content team", "editors publish", "publish articles", "write articles", "landing pages", "help center articles"];
+
+/** An AI that acts, not only answers. "agents" alone could be real-estate or support agents, so it needs an AI word too. */
+export const AGENT = ["ai agent", "ai agents", "agentic", "autonomous agent", "autonomous agents", "agent that", "agents that",
+  "tool use", "tool calling", "tool calls", "function calling", "takes actions", "take actions", "acts on", "multi-step tasks",
+  "research agent", "coding agent", "browser agent", "browses the web", "computer use", "agent workflows", "agent workflow"];
+/** Agent words that only ever mean an AI, so they count as AI on their own. */
+const AGENT_AI = ["ai agent", "ai agents", "agentic", "autonomous agent", "autonomous agents", "tool calling", "function calling",
+  "coding agent", "research agent", "browser agent", "computer use"];
+/** A product that developers call with API keys. */
+export const API_PRODUCT = ["public api", "rest api", "graphql api", "developer api", "api for developers", "api product",
+  "sdk", "sdks", "developer tool", "developer tools", "dev tool", "dev tools", "devtool", "devtools",
+  "developer platform", "per api call", "api-first", "api first", "sell api access", "paid api"];
 
 const ENGINE_NOTE = "Cuely doesn't cover game engines, console or 3D games; it covers casual and daily games that run in a web browser.";
 
@@ -272,8 +288,8 @@ export function detectProfile(text: string, answers: Answers = {}): ProfileResul
     matched.audience = customer ?? "charges users";
   }
 
-  const ai = !!any(t, AI);
-  if (ai) matched.ai = any(t, AI)!;
+  const ai = !!any(t, AI) || !!any(t, AGENT_AI);
+  if (ai) matched.ai = any(t, AI) ?? any(t, AGENT_AI)!;
   const rag = ai && !!any(t, RAG);
   const realtime = !!any(t, ["realtime", "real-time", "real time", "live updates", "chat", "presence", "collaborative",
     "multiplayer", "websocket", "websockets", "retro", "retros", "retrospective", "retrospectives", "whiteboard",
@@ -294,6 +310,8 @@ export function detectProfile(text: string, answers: Answers = {}): ProfileResul
   // "semantic search" is retrieval over documents (the vector category), so it doesn't count as a search bar.
   const search = !!any(t.replace(/semantic search/g, " "), SEARCH);
   const cms = !!any(t, CMS);
+  const agent = ai && !!any(t, AGENT);
+  const api = audience === "customers" && !!any(t, API_PRODUCT);
 
   // Unknown facts that would change the picks.
   const hasApp = !!any(t, APP_WORDS);
@@ -305,7 +323,7 @@ export function detectProfile(text: string, answers: Answers = {}): ProfileResul
   const vague = words.length < 4 && !web && !mob && !ai && !mk && !you && !internal && !game;
 
   return {
-    profile: { platform, money, audience, ai, rag, realtime, inPerson, socialLogin, game, shareable, nativeIos, push, sms, search, cms, source, matched },
+    profile: { platform, money, audience, ai, rag, realtime, inPerson, socialLogin, game, shareable, nativeIos, push, sms, search, cms, agent, api, source, matched },
     unknown,
     vague,
   };

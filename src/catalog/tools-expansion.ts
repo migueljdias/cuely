@@ -23,6 +23,7 @@ export const expansionTools: Tool[] = [
     pitch: "Runs inside the routes your app already has, saving progress between steps so long work survives serverless timeouts.",
     bestFor: ["Next.js or serverless apps that need queues and retries", "Multi-step workflows (signup flows, AI pipelines)", "Cron jobs without a server"],
     watchOut: [
+      "Executions are counted per run and per step: a run with 5 steps uses 6 executions.",
       "The free plan allows 5 concurrent steps; bursts queue up behind that limit.",
       "Pro starts at $99/month, a big step up from Free.",
       "Traces are kept for 24 hours on Free.",

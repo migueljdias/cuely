@@ -447,3 +447,33 @@ describe("background jobs, SMS, search and CMS", () => {
     expect(recommendStack(snap, { description: "Web app for a call center with voice calls", assumeDefaults: true }).coverage.status).toBe("partial");
   });
 });
+
+describe("AI agents and developer APIs", () => {
+  const rec = (description: string) => recommendStack(snap, { description, assumeDefaults: true });
+
+  it("routes AI agents to the agent recipe, with background jobs", () => {
+    for (const d of ["Web app with an AI agent that researches leads and drafts emails", "Agentic coding assistant web app that runs tasks with tool calling"]) {
+      const r = rec(d);
+      expect(r.productType.recipe, d).toBe("ai-agent-app");
+      expect(r.stack.some((s) => s.category === "jobs"), d).toBe(true);
+    }
+  });
+
+  it("keeps document Q&A on the docs recipe, and doesn't treat real-estate agents as AI", () => {
+    expect(rec("AI chatbot that answers questions over our help center PDFs").productType.recipe).toBe("ai-docs-app");
+    expect(rec("Real estate app where agents list homes and buyers book tours").profile.ai).toBe(false);
+  });
+
+  it("routes paid APIs and developer tools to the API recipe, with per-key rate limits", () => {
+    const r = rec("Paid REST API that returns company data, billed per API call");
+    expect(r.productType.recipe).toBe("developer-api");
+    expect(r.stack.find((s) => s.category === "kv")?.pick.slug).toBeDefined();
+    expect(rec("Developer tool: a public API and SDK for e-signatures").productType.recipe).toBe("developer-api");
+  });
+
+  it("doesn't route an ordinary SaaS or an app that uses someone else's API keys to the API recipe", () => {
+    expect(rec("Project management SaaS for software teams").productType.recipe).toBe("b2b-saas");
+    expect(rec("Web app where users paste their OpenAI api keys to summarize articles").productType.recipe).not.toBe("developer-api");
+    expect(rec("Web app where users paste their OpenAI api keys to summarize articles").stack.some((s) => s.category === "cms")).toBe(false);
+  });
+});

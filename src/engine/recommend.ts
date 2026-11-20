@@ -161,6 +161,8 @@ export const RECIPE_FOR = {
   mobile: "mobile-subscription-app",
   nativeIos: "native-ios-app",
   ai: "ai-docs-app",
+  agent: "ai-agent-app",
+  api: "developer-api",
   game: "daily-web-game",
   consumer: "consumer-web-app",
 } as const;
@@ -192,6 +194,13 @@ export function routeRecipe(recipes: Recipe[], profile: Profile, description: st
     recipe = by(RECIPE_FOR.game);
     if (profile.money !== "none") notes.push("The recipe has no payment steps; for paid extras on the web, see the b2b-saas recipe's Stripe steps.");
     if (profile.ai) notes.push("The AI parts aren't in this recipe: call the model API from your server, cap calls per player, and see the ai-docs-app recipe.");
+  } else if (profile.agent) {
+    recipe = by(RECIPE_FOR.agent);
+    if (profile.rag) notes.push("For answers over documents, the ai-docs-app recipe has the parsing, embedding and retrieval steps; give the agent retrieval as one of its tools.");
+    if (b2b) notes.push("For organizations, roles and invites, follow the b2b-saas recipe's tenancy steps first.");
+  } else if (profile.api && profile.platform === "web") {
+    recipe = by(RECIPE_FOR.api);
+    if (profile.ai) notes.push("The model calls behind the API aren't in this recipe: meter tokens per key as well as requests, and see the ai-docs-app recipe for model choice.");
   } else if (profile.ai && (profile.rag || !b2b)) {
     recipe = by(RECIPE_FOR.ai);
     if (b2b) notes.push("Its first step points to the b2b-saas recipe for organizations, roles and invites.");
@@ -291,7 +300,9 @@ export function categoriesFor(p: Profile, needs: Need[] = []): { pick: { slug: C
   if (p.game || (needs.includes("counters") && needs.includes("spiky"))) add("kv");
   if (p.realtime) add("realtime");
   else if (p.game) add("realtime", "optional");
-  if (needs.includes("long_running")) add("jobs");
+  if (needs.includes("long_running") || p.agent) add("jobs");
+  // An API rate-limits per key, which is a counter in Redis (unless kv is already in for a game or spiky counters).
+  if (p.api && !p.game && !(needs.includes("counters") && needs.includes("spiky"))) add("kv");
   if (p.sms) add("sms");
   if (p.search) add("search");
   if (p.cms) add("cms");
@@ -316,8 +327,9 @@ export function productLabel(p: Profile, b2b: boolean): string {
   if (p.platform === "mobile") parts.push(p.nativeIos ? "iPhone app in Swift" : "Phone app");
   else if (p.platform === "both") parts.push("Web and phone app");
   else if (p.game) parts.push("Web game");
+  else if (p.api) parts.push("Developer API");
   else parts.push(b2b ? "B2B web app" : "Web app");
-  if (p.ai) parts.push(p.rag ? "with AI answers over documents" : "with AI features");
+  if (p.ai) parts.push(p.agent ? "with an AI agent" : p.rag ? "with AI answers over documents" : "with AI features");
   if (p.money === "users_pay_each_other") parts.push("where users pay each other");
   else if (p.money === "users_pay_you" && isMobile(p)) parts.push("with in-app subscriptions");
   if (p.realtime && !p.game) parts.push("with live collaboration");

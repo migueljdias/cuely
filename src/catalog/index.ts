@@ -12,6 +12,8 @@ import { aiDocsApp } from "./recipes/ai-docs-app";
 import { internalTool } from "./recipes/internal-tool";
 import { dailyWebGame } from "./recipes/daily-web-game";
 import { consumerWebApp } from "./recipes/consumer-web-app";
+import { aiAgentApp } from "./recipes/ai-agent-app";
+import { developerApi } from "./recipes/developer-api";
 import type { Recipe, Tool } from "./types";
 import { healthFrom, normsOf, outageRivals, type SignalsFile } from "@/freshness/health";
 import { applyFacts, type FactsFile } from "@/freshness/facts";
@@ -55,7 +57,7 @@ export const tools: Tool[] = allTools.map((t) => {
 export { categories };
 
 /** Sorted by slug, the same order the Postgres repository returns. */
-export const recipes: Recipe[] = [b2bSaas, mobileSubscriptionApp, nativeIosApp, marketplace, aiDocsApp, internalTool, dailyWebGame, consumerWebApp].sort((a, b) => a.slug.localeCompare(b.slug));
+export const recipes: Recipe[] = [b2bSaas, mobileSubscriptionApp, nativeIosApp, marketplace, aiDocsApp, internalTool, dailyWebGame, consumerWebApp, aiAgentApp, developerApi].sort((a, b) => a.slug.localeCompare(b.slug));
 
 /** One statement every answer carries, so agents can repeat it to users. */
 export const POLICY =
