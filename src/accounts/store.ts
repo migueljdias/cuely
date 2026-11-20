@@ -8,6 +8,8 @@ export interface Account {
   planStatus: string | null;
   stripeCustomerId: string | null;
   currentPeriodEnd: string | null;
+  /** Opted in to product-update emails. Off by default; only the account holder turns it on. */
+  productUpdates: boolean;
 }
 
 export interface UsageCount {
@@ -34,6 +36,7 @@ const toAccount = (r: Record<string, any>): Account => ({
   planStatus: r.plan_status ?? null,
   stripeCustomerId: r.stripe_customer_id ?? null,
   currentPeriodEnd: r.current_period_end ? new Date(r.current_period_end).toISOString() : null,
+  productUpdates: r.product_updates === true,
 });
 
 /** Subscription statuses that keep Pro on. Anything else falls back to Free. */
@@ -55,6 +58,15 @@ export function accountStore(query: QueryFn) {
     async get(userId: string): Promise<Account | null> {
       const rows = await query("select * from accounts where user_id = $1", [userId]);
       return rows[0] ? toAccount(rows[0]) : null;
+    },
+
+    /** Turns product-update emails on or off, and records when the choice was made. */
+    async setProductUpdates(userId: string, on: boolean): Promise<void> {
+      await query(
+        `update accounts set product_updates = $2, product_updates_at = now(), updated_at = now()
+         where user_id = $1 and product_updates is distinct from $2`,
+        [userId, on],
+      );
     },
 
     async setStripeCustomer(userId: string, customerId: string): Promise<void> {

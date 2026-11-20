@@ -2825,3 +2825,81 @@ main.wrap :is(h2, h3) {
     background: var(--surface);
   }
 }
+
+/* Announcement bar above the header (announce-bar.tsx). */
+.announce {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 40px;
+  padding: 6px 48px;
+  position: relative;
+  background: var(--accent);
+  color: #fff;
+  font: 500 14px/1.4 var(--sans);
+  text-align: center;
+}
+.announce p {
+  margin: 0;
+}
+.announce a {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(255, 255, 255, 0.55);
+}
+.announce a:hover {
+  text-decoration-color: #fff;
+}
+.announce-close {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+}
+.announce-close:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+@media (max-width: 560px) {
+  .announce {
+    font-size: 13px;
+    padding-left: 16px;
+  }
+  .announce-sep,
+  .announce-repo {
+    display: none;
+  }
+}
+
+/* Product-updates checkbox on the account page. */
+.optin {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.optin label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  max-width: 36em;
+}
+.optin input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--accent);
+  flex: none;
+}

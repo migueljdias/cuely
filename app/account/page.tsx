@@ -8,7 +8,7 @@ import { SITE_URL } from "@/site";
 import { NewKey } from "./_new-key";
 import { LogOutItem } from "./_log-out";
 import { AppShell } from "./_shell";
-import { checkoutAction, portalAction, revokeKeyAction } from "./actions";
+import { checkoutAction, portalAction, productUpdatesAction, revokeKeyAction } from "./actions";
 
 export const metadata: Metadata = { title: "Account · Cuely", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -18,7 +18,7 @@ function day(iso: string | null) {
   return iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "never";
 }
 
-export default async function AccountPage({ searchParams }: { searchParams: Promise<{ checkout?: string }> }) {
+export default async function AccountPage({ searchParams }: { searchParams: Promise<{ checkout?: string; updates?: string }> }) {
   if (!authConfigured()) redirect("/sign-in");
   const user = await currentUser();
   if (!user) redirect("/sign-in");
@@ -31,7 +31,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const plan = planFor(account?.plan);
   const payments = paymentsConfig();
   const canCheckout = checkoutOpen(payments);
-  const { checkout } = await searchParams;
+  const { checkout, updates } = await searchParams;
 
   return (
     <AppShell email={user.email ?? ""} name={user.name} imageUrl={user.imageUrl} plan={plan.name} logOut={<LogOutItem />}>
@@ -175,6 +175,32 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
             Create a key and the setup for Claude Code, Cursor and VS Code appears here with it filled in. Lost a key?
             Revoke it and make a new one. Step-by-step help: <a href={`${SITE_URL}/start`}>Get started</a>.
           </p>
+        </section>
+
+        <section id="email" className="panel" aria-labelledby="email-title">
+          <div className="panel-head">
+            <h2 id="email-title">Email</h2>
+            <p className="muted">Account and billing email always goes to {user.email}. Everything else is your call.</p>
+          </div>
+          {account && (
+            <form action={productUpdatesAction} className="optin">
+              <label>
+                <input type="checkbox" name="product_updates" defaultChecked={account.productUpdates} />
+                <span>
+                  <strong>Product updates</strong>
+                  <span className="muted"> A few emails a year when something big ships. Unsubscribe anytime.</span>
+                </span>
+              </label>
+              <button type="submit" className="btn btn-quiet btn-small">
+                Save
+              </button>
+            </form>
+          )}
+          {updates === "saved" && (
+            <p className="muted small" role="status">
+              Saved.
+            </p>
+          )}
         </section>
       </div>
     </AppShell>

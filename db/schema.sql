@@ -81,6 +81,9 @@ create table if not exists accounts (
   created_at             timestamptz not null default now(),
   updated_at             timestamptz not null default now()
 );
+-- Product-update emails: off unless the account holder turns them on. The time records when they chose.
+alter table accounts add column if not exists product_updates boolean not null default false;
+alter table accounts add column if not exists product_updates_at timestamptz;
 
 -- Optional MCP API keys. Only a SHA-256 hash is stored, the key is shown once.
 create table if not exists api_keys (

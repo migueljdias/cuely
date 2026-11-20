@@ -1,5 +1,6 @@
 import { authConfigured } from "@/auth/server";
 import { APP_URL, REPO_URL, SITE_URL, SUPPORT_EMAIL } from "@/site";
+import { AnnounceBar } from "./announce-bar";
 import { HeaderAccount } from "./header-account";
 import { NavMenu } from "./nav-menu";
 
@@ -34,6 +35,7 @@ export function SiteHeader() {
       <a className="skip" href="#main">
         Skip to content
       </a>
+      <AnnounceBar trustHref={`${SITE_URL}/trust`} repoHref={REPO_URL} />
       <header className="site-nav" id="site-nav">
         <div className="site-nav-bar">
           <Logo />
