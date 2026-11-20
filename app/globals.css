@@ -758,6 +758,12 @@ section {
   max-width: 36em;
   margin: 0 0 32px;
 }
+.page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: -12px 0 28px;
+}
 .small {
   font-size: 14px;
 }
