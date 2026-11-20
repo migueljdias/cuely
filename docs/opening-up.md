@@ -1,11 +1,9 @@
 # Opening up Cuely
 
-> **Status (Nov 20, 2026): paused.** The repo stays private for now. Shipped from this plan:
-> the `/trust` page, agent guidance on what to send, and the test that proves free text isn't
-> stored. The license files, contributor files and public-source links were taken out until
-> the repo goes public; they're in this branch's history (commit "Open up Cuely") to restore
-> later. When resuming, go public through a new repo with rewritten history (Phase 4) so the
-> personal email on old commits stays private.
+> **Status (Nov 20, 2026): resumed.** Branch `claude/open-source` brings back the license files,
+> contributor files and public-source links. Don't merge it into `main` on the private repo:
+> the site would say the code is public before it is. It goes over in Phase 4 (new repo,
+> rewritten history) and is merged there in step 6, right before the repo goes public.
 
 Why: builders asked what repo data Cuely receives before pointing it at real projects
 (Maurice, @KI_Vater, Nov 18 2026). Trust comes from saying exactly what Cuely receives,
@@ -50,7 +48,7 @@ the hosted endpoint, kept fresh every day, with Pro limits.
 
 ## Phase 4: Go public without exposing your email
 
-Your personal email is on 23 commits. Rewriting history in this repo and flipping it public
+Your personal email is on 32 commits (recounted Nov 20). Rewriting history in this repo and flipping it public
 would not hide it: GitHub keeps every merged pull request's original commits under
 `refs/pull/*`, which only GitHub Support can remove. So the public repo is a **new repo** with
 the history rewritten to your GitHub no-reply address; this one is renamed and stays private.
@@ -59,7 +57,7 @@ files or commit messages either.)
 
 1. [ ] github.com → Settings → Emails: tick **Keep my email addresses private** and **Block
        command line pushes that expose my email**. This stops new leaks, including merges made
-       on github.com, which is how most of the 23 got in.
+       on github.com, which is how most of them got in.
 2. [ ] Rename this repo: Settings → General → `cuely` → `cuely-private`. Leave it private.
 3. [ ] Create a new **empty, private** repo named `cuely` (no README, license or .gitignore).
        The old name then points at the new repo, so `server.json` and every link stay right.

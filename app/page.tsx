@@ -5,7 +5,7 @@ import { ENDPOINT, KEY_PAGE, connectOptions } from "@/connect";
 import { checkoutOpen, paymentsConfig } from "@/billing/stripe";
 import { MCP_TOOLS as mcpTools } from "@/mcp/tool-docs";
 import { PLANS } from "@/plans";
-import { APP_URL, SITE_URL, SUPPORT_EMAIL } from "@/site";
+import { APP_URL, REPO_URL, SITE_URL, SUPPORT_EMAIL } from "@/site";
 import { SiteFooter, SiteHeader } from "./_components/chrome";
 import { ConnectTabs } from "./_components/connect-tabs";
 import { CopyButton } from "./_components/copy";
@@ -472,7 +472,8 @@ export default function Home() {
                 <h3>It never sees your code</h3>
                 <p>
                   Your agent reads your project locally and sends a sentence about the product and the names of the tools it
-                  uses. Cuely keeps neither. <a href="/trust">See exactly what Cuely receives</a>.
+                  uses. Cuely keeps neither. <a href="/trust">See exactly what Cuely receives</a>, or{" "}
+                  <a href={REPO_URL}>read the source</a>.
                 </p>
                 <dl className="spec">
                   {mcpTools.map((t) => (
@@ -563,7 +564,8 @@ export default function Home() {
                   <h3>Measured every day, published without anyone touching it</h3>
                   <p>
                     A scheduled job reads each vendor&apos;s status page, security advisories, package downloads and pricing page
-                    {measured ? `, last on ${measured}` : ""}. If a tool gets worse, Cuely stops recommending it.
+                    {measured ? `, last on ${measured}` : ""}. If a tool gets worse, Cuely stops recommending it. The rules, the
+                    data and every measurement are <a href={REPO_URL}>public on GitHub</a>.
                   </p>
                 </div>
                 <div className="b-blue">

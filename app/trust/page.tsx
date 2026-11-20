@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
-import { SUPPORT_EMAIL } from "@/site";
+import { REPO_URL, SUPPORT_EMAIL } from "@/site";
 import { LegalPage } from "../_components/legal";
 
 export const metadata: Metadata = {
   title: "What Cuely receives · Cuely",
   description:
-    "Cuely never sees your code. What your agent sends when it calls Cuely, what Cuely keeps, and how to check what's sent before it leaves your machine.",
+    "Cuely never sees your code. What your agent sends when it calls Cuely, what Cuely keeps, and how to check both yourself.",
   alternates: { canonical: "/trust" },
 };
+
+const src = (path: string) => `${REPO_URL}/blob/main/${path}`;
 
 // A real check_project call, as an agent sends it after reading package.json on your machine.
 const EXAMPLE = `{
@@ -22,7 +24,7 @@ export default function Trust() {
   return (
     <LegalPage
       title="What Cuely receives"
-      lede="Cuely never sees your code. Your agent reads your project on your own machine and sends Cuely a sentence about the product and a list of tool names. This page shows exactly what that looks like, what Cuely keeps, and how to check it before anything is sent."
+      lede="Cuely never sees your code. Your agent reads your project on your own machine and sends Cuely a sentence about the product and a list of tool names. This page shows exactly what that looks like, what Cuely keeps, and how to check it yourself."
     >
       <h2>What your agent sends</h2>
       <p>
@@ -35,7 +37,8 @@ export default function Trust() {
       </div>
       <p>
         That&apos;s the whole request: a plain description of the product (at most 2,000 characters) and tool names (at
-        most 40). Some tools also take a few fixed choices, such as web or phone app and who pays whom.
+        most 40). Some tools also take a few fixed choices, such as web or phone app and who pays whom. The full input of
+        every tool is in <a href={src("src/mcp/server.ts")}>src/mcp/server.ts</a>.
       </p>
 
       <h2>What Cuely never asks for</h2>
@@ -64,29 +67,47 @@ export default function Trust() {
       </ul>
       <p>
         Cuely does not keep the description, the tool list, the comparison context or your IP address. It also counts your
-        account&apos;s calls per day and per minute to apply your plan&apos;s limits. An automated test calls every tool
-        with marked text in every field and fails the build if any of that text is stored, so this can&apos;t change by
-        accident.
+        account&apos;s calls per day and per minute to apply your plan&apos;s limits. See the table in{" "}
+        <a href={src("db/schema.sql")}>db/schema.sql</a>, the code that writes it in{" "}
+        <a href={src("src/mcp/server.ts")}>src/mcp/server.ts</a>, and the test that calls every tool with marked text and
+        fails if any of it is stored, in <a href={src("tests/mcp.test.ts")}>tests/mcp.test.ts</a>.
       </p>
 
       <h2>What passes through without being kept</h2>
       <p>
         Vercel hosts Cuely, so your request passes through Vercel&apos;s network on its way to the server. When something
         breaks, Cuely&apos;s error log records the path and the error, and leaves out request bodies and headers on
-        purpose. The full list of services and what each one handles is in the <a href="/privacy">privacy policy</a>.
+        purpose (<a href={src("instrumentation.ts")}>instrumentation.ts</a>). The full list of services and what each one
+        handles is in the <a href="/privacy">privacy policy</a>.
       </p>
 
       <h2>Check it yourself</h2>
-      <p>
-        Claude Code and most MCP clients show the exact arguments of every tool call and ask you to allow it before
-        anything is sent. Read the payload, then allow or deny it. If it ever holds more than this page describes, deny the
-        call and tell us.
-      </p>
+      <ul>
+        <li>
+          <strong>Before it&apos;s sent:</strong> Claude Code and most MCP clients show the exact arguments of a tool call
+          and ask you to allow it. Read the payload, then allow or deny it.
+        </li>
+        <li>
+          <strong>On the server:</strong> the code that runs cuely.dev is public at <a href={REPO_URL}>{REPO_URL}</a>. The
+          MCP server is in <code>src/mcp</code>, the scoring in <code>src/engine</code> and every vendor fact, with its
+          source page and date, in <code>src/catalog</code> and <code>data</code>.
+        </li>
+        <li>
+          <strong>Run it yourself:</strong> you can run your own copy of Cuely for your own use, so nothing leaves your
+          network at all. The README shows how.
+        </li>
+      </ul>
 
-      <h2>Questions</h2>
+      <h2>Source and licenses</h2>
       <p>
-        Found something that doesn&apos;t match this page, or want to report a security problem? Email{" "}
-        <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.
+        Cuely&apos;s code is published under the Functional Source License (FSL-1.1-ALv2): you can read, run, change and
+        self-host it for any purpose except offering a competing service, and each version becomes Apache 2.0 two years
+        after it&apos;s published. The catalog (vendor facts, prices, recipes and measurements) is published under CC
+        BY-NC 4.0. Using Cuely&apos;s answers in your own projects, commercial or not, is always fine.
+      </p>
+      <p>
+        Found something that doesn&apos;t match this page? Email <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> or
+        open an issue on GitHub. See <a href={src("SECURITY.md")}>SECURITY.md</a> for security reports.
       </p>
     </LegalPage>
   );
