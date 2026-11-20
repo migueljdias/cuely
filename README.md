@@ -238,3 +238,12 @@ All colour, type, radius and motion values are tokens at the top of `app/globals
 ### Tool marks and motion
 
 Tool logos come from [simple-icons](https://simpleicons.org) (CC0-1.0), vendored as path data in `src/logos.ts` and drawn in the current text colour at one size, so no tool looks louder than another. Each mark belongs to its owner and only identifies the tool. Tools without a simple-icons mark get a plain monogram. The hero example replays once when it scrolls into view and sections rise in once; both are skipped under `prefers-reduced-motion`, and the page reads fully without JavaScript.
+
+## Contributing
+
+Catalog corrections are the most useful contribution: see [CONTRIBUTING.md](CONTRIBUTING.md). Report security problems privately, as [SECURITY.md](SECURITY.md) describes.
+
+## License
+
+- **Code** is under the [Functional Source License, Version 1.1, ALv2 Future License](LICENSE) (FSL-1.1-ALv2). You can read, run, change and self-host it for any purpose except offering a competing commercial service. Each version becomes Apache 2.0 two years after it's published.
+- **Catalog data** (`src/catalog/`, `data/`, `db/seed.sql`) is under [CC BY-NC 4.0 with additional permissions](LICENSE-DATA). You can use it with your own copy of Cuely, even at work, and you can use Cuely's answers in any project. Republishing or selling the catalog itself needs permission.

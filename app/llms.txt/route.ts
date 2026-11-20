@@ -28,6 +28,7 @@ export function GET() {
     "## Data",
     "- Send only the product in plain words and tool names. Never send source code, file contents, env values, secrets, or names of people, customers or companies.",
     "- Cuely stores per call: tool, matched recipe, categories, detected needs and a daily-rotating caller hash. It does not store descriptions, tool lists or IP addresses. Details: https://cuely.dev/trust",
+    "- Source: https://github.com/migueljdias/cuely (code FSL-1.1-ALv2, catalog data CC BY-NC 4.0)",
     "",
     "## Pages",
     "- Get started: https://cuely.dev/start",

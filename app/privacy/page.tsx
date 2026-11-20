@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { OPERATOR, SUPPORT_EMAIL } from "@/site";
+import { OPERATOR, REPO_URL, SUPPORT_EMAIL } from "@/site";
 import { LegalPage } from "../_components/legal";
 
 export const metadata: Metadata = {
@@ -83,6 +83,12 @@ export default function Privacy() {
         </li>
       </ul>
       <p>These services process data only to run Cuely. Cuely doesn&apos;t sell or rent your data to anyone.</p>
+
+      <h2>Checking these claims</h2>
+      <p>
+        The code that runs Cuely is public at <a href={REPO_URL}>{REPO_URL}</a>, including the database schema and the
+        code that writes each usage record, so you can check this policy against what the server does.
+      </p>
 
       <h2>Cookies</h2>
       <p>
