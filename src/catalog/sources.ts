@@ -89,4 +89,17 @@ export const SOURCES: Record<string, ToolSources> = {
   "cloudflare-durable-objects": { status: CLOUDFLARE },
   "cloudflare-kv": { status: CLOUDFLARE },
   "vercel-global-config": { status: VERCEL, npm: "@vercel/edge-config" },
+  // Background jobs, SMS, search, CMS (added 2026-11-20; npm only until each status page is confirmed readable)
+  inngest: { npm: "inngest" },
+  "trigger-dev": { npm: "@trigger.dev/sdk" },
+  "upstash-qstash": { status: "https://status.upstash.com", npm: "@upstash/qstash" },
+  twilio: { npm: "twilio" },
+  telnyx: { npm: "telnyx" },
+  vonage: { npm: "@vonage/server-sdk" },
+  algolia: { npm: "algoliasearch" },
+  typesense: { npm: "typesense" },
+  meilisearch: { npm: "meilisearch" },
+  sanity: { npm: "@sanity/client" },
+  payload: { npm: "payload" },
+  contentful: { npm: "contentful" },
 };

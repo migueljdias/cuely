@@ -2,6 +2,7 @@ import { categories } from "./categories";
 import { tools as coreTools } from "./tools";
 import { moreTools } from "./tools-more";
 import { gameTools } from "./tools-games";
+import { expansionTools } from "./tools-expansion";
 import { COSTS, COST_PROFILE } from "./costs";
 import { b2bSaas } from "./recipes/b2b-saas";
 import { mobileSubscriptionApp } from "./recipes/mobile-subscription-app";
@@ -42,7 +43,7 @@ export const factUpdates: FactsFile = process.env.CUELY_NO_FACT_UPDATES === "1" 
 export const compliance: ComplianceFile = process.env.CUELY_NO_COMPLIANCE === "1" ? { tools: {} } : (complianceJson as ComplianceFile);
 
 /** Every tool, with its monthly cost at the published profile and its measured health attached. */
-const allTools = [...coreTools, ...moreTools, ...gameTools];
+const allTools = [...coreTools, ...moreTools, ...gameTools, ...expansionTools];
 const norms = normsOf(signals);
 const rivals = outageRivals(allTools, signals);
 export const tools: Tool[] = allTools.map((t) => {

@@ -412,3 +412,38 @@ describe("casual and daily web games", () => {
     expect(matchRecipe(recipes, "browser trivia game")?.slug).toBe("daily-web-game");
   });
 });
+
+describe("background jobs, SMS, search and CMS", () => {
+  const cats = (description: string) => {
+    const r = recommendStack(snap, { description, assumeDefaults: true });
+    return Object.fromEntries(r.stack.map((s) => [s.category, s.pick.slug]));
+  };
+
+  it("adds SMS for texts and one-time codes, with the 10DLC catch", () => {
+    const r = recommendStack(snap, { description: "Next.js SaaS for gyms that texts members class reminders", assumeDefaults: true });
+    expect(r.stack.some((s) => s.category === "sms")).toBe(true);
+    const all = [...(r.summary?.catches ?? []), ...(r.summary?.moreCatches ?? [])].map((c) => c.text).join(" ");
+    expect(all).toMatch(/10DLC/);
+    expect(cats("bootstrapped SaaS that sends one-time codes by text").sms).toBe("telnyx");
+  });
+
+  it("adds a search category for a search bar, but not for semantic search", () => {
+    expect(cats("Marketplace for vintage furniture with a search bar and facets").search).toBe("postgres-full-text");
+    expect(cats("Web app for lawyers with semantic search over their documents").search).toBeUndefined();
+  });
+
+  it("adds a CMS for a blog, and Payload when the builder wants open source", () => {
+    expect(cats("Next.js marketing site with a blog our content team edits").cms).toBe("sanity");
+    expect(cats("Open source self-hosted Next.js site with a blog").cms).toBe("payload");
+  });
+
+  it("adds background jobs when the work runs outside a request", () => {
+    expect(cats("Web app that scrapes job boards nightly with background jobs").jobs).toBeDefined();
+    expect(cats("B2B SaaS for companies, per-seat subscriptions").jobs).toBeUndefined();
+  });
+
+  it("no longer marks SMS as outside coverage, but still flags voice", () => {
+    expect(recommendStack(snap, { description: "Web app that sends SMS alerts", assumeDefaults: true }).coverage.status).toBe("covered");
+    expect(recommendStack(snap, { description: "Web app for a call center with voice calls", assumeDefaults: true }).coverage.status).toBe("partial");
+  });
+});

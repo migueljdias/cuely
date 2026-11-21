@@ -407,6 +407,16 @@ export const PRACTICES: Practice[] = [
     source: "https://developer.apple.com/help/app-store-connect/manage-compliance-information/manage-european-union-digital-services-act-trader-requirements",
     applies: (c) => mobile(c) && customers(c),
   },
+  {
+    id: "sms-consent",
+    area: "compliance",
+    phase: "before_launch",
+    title: "Get consent before texting people, and honor STOP",
+    detail: "Collect a clear opt-in (a checkbox that says what you'll text and how often) before sending any automated text, store when and how each person agreed, and stop texting the moment someone replies STOP or opts out another way.",
+    why: "FCC rules require consent for autodialed texts (written consent for marketing texts), and people can opt out at any time in any reasonable manner.",
+    source: "https://www.fcc.gov/consumers/guides/stop-unwanted-robocalls-and-texts",
+    applies: (c) => c.categories.includes("sms"),
+  },
 ];
 
 const PHASE_ORDER: Phase[] = ["day_one", "before_launch"];

@@ -91,4 +91,27 @@ export const COSTS: Record<string, ToolCost> = {
   appsheet: { monthly: 0, scale: "10_staff", basis: "$0 if your Workspace plan includes AppSheet Core; otherwise Starter at $5 × 10 staff = $50/month." },
   airtable: { monthly: 200, scale: "10_staff", basis: "Team at $20 per seat × 10 staff = $200/month, billed annually." },
   glide: { monthly: 25, scale: "10_staff", basis: "Basic is $25/month; check how many staff it allows on the page." },
+
+  // Added 2026-11-20. Volumes for these categories, used only when a product needs them:
+  // background jobs: 30,000 runs a month of about 2 seconds each; SMS: 2,000 US texts a month
+  // from one 10-digit number (carrier fees averaged at $0.004 per text, low-volume 10DLC campaign
+  // at $1.50/month); search: 10,000 records and 50,000 searches a month; CMS: 3 editors and
+  // about 500 entries, with pages cached by your host.
+  // Background jobs
+  inngest: { monthly: 0, basis: "30,000 single-step runs fits the free 50,000 executions; multi-step workflows use more executions per run. Pro is $99/month." },
+  "trigger-dev": { monthly: 0, basis: "30,000 runs × 2 s × $0.0000338/s (Small 1x) = $2.03 compute + 30,000 × $0.000025 = $0.75 per-run fees, inside the free $5 credit." },
+  "upstash-qstash": { monthly: 0.3, basis: "30,000 messages is about 1,000 a day, the Free cap, so retries would push past it; Pay as You Go at $1 per 100K = $0.30." },
+  // SMS (US)
+  twilio: { monthly: 27.25, basis: "2,000 × $0.0083 = $16.60 + carrier fees ~2,000 × $0.004 = $8 + number $1.15 + 10DLC campaign $1.50 = $27.25; plus one-time brand ($4.50) and campaign vetting ($15) fees." },
+  telnyx: { monthly: 18.5, basis: "2,000 × $0.004 = $8 + carrier fees ~2,000 × $0.004 = $8 + number $1 + 10DLC campaign ~$1.50 = $18.50; plus one-time 10DLC registration fees." },
+  vonage: { monthly: 27.98, basis: "2,000 × $0.0086 = $17.20 + carrier fees ~2,000 × $0.004 = $8 + long code $1.28 + 10DLC campaign ~$1.50 = $27.98; plus one-time 10DLC registration fees." },
+  // Search
+  "postgres-full-text": { monthly: 0, basis: "No separate bill; 10,000 records with a GIN index is a few MB in the Postgres you already have." },
+  algolia: { monthly: 20, basis: "Grow: 50,000 searches − 10,000 included = 40,000 × $0.50 per 1,000 = $20; 10,000 records fit the 100,000 included. Debounce search-as-you-type or it multiplies." },
+  typesense: { monthly: 21.6, basis: "Smallest Cloud configuration at $0.03/hr × 720 hrs = $21.60; searches aren't metered. The first 720 hours are free once per account." },
+  meilisearch: { monthly: 20, basis: "Cloud XS: $14.88 instance + $5.28 for the 32 GiB minimum disk = $20/month (US East), unlimited searches." },
+  // CMS
+  sanity: { monthly: 0, basis: "3 editors and 500 entries fit Free (20 seats, 10k documents); editors get the Administrator role there. Editor roles need Growth: 3 × $15 = $45/month." },
+  payload: { monthly: 0, basis: "MIT-licensed, no license or seat fees; it runs in your app and database, whose bills are counted already." },
+  contentful: { monthly: 0, basis: "500 entries and 3 editors fit Free (hard caps: 100K API calls/month); the next plan, Lite, is $300/month." },
 };

@@ -291,6 +291,10 @@ export function categoriesFor(p: Profile, needs: Need[] = []): { pick: { slug: C
   if (p.game || (needs.includes("counters") && needs.includes("spiky"))) add("kv");
   if (p.realtime) add("realtime");
   else if (p.game) add("realtime", "optional");
+  if (needs.includes("long_running")) add("jobs");
+  if (p.sms) add("sms");
+  if (p.search) add("search");
+  if (p.cms) add("cms");
   add("email", p.platform === "mobile" || p.game ? "optional" : "core");
   add("monitoring");
   add("analytics", "optional");
@@ -349,6 +353,7 @@ export function catchesFor(p: Profile, needs: Need[]): typeof CATCHES {
     if (needs.includes("usage_billing") && p.money !== "none") flags.push("usage_billing");
     if (p.game) flags.push("game");
     if (p.realtime && !p.game) flags.push("realtime");
+    if (p.sms) flags.push("sms");
   }
   if (needs.includes("health_data")) flags.unshift("health_data");
   const platform = p.nativeIos ? "native_ios" : "cross_platform";

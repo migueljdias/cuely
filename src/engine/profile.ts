@@ -36,6 +36,12 @@ export interface Profile {
   nativeIos: boolean;
   /** The description asks for push notifications or reminders. */
   push: boolean;
+  /** Sends or receives text messages (codes, alerts, reminders by text). */
+  sms: boolean;
+  /** Has a search bar over its own records (not semantic search over documents). */
+  search: boolean;
+  /** Non-developers write or edit content: a blog, marketing pages, articles. */
+  cms: boolean;
   /** Where each value came from. */
   source: Record<"platform" | "money" | "audience", "described" | "answered" | "assumed">;
   matched: Partial<Record<"platform" | "money" | "audience" | "ai" | "game" | "nativeIos", string>>;
@@ -116,6 +122,18 @@ const GAME_3D = ["3d", "console", "consoles", "steam", "fps", "first-person shoo
 const FAST_MULTIPLAYER = ["multiplayer", "real-time multiplayer", "realtime multiplayer", "matchmaking", "netcode",
   "game server", "game servers", "pvp", "player vs player", "lobbies"];
 
+/** Text messages and phone verification: the SMS and voice category. */
+export const SMS = ["sms", "text message", "text messages", "texting", "text reminder", "text reminders", "send a text",
+  "sends a text", "by text", "via text", "otp", "one-time code", "one-time codes", "verification code", "verification codes",
+  "phone verification", "verify phone", "verify their phone", "two-way texting", "mms"];
+/** A search bar over the product's own records. Semantic search over documents is RAG, not this. */
+export const SEARCH = ["search bar", "search box", "full-text search", "full text search", "site search", "searchable",
+  "search across", "search and filter", "search and filters", "search their", "search our", "search the catalog",
+  "faceted", "facets", "typo-tolerant", "typo tolerance", "instant search", "search-as-you-type", "search as you type"];
+/** Content written by non-developers: the CMS category. */
+export const CMS = ["cms", "headless cms", "blog", "blog posts", "content site", "marketing site", "marketing pages",
+  "content editors", "content team", "editors publish", "articles", "publish articles", "landing pages", "help center articles"];
+
 const ENGINE_NOTE = "Cuely doesn't cover game engines, console or 3D games; it covers casual and daily games that run in a web browser.";
 
 /** Things Cuely doesn't cover. "outside" means the core of the product is out of scope. */
@@ -142,8 +160,8 @@ const OUTSIDE: { words: string[]; note: string; status: "partial" | "outside"; n
     note: "Cuely doesn't cover model training or GPU hosting; it covers calling hosted model APIs." },
   { words: ["wallet", "neobank", "lending", "hold customer money", "money transfer", "remittance"], status: "partial",
     note: "Apps that move or hold customer money need licensing review first; Cuely doesn't cover ledgers or banking partners." },
-  { words: ["sms", "text messages", "phone calls", "voice calls"], status: "partial",
-    note: "Cuely doesn't cover SMS or voice providers yet." },
+  { words: ["phone calls", "voice calls", "ivr", "call center", "call centre"], status: "partial",
+    note: "Cuely's SMS and voice picks also handle calls, but they're compared on US text message prices; check each provider's voice rates." },
   { words: ["push notifications", "web push", "browser notifications"], status: "partial", unless: MOBILE,
     note: "Cuely compares push services for phone apps, not browser (web push) notifications." },
 ];
@@ -271,6 +289,11 @@ export function detectProfile(text: string, answers: Answers = {}): ProfileResul
   const nativeIos = !!nativeWord && !any(raw, CROSS_PLATFORM);
   if (nativeIos) matched.nativeIos = nativeWord!;
   const push = !!any(t, PUSH);
+  // "texts members" is a text message; "legal texts" isn't, so the bare word only counts as a verb with a person after it.
+  const sms = !!any(t, SMS) || /\btext(s|ing)?\s+(users|members|customers|patients|clients|people|them|parents|students|staff|guests|riders|drivers|tenants)\b/.test(raw);
+  // "semantic search" is retrieval over documents (the vector category), so it doesn't count as a search bar.
+  const search = !!any(t.replace(/semantic search/g, " "), SEARCH);
+  const cms = !!any(t, CMS);
 
   // Unknown facts that would change the picks.
   const hasApp = !!any(t, APP_WORDS);
@@ -282,7 +305,7 @@ export function detectProfile(text: string, answers: Answers = {}): ProfileResul
   const vague = words.length < 4 && !web && !mob && !ai && !mk && !you && !internal && !game;
 
   return {
-    profile: { platform, money, audience, ai, rag, realtime, inPerson, socialLogin, game, shareable, nativeIos, push, source, matched },
+    profile: { platform, money, audience, ai, rag, realtime, inPerson, socialLogin, game, shareable, nativeIos, push, sms, search, cms, source, matched },
     unknown,
     vague,
   };

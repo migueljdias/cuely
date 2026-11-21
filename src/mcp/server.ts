@@ -28,7 +28,7 @@ export const SERVER_INFO = {
 
 const CATEGORY_SLUGS = [
   "hosting", "database", "auth", "payments", "email", "secrets", "dns", "monitoring", "analytics", "storage",
-  "llm", "vector", "realtime", "mobile_build", "internal_tools", "kv",
+  "llm", "vector", "realtime", "mobile_build", "internal_tools", "kv", "jobs", "sms", "search", "cms",
 ] as const satisfies readonly CategorySlug[];
 
 export const INSTRUCTIONS = `Cuely recommends tools and setup steps for what a user is building: web apps, phone apps, marketplaces, AI apps, staff tools and casual web games.
