@@ -1,7 +1,7 @@
 {
   "tools": {
     "amazon-route-53": {
-      "verifiedOn": "2026-11-19"
+      "verifiedOn": "2026-11-21"
     },
     "amazon-s3": {
       "verifiedOn": "2026-11-18"
