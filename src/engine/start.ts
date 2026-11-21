@@ -49,8 +49,11 @@ export function startProject(catalog: CatalogSnapshot, input: StartInput): Proje
   if (rec.status !== "ok") return { status: rec.status, recommendation: rec, checklist: [], nextStep: rec.nextStep };
 
   const using = (input.alreadyUsing ?? []).map((r) => resolveTool(catalog.tools, r)).filter((t) => !!t);
-  const tools = [...new Set([...rec.stack.map((s) => s.pick.slug), ...using.map((t) => t!.slug)])];
-  const categories = [...new Set([...rec.stack.map((s) => s.category), ...using.map((t) => t!.category)])] as CategorySlug[];
+  // A part marked "if you build" (a hosted store's database, auth and payments) isn't in the
+  // product until someone builds it, so its practices wait until then.
+  const inUse = rec.stack.filter((s) => s.role !== "if_you_build" || rec.productType.recipe !== "online-store");
+  const tools = [...new Set([...inUse.map((s) => s.pick.slug), ...using.map((t) => t!.slug)])];
+  const categories = [...new Set([...inUse.map((s) => s.category), ...using.map((t) => t!.category)])] as CategorySlug[];
   const needs = rec.detectedNeeds.map((d) => d.need);
 
   const checklist = practicesFor({
