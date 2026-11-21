@@ -25,7 +25,8 @@ export type CategorySlug =
   | "jobs"
   | "sms"
   | "search"
-  | "cms";
+  | "cms"
+  | "commerce";
 
 /**
  * Needs are what a builder's description can ask for. recommend_stack detects

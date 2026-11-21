@@ -168,4 +168,12 @@ export const categories: Category[] = [
       "If editors only touch a blog or a few pages, a CMS that runs inside your app and database avoids another vendor. A hosted CMS gives editors a polished studio without hosting it. Check seats, roles and API request limits on the free plan.",
     order: 21,
   },
+  {
+    slug: "commerce",
+    name: "Store platform",
+    description: "Products, cart, checkout, orders, shipping and taxes for an online store.",
+    howToChoose:
+      "A standard store selling products is usually faster and cheaper on a hosted store builder than built from scratch. Build on an open-source commerce framework when the checkout, catalog or pricing logic is unusual. Compare the monthly fee with the per-sale fees.",
+    order: 22,
+  },
 ];

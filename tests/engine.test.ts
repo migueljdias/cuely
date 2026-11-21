@@ -205,7 +205,8 @@ describe("questions, coverage and misroutes", () => {
     const r = recommendStack(snap, { description: "a multiplayer game for phones" });
     expect(r.status).toBe("outside_coverage");
     expect(r.stack).toHaveLength(0);
-    expect(detectCoverage("an online store for candles").status).toBe("partial");
+    expect(detectCoverage("an online store for candles").status).toBe("covered"); // covered since 2026-11-20 (online-store recipe)
+    expect(detectCoverage("online store with multi-warehouse inventory").status).toBe("partial");
   });
 
   it("doesn't read Google Workspace, teams or subscriptions as B2B SaaS", () => {
@@ -427,6 +428,10 @@ describe("background jobs, SMS, search and CMS", () => {
     expect(cats("bootstrapped SaaS that sends one-time codes by text").sms).toBe("telnyx");
   });
 
+  it("keeps free Postgres search as the default for a Next.js app", () => {
+    expect(cats("Next.js SaaS for dentists with a search bar").search).toBe("postgres-full-text");
+  });
+
   it("adds a search category for a search bar, but not for semantic search", () => {
     expect(cats("Marketplace for vintage furniture with a search bar and facets").search).toBe("postgres-full-text");
     expect(cats("Web app for lawyers with semantic search over their documents").search).toBeUndefined();
@@ -475,5 +480,31 @@ describe("AI agents and developer APIs", () => {
     expect(rec("Project management SaaS for software teams").productType.recipe).toBe("b2b-saas");
     expect(rec("Web app where users paste their OpenAI api keys to summarize articles").productType.recipe).not.toBe("developer-api");
     expect(rec("Web app where users paste their OpenAI api keys to summarize articles").stack.some((s) => s.category === "cms")).toBe(false);
+  });
+});
+
+describe("online stores and browser extensions", () => {
+  const rec = (description: string) => recommendStack(snap, { description, assumeDefaults: true });
+
+  it("routes an online store to Shopify first, with custom-build parts conditional", () => {
+    const r = rec("Online store selling handmade candles and soap");
+    expect(r.productType.recipe).toBe("online-store");
+    const commerce = r.stack.find((s) => s.category === "commerce");
+    expect(commerce?.pick.slug).toBe("shopify");
+    expect(commerce?.role).toBe("core");
+    expect(r.stack.find((s) => s.category === "hosting")?.role).toBe("if_you_build");
+    expect(r.stack.find((s) => s.category === "payments")?.role).toBe("if_you_build");
+  });
+
+  it("picks Medusa for an open-source store, and keeps marketplaces on the marketplace recipe", () => {
+    expect(rec("Open source self-hosted ecommerce store for sneakers").stack.find((s) => s.category === "commerce")?.pick.slug).toBe("medusa");
+    expect(rec("Marketplace where sellers list vintage clothes and we keep 10%").productType.recipe).toBe("marketplace");
+  });
+
+  it("routes browser extensions to the extension recipe", () => {
+    const r = rec("Chrome extension that summarizes articles, with a paid pro plan");
+    expect(r.productType.recipe).toBe("browser-extension");
+    expect(r.coverage.status).toBe("covered");
+    expect(r.stack.some((s) => s.category === "payments")).toBe(true); // "paid pro plan" charges money
   });
 });

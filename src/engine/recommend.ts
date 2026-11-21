@@ -163,6 +163,8 @@ export const RECIPE_FOR = {
   ai: "ai-docs-app",
   agent: "ai-agent-app",
   api: "developer-api",
+  store: "online-store",
+  extension: "browser-extension",
   game: "daily-web-game",
   consumer: "consumer-web-app",
 } as const;
@@ -194,6 +196,11 @@ export function routeRecipe(recipes: Recipe[], profile: Profile, description: st
     recipe = by(RECIPE_FOR.game);
     if (profile.money !== "none") notes.push("The recipe has no payment steps; for paid extras on the web, see the b2b-saas recipe's Stripe steps.");
     if (profile.ai) notes.push("The AI parts aren't in this recipe: call the model API from your server, cap calls per player, and see the ai-docs-app recipe.");
+  } else if (profile.extension && profile.platform === "web") {
+    recipe = by(RECIPE_FOR.extension);
+    if (profile.ai) notes.push("Call the model API from your backend, never from the extension, so your key never ships inside it; see the ai-docs-app recipe for model choice and usage caps.");
+  } else if (profile.store && profile.platform === "web") {
+    recipe = by(RECIPE_FOR.store);
   } else if (profile.agent) {
     recipe = by(RECIPE_FOR.agent);
     if (profile.rag) notes.push("For answers over documents, the ai-docs-app recipe has the parsing, embedding and retrieval steps; give the agent retrieval as one of its tools.");
@@ -306,6 +313,10 @@ export function categoriesFor(p: Profile, needs: Need[] = []): { pick: { slug: C
   if (p.sms) add("sms");
   if (p.search) add("search");
   if (p.cms) add("cms");
+  if (p.store) {
+    add("commerce");
+    if (!p.search) add("search", "optional");
+  }
   add("email", p.platform === "mobile" || p.game ? "optional" : "core");
   add("monitoring");
   add("analytics", "optional");
@@ -318,6 +329,13 @@ export function categoriesFor(p: Profile, needs: Need[] = []): { pick: { slug: C
     add("secrets", "optional");
     add("dns", "optional");
   }
+  if (p.store) {
+    // A hosted store platform already covers hosting, checkout, customer accounts and order email;
+    // those categories matter only for a headless or custom build.
+    const builtIn = new Set<CategorySlug>(["hosting", "database", "auth", "payments", "monitoring"]);
+    for (const it of pick) if (builtIn.has(it.slug)) it.role = "if_you_build";
+    for (const it of pick) if (it.slug === "email") it.role = "optional";
+  }
   return { pick, leftOut };
 }
 
@@ -327,6 +345,8 @@ export function productLabel(p: Profile, b2b: boolean): string {
   if (p.platform === "mobile") parts.push(p.nativeIos ? "iPhone app in Swift" : "Phone app");
   else if (p.platform === "both") parts.push("Web and phone app");
   else if (p.game) parts.push("Web game");
+  else if (p.extension) parts.push("Browser extension");
+  else if (p.store) parts.push("Online store");
   else if (p.api) parts.push("Developer API");
   else parts.push(b2b ? "B2B web app" : "Web app");
   if (p.ai) parts.push(p.agent ? "with an AI agent" : p.rag ? "with AI answers over documents" : "with AI features");
@@ -340,6 +360,7 @@ export function productLabel(p: Profile, b2b: boolean): string {
 function headlineOrder(p: Profile, b2b: boolean): CategorySlug[] {
   const o: CategorySlug[] = [];
   if (p.audience === "internal") o.push("internal_tools");
+  if (p.store) o.push("commerce", "cms", "search");
   if (isMobile(p)) o.push("mobile_build", ...(p.money !== "none" ? (["payments"] as CategorySlug[]) : []), "database");
   if (p.money === "users_pay_each_other") o.push("payments");
   if (p.ai) o.push("llm", "vector");

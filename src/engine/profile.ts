@@ -46,6 +46,10 @@ export interface Profile {
   agent: boolean;
   /** The product is an API or developer tool that other developers call with keys. */
   api: boolean;
+  /** An online store selling products to shoppers (not a marketplace where users sell to each other). */
+  store: boolean;
+  /** A browser extension (Chrome, Firefox, Edge, Safari). */
+  extension: boolean;
   /** Where each value came from. */
   source: Record<"platform" | "money" | "audience", "described" | "answered" | "assumed">;
   matched: Partial<Record<"platform" | "money" | "audience" | "ai" | "game" | "nativeIos", string>>;
@@ -87,7 +91,7 @@ const MARKETPLACE = ["marketplace", "commission", "take rate", "our cut", "we ke
 const PAY_YOU = ["subscription", "subscriptions", "per month", "/month", "/mo", "monthly plan", "paid plan",
   "paid plans", "pricing", "per-seat", "per seat", "freemium", "charge users", "charge customers", "paywall",
   "in-app purchase", "in-app purchases", "one-time purchase", "sell it", "sell to", "usage-based", "usage based",
-  "billing", "monetize", "premium", "online store", "my store", "online shop", "web shop", "checkout", "sell", "selling", "subscription box", "shopify", "ecommerce", "e-commerce"];
+  "billing", "monetize", "premium", "pro plan", "paid pro", "paid tier", "paid api", "per api call", "billed per", "online store", "my store", "online shop", "web shop", "checkout", "sell", "selling", "subscription box", "shopify", "ecommerce", "e-commerce"];
 const TWO_SIDED = ["book a", "book and pay", "book appointments", "booking", "bookings", "hire", "hiring", "providers", "sellers", "buyers", "hosts",
   "freelancers", "walkers", "sitters", "tutors", "drivers", "cleaners", "creators", "vendors", "two-sided",
   "connects", "connect people"];
@@ -150,6 +154,14 @@ export const API_PRODUCT = ["public api", "rest api", "graphql api", "developer 
   "sdk", "sdks", "developer tool", "developer tools", "dev tool", "dev tools", "devtool", "devtools",
   "developer platform", "per api call", "api-first", "api first", "sell api access", "paid api"];
 
+/** An online store selling products. */
+export const STORE = ["online store", "online shop", "web shop", "webshop", "ecommerce", "e-commerce", "shopify", "storefront",
+  "physical products", "dropshipping", "subscription box", "shopping cart", "sell products", "sells products", "sell merch",
+  "merch store", "product catalog", "my store", "our store"];
+/** A browser extension. */
+export const EXTENSION = ["chrome extension", "browser extension", "firefox add-on", "firefox addon", "firefox extension",
+  "edge extension", "safari extension", "web extension"];
+
 const ENGINE_NOTE = "Cuely doesn't cover game engines, console or 3D games; it covers casual and daily games that run in a web browser.";
 
 /** Things Cuely doesn't cover. "outside" means the core of the product is out of scope. */
@@ -166,10 +178,8 @@ const OUTSIDE: { words: string[]; note: string; status: "partial" | "outside"; n
     note: "Cuely doesn't cover blockchain or crypto infrastructure." },
   { words: ["desktop app", "electron", "tauri", "macos app", "windows app"], status: "partial",
     note: "Cuely doesn't cover desktop packaging, signing or auto-updates; the stack below covers only the backend parts." },
-  { words: ["online store", "ecommerce", "e-commerce", "shopify", "shipping", "shipped", "physical products", "dropshipping", "subscription box"], status: "partial",
-    note: "Cuely doesn't compare store builders, shipping or inventory systems; for a standard online store, a hosted store builder may beat a custom build." },
-  { words: ["chrome extension", "browser extension"], status: "partial",
-    note: "Cuely doesn't cover browser-extension publishing or store rules." },
+  { words: ["warehouse management", "inventory across warehouses", "erp", "3pl", "multi-warehouse"], status: "partial",
+    note: "Cuely doesn't compare warehouse, ERP or 3PL systems; the store platform below covers products, orders, shipping labels and taxes." },
   { words: ["live streaming", "video streaming", "video calls", "video calling"], status: "partial",
     note: "Cuely doesn't cover video streaming or calling providers yet." },
   { words: ["train a model", "fine-tune", "fine tune", "fine-tuning", "gpu", "gpus", "training data"], status: "partial",
@@ -312,6 +322,8 @@ export function detectProfile(text: string, answers: Answers = {}): ProfileResul
   const cms = !!any(t, CMS);
   const agent = ai && !!any(t, AGENT);
   const api = audience === "customers" && !!any(t, API_PRODUCT);
+  const store = audience === "customers" && money !== "users_pay_each_other" && !!any(t, STORE);
+  const extension = !!any(t, EXTENSION);
 
   // Unknown facts that would change the picks.
   const hasApp = !!any(t, APP_WORDS);
@@ -323,7 +335,7 @@ export function detectProfile(text: string, answers: Answers = {}): ProfileResul
   const vague = words.length < 4 && !web && !mob && !ai && !mk && !you && !internal && !game;
 
   return {
-    profile: { platform, money, audience, ai, rag, realtime, inPerson, socialLogin, game, shareable, nativeIos, push, sms, search, cms, agent, api, source, matched },
+    profile: { platform, money, audience, ai, rag, realtime, inPerson, socialLogin, game, shareable, nativeIos, push, sms, search, cms, agent, api, store, extension, source, matched },
     unknown,
     vague,
   };
