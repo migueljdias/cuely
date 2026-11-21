@@ -155,7 +155,7 @@ export const PRACTICES: Practice[] = [
     detail: "Use hosted Checkout or the provider's embedded fields; card numbers never touch your server or logs.",
     why: "It keeps your PCI DSS scope to the shortest questionnaire.",
     source: "https://docs.stripe.com/security/guide",
-    applies: (c) => c.money !== "none" && !mobile(c),
+    applies: (c) => c.categories.includes("payments") && c.money !== "none" && !mobile(c),
   },
   {
     id: "verify-webhooks",
@@ -165,7 +165,7 @@ export const PRACTICES: Practice[] = [
     detail: "Check the webhook signature with the endpoint's signing secret before acting on an event, and make handlers safe to run twice.",
     why: "An unverified webhook lets anyone mark an order paid or a subscription active.",
     source: "https://docs.stripe.com/webhooks",
-    applies: (c) => c.money !== "none",
+    applies: (c) => c.categories.includes("payments") && c.money !== "none",
   },
   {
     id: "marketplace-kyc",

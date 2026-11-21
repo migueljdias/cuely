@@ -92,7 +92,7 @@ describe("practices", () => {
     const base = { platform: "web" as const, money: "none" as const, audience: "customers" as const, ai: false, rag: false, game: false, needs: [], tools: [], categories: [] };
     const all = { platform: "both" as const, money: "users_pay_each_other" as const, audience: "customers" as const, ai: true, rag: true, game: true,
       needs: ["eu", "health_data", "b2b", "regulated"] as const, tools: ["supabase", "firebase"], categories: ["database", "auth", "sms"] as const };
-    const hit = new Set([...practicesFor({ ...all, needs: [...all.needs], categories: [...all.categories], push: true, agent: true }), ...practicesFor({ ...base, platform: "web", needs: ["eu"], money: "users_pay_you" }), ...practicesFor({ ...base, audience: "internal" })].map((p) => p.id));
+    const hit = new Set([...practicesFor({ ...all, needs: [...all.needs], categories: [...all.categories], push: true, agent: true }), ...practicesFor({ ...base, platform: "web", needs: ["eu"], money: "users_pay_you", categories: ["payments"] }), ...practicesFor({ ...base, audience: "internal" })].map((p) => p.id));
     for (const p of PRACTICES) expect(hit.has(p.id), p.id).toBe(true);
   });
 });
@@ -101,5 +101,16 @@ describe("paid products", () => {
   it("reads 'patients pay monthly' as users paying the product", () => {
     expect(detectProfile("Patients pay monthly for the app").profile.money).toBe("users_pay_you");
     expect(detectProfile("Members pay a yearly fee").profile.money).toBe("users_pay_you");
+  });
+});
+
+describe("a hosted online store's checklist", () => {
+  it("leaves out practices for parts only a custom build has", async () => {
+    const { startProject } = await import("@/engine/start");
+    const { categories, tools, recipes } = await import("@/catalog");
+    const r = startProject({ categories, tools, recipes }, { description: "Online store selling handmade candles" });
+    const ids = r.checklist.map((c) => c.id);
+    expect(ids).toContain("privacy-policy");
+    for (const id of ["server-side-authz", "parameterized-queries", "backups", "hosted-card-entry", "verify-webhooks"]) expect(ids, id).not.toContain(id);
   });
 });
