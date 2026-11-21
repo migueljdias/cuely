@@ -64,6 +64,7 @@ export function startProject(catalog: CatalogSnapshot, input: StartInput): Proje
     tools,
     categories,
     push: rec.stack.some((s) => s.category === "push" && s.role === "core"),
+    agent: rec.productType.recipe === "ai-agent-app",
   }).map(({ id, area, phase, title, detail, why, source }) => ({ id, area, phase, title, detail, why, source }));
 
   const recipe = rec.productType.recipe;

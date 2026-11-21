@@ -25,6 +25,8 @@ export interface PracticeContext {
   categories: CategorySlug[];
   /** The product sends push notifications (push is a core pick, not an optional one). */
   push?: boolean;
+  /** An AI agent that takes actions with tools. */
+  agent?: boolean;
 }
 
 export type Phase = "day_one" | "before_launch";
@@ -416,6 +418,16 @@ export const PRACTICES: Practice[] = [
     why: "FCC rules require consent for autodialed texts (written consent for marketing texts), and people can opt out at any time in any reasonable manner.",
     source: "https://www.fcc.gov/consumers/guides/stop-unwanted-robocalls-and-texts",
     applies: (c) => c.categories.includes("sms"),
+  },
+  {
+    id: "agent-least-privilege",
+    area: "ai",
+    phase: "day_one",
+    title: "Give the agent the fewest permissions it needs, and ask a person before risky actions",
+    detail: "Give each tool its own narrowly scoped credentials (read-only where possible, one user's data only), and require a person to approve actions that send, pay, delete or publish. Treat web pages, emails and files the agent reads as data that may contain instructions, never as commands.",
+    why: "Instructions hidden in a web page or file can steer an agent (indirect prompt injection), and the damage is limited by what its tools are allowed to do.",
+    source: "https://genai.owasp.org/llmrisk/llm01-prompt-injection/",
+    applies: (c) => !!c.agent,
   },
 ];
 
