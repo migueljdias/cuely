@@ -46,6 +46,29 @@
       },
       "readOn": "2026-11-13"
     },
+    "algolia": {
+      "facts": {
+        "dpa": {
+          "answer": "yes",
+          "detail": "The DPA forms part of the subscription agreement or Terms of Service and includes EU SCCs and the UK Addendum; Algolia SAS is the contracting entity for subscribers in Europe.",
+          "quote": "This Data Processing Addendum (&ldquo;DPA&rdquo;), including its Attachments and Appendices, forms part of the subscription agreement",
+          "source": "https://www.algolia.com/policies/data-processing-addendum"
+        },
+        "eu_region": {
+          "answer": "yes",
+          "detail": "End User Data stays in the EEA, Switzerland or the UK only if the subscriber keeps its services located there and meets the other listed conditions.",
+          "quote": "Subscriber&rsquo;s End User Data, as described in Attachment 1 to the DPA, will not be sent outside of the EEA, Switzerland, or the United Kingdom",
+          "source": "https://www.algolia.com/policies/data-processing-addendum"
+        },
+        "soc2": {
+          "answer": "yes",
+          "detail": "SOC 2 and SOC 3 audits; Algolia makes its most recent SOC 2 report available to subscribers for review and updates it at least every 18 months.",
+          "quote": "Algolia&rsquo;s information security control environment applicable to the Services undergoes an independent evaluation in the form of SOC2 and SOC 3 audits.",
+          "source": "https://www.algolia.com/policies/security-measures"
+        }
+      },
+      "readOn": "2026-11-21"
+    },
     "amazon-s3": {
       "facts": {
         "dpa": {
@@ -245,6 +268,29 @@
       },
       "readOn": "2026-11-13"
     },
+    "inngest": {
+      "facts": {
+        "baa": {
+          "answer": "plan",
+          "detail": "BAAs come with the HIPAA add-on, which is paid separately and not included in the base Pro, Business or Enterprise price.",
+          "quote": "Advanced observability and HIPAA compliance are separate paid add-ons, not included in the base Pro, Business, or Enterprise price.",
+          "source": "https://www.inngest.com/pricing"
+        },
+        "dpa": {
+          "answer": "plan",
+          "detail": "A signed DPA is available on paid plans; request it through a support ticket.",
+          "quote": "Inngest offers a standard signed Data Processing Agreement (DPA) to customers on paid plans.",
+          "source": "https://www.inngest.com/security"
+        },
+        "soc2": {
+          "answer": "yes",
+          "detail": "Inngest states it has SOC 2 Type II.",
+          "quote": "Inngest is SOC 2 Type II compliant.",
+          "source": "https://www.inngest.com/security"
+        }
+      },
+      "readOn": "2026-11-21"
+    },
     "liveblocks": {
       "facts": {
         "soc2": {
@@ -255,6 +301,29 @@
         }
       },
       "readOn": "2026-11-13"
+    },
+    "meilisearch": {
+      "facts": {
+        "dpa": {
+          "answer": "yes",
+          "detail": "Meilisearch acts as data processor and signs a DPA with Cloud customers; no plan restriction is stated.",
+          "quote": "We act as your data processor, sign a DPA with you, and give you the tools to honor access and erasure requests.",
+          "source": "https://www.meilisearch.com/eu"
+        },
+        "eu_region": {
+          "answer": "yes",
+          "detail": "Meilisearch Cloud EU regions are Paris (PAR, on AWS European Sovereign Cloud) and Frankfurt (FRA); London is UK, not EU; the region cannot be changed after project creation.",
+          "quote": "Pick Paris or Frankfurt when you create a project. Your documents, indexes, and backups stay in that region.",
+          "source": "https://www.meilisearch.com/eu"
+        },
+        "soc2": {
+          "answer": "yes",
+          "detail": "Meilisearch Cloud has a SOC 2 Type II report, available under NDA from the Trust Center.",
+          "quote": "Meilisearch Cloud is SOC 2 Type II certified. Our security documentation, including the SOC 2 report under NDA, is available from our Trust Center.",
+          "source": "https://www.meilisearch.com/eu"
+        }
+      },
+      "readOn": "2026-11-21"
     },
     "neon": {
       "facts": {
@@ -618,6 +687,52 @@
       },
       "readOn": "2026-11-13"
     },
+    "telnyx": {
+      "facts": {
+        "dpa": {
+          "answer": "yes",
+          "detail": "A DPA with EU Standard Contractual Clauses is available to all customers on request and can be signed electronically.",
+          "quote": "The Telnyx DPA is available for all customers on request which can be electronically signed to meet onward transfer requirements",
+          "source": "https://telnyx.com/data-privacy"
+        },
+        "eu_region": {
+          "answer": "yes",
+          "detail": "Data is stored in the US by default; customers can choose storage in Germany, though staff worldwide may access certain data.",
+          "quote": "We store data in data centers located in the US, or customers can elect to store data in Germany.",
+          "source": "https://telnyx.com/data-privacy"
+        },
+        "soc2": {
+          "answer": "yes",
+          "detail": "Telnyx states it has both SOC 2 Type 1 and Type 2.",
+          "quote": "Accordingly, we are SOC 2 certified for both Type 1 and Type 2.",
+          "source": "https://telnyx.com/data-privacy"
+        }
+      },
+      "readOn": "2026-11-21"
+    },
+    "trigger-dev": {
+      "facts": {
+        "baa": {
+          "answer": "plan",
+          "detail": "A signed BAA for running PHI tasks on Trigger.dev Cloud is a $500/month add-on.",
+          "quote": "To run tasks that process PHI on Trigger.dev Cloud you'll need a signed BAA with us, which is available as a $500/month add-on.",
+          "source": "https://trigger.dev/security"
+        },
+        "dpa": {
+          "answer": "yes",
+          "detail": "The DPA is part of the Terms of Service and applies automatically on sign-up.",
+          "quote": "Yes, our Data Processing Agreement is formed as part of our Terms of Service and applies automatically upon sign-up.",
+          "source": "https://trigger.dev/security"
+        },
+        "soc2": {
+          "answer": "yes",
+          "detail": "SOC 2 Type II; the latest report is provided on request to Enterprise customers only.",
+          "quote": "Yes, Trigger.dev is SOC 2 Type II compliant.",
+          "source": "https://trigger.dev/security"
+        }
+      },
+      "readOn": "2026-11-21"
+    },
     "turbopuffer": {
       "facts": {
         "baa": {
@@ -646,6 +761,63 @@
         }
       },
       "readOn": "2026-11-13"
+    },
+    "twilio": {
+      "facts": {
+        "baa": {
+          "answer": "plan",
+          "detail": "A BAA requires the Security Edition or Enterprise Edition, and it only covers products on Twilio's HIPAA Eligible Products list; these lines do not say whether SMS is on it.",
+          "quote": "Customers wishing to sign a BAA with Twilio must have our Security Edition or Enterprise Edition.",
+          "source": "https://www.twilio.com/en-us/hipaa"
+        }
+      },
+      "readOn": "2026-11-21"
+    },
+    "typesense": {
+      "facts": {
+        "baa": {
+          "answer": "yes",
+          "detail": "Typesense signs its standard BAA with Covered Entities; no plan restriction is stated on the page.",
+          "quote": "We are able to sign our standard Business Associate Agreement (BAA) with any Covered Entities",
+          "source": "https://cloud.typesense.org/security"
+        },
+        "dpa": {
+          "answer": "yes",
+          "detail": "The DPA amends the Terms of Service automatically, with no signing step, and links to the sub-processor list.",
+          "quote": "This DPA amends and supplements our Terms of Service (\"ToS\") and requires no further action on your part.",
+          "source": "https://cloud.typesense.org/legal/dpa"
+        },
+        "eu_region": {
+          "answer": "yes",
+          "detail": "You choose the cluster region at provisioning; EU options are Ireland, Paris, Frankfurt and Stockholm (London is also offered), and data stays in the chosen region.",
+          "quote": "When provisioning your cluster, we offer you the choice to pick which geographic region(s) you want your cluster to be",
+          "source": "https://cloud.typesense.org/security"
+        },
+        "soc2": {
+          "answer": "yes",
+          "detail": "Typesense states it is SOC 2 Type 2 certified; the report is shared on request, and the page's wording suggests it may be limited to some customers.",
+          "quote": "We are SOC 2 (Type 2) certified, and evaluated by an independent AICPA certified external auditor.",
+          "source": "https://cloud.typesense.org/security"
+        }
+      },
+      "readOn": "2026-11-21"
+    },
+    "upstash-qstash": {
+      "facts": {
+        "dpa": {
+          "answer": "yes",
+          "detail": "Upstash has a Data Processing Agreement; the lines name no plan restriction.",
+          "quote": "Upstash Data Processing Agreement",
+          "source": "https://upstash.com/docs/common/help/compliance"
+        },
+        "soc2": {
+          "answer": "yes",
+          "detail": "Upstash states it has a SOC 2 Type II report; the lines do not say which products it covers.",
+          "quote": "Yes. Upstash has a SOC 2 Type II report.",
+          "source": "https://upstash.com/docs/common/help/compliance"
+        }
+      },
+      "readOn": "2026-11-21"
     },
     "upstash-redis": {
       "facts": {

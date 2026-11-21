@@ -1,0 +1,28 @@
+{
+  "slug": "twilio",
+  "readOn": "2026-11-21",
+  "pages": [
+    {
+      "url": "https://www.twilio.com/en-us/hipaa",
+      "lines": [
+        "Twilio and HIPAA",
+        "The Health Insurance Portability and Accountability Act (HIPAA) was signed into law in 1996 as part of a larger healthcare reform in the US. Part of the legislation is aimed at providing security and data privacy protections around access, use, and disclosure of protected health information (PHI). HIPAA covers any organizations that meet the definition of “covered entities” or “business associates",
+        "HIPAA is another milestone for Twilio in elevating our data privacy and security to meet the needs of our HIPAA compliant customers. Twilio is committed to providing a platform trusted by customers and patients.",
+        "Twilio as a Business Associate",
+        "Under HIPAA, companies that use a service provider to process PHI on their behalf must put in place a business associate agreement with that service provider. Accordingly, customers that are subject to HIPAA and intend to utilize Twilio’s products and services to develop communication workflows containing PHI must execute a Business Associate Addendum (BAA) to Twilio’s Terms of Service. Twilio’s B",
+        "What do I need to do to build a HIPAA compliant workflow using Twilio?",
+        "First, ensure that the Twilio products and services that you are interested in using for your HIPAA workflows are covered under our current list of HIPAA Eligible Products and Services↗. Then, sign Twilio’s Business Associate Addendum (BAA).",
+        "With a BAA signed, you can start building but we recommend following the guidelines we created on Architecting for HIPAA on Twilio↗ that outlines the customer‑side shared responsibilities and requirements for building and maintaining a HIPAA compliant workflow utilizing Twilio's tools.",
+        "How can I get a BAA in place with Twilio?",
+        "Is the HIPAA eligible version of Twilio’s products different from the non-HIPAA eligible version?",
+        "No. Twilio’s HIPAA eligible products and services have the necessary security controls to support HIPAA, but their functionality did not change. However, there may be customer requirements that need to be implemented when building a HIPAA compliant workflow. Please refer to Architecting for HIPAA on Twilio↗ for more details.",
+        "What products can I use if I have a BAA in place with Twilio?",
+        "Customers wishing to build communication workflows that may contain PHI should only use HIPAA Eligible Products and Services↗. This list may be updated as additional products and services become HIPAA Eligible. Customers may use all other products and services that are not on this list, but there must be no potential for PHI being exchanged in violation of HIPAA as part of these workflows.",
+        "Is there a separate charge for signing a BAA with Twilio?",
+        "Customers wishing to sign a BAA with Twilio must have our Security Edition or Enterprise Edition. Please contact your Twilio account representative or talk Contact Sales to learn more.",
+        "Architecting for HIPAA on Twilio",
+        "HIPAA Eligible Products and Services"
+      ]
+    }
+  ]
+}
