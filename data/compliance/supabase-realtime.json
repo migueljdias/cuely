@@ -1,6 +1,6 @@
 {
   "slug": "supabase-realtime",
-  "readOn": "2026-11-13",
+  "readOn": "2026-11-23",
   "pages": [
     {
       "url": "https://supabase.com/security",
@@ -83,7 +83,10 @@
         "West EU (Paris)eu-west-3",
         "Central EU (Frankfurt)eu-central-1",
         "Central Europe (Zurich)eu-central-2",
-        "North EU (Stockholm)eu-north-1"
+        "North EU (Stockholm)eu-north-1",
+        "Change a region",
+        "Once you select a region for your project, you cannot change it.",
+        "If you need to move to a different region, migrate to a new project within Supabase."
       ]
     }
   ]

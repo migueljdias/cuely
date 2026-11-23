@@ -512,24 +512,24 @@
       "facts": {
         "baa": {
           "answer": "plan",
-          "detail": "Render signs a BAA for one HIPAA-enabled workspace on Scale or Enterprise plans; it adds a 20% fee on all usage and excludes free instances, Workflows and the Singapore region.",
+          "detail": "BAA is signed only for one HIPAA-enabled workspace on a Scale or Enterprise plan, with a 20% fee on all usage; the Singapore region, free instances and Workflows are excluded.",
           "quote": "HIPAA-enabled workspaces require a Scale or Enterprise plan.",
           "source": "https://render.com/docs/hipaa-compliance"
         },
         "eu_region": {
           "answer": "yes",
-          "detail": "Services and datastores can be deployed to Frankfurt, Germany; static sites run on a global CDN with no region choice, and an existing service's region cannot be changed.",
+          "detail": "Services and datastores can be deployed to the Frankfurt, Germany region; static sites are served from a global CDN with no region choice.",
           "quote": "Frankfurt, Germany",
           "source": "https://render.com/docs/regions"
         },
         "soc2": {
           "answer": "yes",
-          "detail": "Render lists a SOC 2 Type 2 report.",
+          "detail": "The security page lists a SOC 2 Type 2 report.",
           "quote": "SOC 2 Type 2",
           "source": "https://render.com/security"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-23"
     },
     "resend": {
       "facts": {
@@ -604,65 +604,36 @@
       "facts": {
         "baa": {
           "answer": "plan",
-          "detail": "BAA is available only to Team and Enterprise customers, requested from the dashboard; it covers the hosted platform, not self-hosted Supabase.",
-          "quote": "Enterprise and Team customers can request to sign our BAA on the dashboard.",
-          "source": "https://supabase.com/security"
-        },
-        "dpa": {
-          "answer": "yes",
-          "detail": "A GDPR Data Processing Agreement is available; no plan restriction is stated.",
-          "quote": "A Data Processing Agreement (DPA) is available for customers who need a formal GDPR data processing contract.",
-          "source": "https://supabase.com/security"
-        },
-        "eu_region": {
-          "answer": "yes",
-          "detail": "Choose a specific EU region (Ireland, Paris, Frankfurt or Stockholm); the general 'Europe' region may deploy to London or Zurich, which are not in the EU.",
-          "quote": "Projects hosted in EU regions keep your primary database data in-region",
-          "source": "https://supabase.com/security"
-        },
-        "soc2": {
-          "answer": "yes",
-          "detail": "SOC 2 Type 2; only Team and Enterprise customers can access the report, via the dashboard.",
-          "quote": "Supabase is SOC 2 Type 2 compliant.",
-          "source": "https://supabase.com/security"
-        }
-      },
-      "readOn": "2026-11-13"
-    },
-    "supabase-auth": {
-      "facts": {
-        "baa": {
-          "answer": "plan",
           "detail": "BAA is available only to Team and Enterprise customers, requested via the dashboard, and covers the hosted platform only, not self-hosted Supabase.",
           "quote": "Enterprise and Team customers can request to sign our BAA on the dashboard.",
           "source": "https://supabase.com/security"
         },
         "dpa": {
           "answer": "yes",
-          "detail": "A GDPR DPA is available; the lines state no plan restriction.",
+          "detail": "A GDPR DPA is available to customers who need one, with no plan restriction stated.",
           "quote": "A Data Processing Agreement (DPA) is available for customers who need a formal GDPR data processing contract.",
           "source": "https://supabase.com/security"
         },
         "eu_region": {
           "answer": "yes",
-          "detail": "Auth data is hosted in the project's region. Choose a specific EU region (Ireland, Paris, Frankfurt, Stockholm), because the general 'Europe' region may place data in London or Zurich.",
-          "quote": "When you create a project in an AWS region, your Postgres database, Auth service, and Storage objects are hosted in that region. Supabase offers regions across the US, EU, and Asia Pacific.",
+          "detail": "Pick a specific EU region (Ireland, Paris, Frankfurt, Stockholm); London and Zurich are not EU, and the general 'Europe' region may land in either; the region cannot be changed after creation.",
+          "quote": "Projects hosted in EU regions keep your primary database data in-region",
           "source": "https://supabase.com/security"
         },
         "soc2": {
           "answer": "yes",
-          "detail": "SOC 2 Type 2; only Team and Enterprise customers can access the report on the dashboard.",
+          "detail": "SOC 2 Type 2; the report itself is available on the dashboard only to Team and Enterprise customers.",
           "quote": "Supabase is SOC 2 Type 2 compliant.",
           "source": "https://supabase.com/security"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-23"
     },
-    "supabase-realtime": {
+    "supabase-auth": {
       "facts": {
         "baa": {
           "answer": "plan",
-          "detail": "BAA is available only to Team and Enterprise customers, who request it on the dashboard; it covers the hosted platform, not self-hosted Supabase.",
+          "detail": "Team and Enterprise customers can request to sign the BAA on the dashboard; it covers the hosted platform, not self-hosted Supabase.",
           "quote": "Enterprise and Team customers can request to sign our BAA on the dashboard.",
           "source": "https://supabase.com/security"
         },
@@ -674,18 +645,41 @@
         },
         "eu_region": {
           "answer": "yes",
-          "detail": "Choose a specific EU region: Ireland, Paris, Frankfurt or Stockholm. The 'Europe' general region can place data in London or Zurich, which are not in the EU. The pages name Postgres, Auth and Storage as in-region but do not name Realtime.",
-          "quote": "Projects hosted in EU regions keep your primary database data in-region",
+          "detail": "Auth data is hosted in the project's region; for EU-only storage pick a specific region (Ireland, Paris, Frankfurt, Stockholm), because the general Europe region can deploy to London or Zurich, which are outside the EU.",
+          "quote": "your Postgres database, Auth service, and Storage objects are hosted in that region. Supabase offers regions across the US, EU, and Asia Pacific.",
           "source": "https://supabase.com/security"
         },
         "soc2": {
           "answer": "yes",
-          "detail": "Supabase has a SOC 2 Type 2 report; only Team and Enterprise customers can access it on the dashboard.",
+          "detail": "Supabase states it is SOC 2 Type 2 compliant; only Team and Enterprise customers can access the report on the dashboard.",
           "quote": "Supabase is SOC 2 Type 2 compliant.",
           "source": "https://supabase.com/security"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-23"
+    },
+    "supabase-realtime": {
+      "facts": {
+        "baa": {
+          "answer": "plan",
+          "detail": "Team and Enterprise customers can sign a BAA via the dashboard; it covers the hosted Supabase platform, not self-hosted.",
+          "quote": "Enterprise and Team customers can request to sign our BAA on the dashboard.",
+          "source": "https://supabase.com/security"
+        },
+        "dpa": {
+          "answer": "yes",
+          "detail": "A GDPR DPA is available to request or view, with no plan restriction stated.",
+          "quote": "A Data Processing Agreement (DPA) is available for customers who need a formal GDPR data processing contract.",
+          "source": "https://supabase.com/security"
+        },
+        "soc2": {
+          "answer": "yes",
+          "detail": "Supabase has a SOC 2 Type 2 report, which Team and Enterprise customers can access in the dashboard.",
+          "quote": "Supabase is SOC 2 Type 2 compliant.",
+          "source": "https://supabase.com/security"
+        }
+      },
+      "readOn": "2026-11-23"
     },
     "telnyx": {
       "facts": {
