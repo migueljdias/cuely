@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getAccountStore } from "@/accounts/store";
 import { currentUser } from "@/auth/server";
@@ -10,6 +11,19 @@ import { APP_URL } from "@/site";
 
 // Overridable for local testing; production uses app.cuely.dev.
 const APP = process.env.CUELY_APP_URL ?? APP_URL;
+
+/**
+ * Where Stripe sends people back to. Production always uses app.cuely.dev; previews and local
+ * runs use the host the request came in on, so a test checkout returns to the same preview.
+ */
+async function appOrigin(): Promise<string> {
+  if (process.env.VERCEL_ENV === "production") return APP;
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host");
+  if (!host || !/^[a-z0-9.-]+(:\d+)?$/i.test(host)) return APP;
+  const proto = h.get("x-forwarded-proto") === "http" || host.startsWith("localhost") ? "http" : "https";
+  return `${proto}://${host}`;
+}
 
 async function requireUser() {
   const user = await currentUser();
@@ -96,14 +110,15 @@ export async function checkoutAction(): Promise<void> {
         await store.setStripeCustomer(user.id, customerId);
       }
 
+      const origin = await appOrigin();
       const session = await stripePost<{ url: string }>(cfg, "checkout/sessions", {
         mode: "subscription",
         customer: customerId,
         client_reference_id: user.id,
         line_items: [{ price: cfg.priceId, quantity: 1 }],
         allow_promotion_codes: "true",
-        success_url: `${APP}/account/billing?checkout=done`,
-        cancel_url: `${APP}/account/billing`,
+        success_url: `${origin}/account/billing?checkout=done&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/account/billing`,
         subscription_data: { metadata: { cuely_user_id: user.id } },
         // Stripe as merchant of record: it collects and files sales tax and VAT.
         ...(cfg.managedPayments ? { managed_payments: { enabled: "true" } } : {}),
@@ -124,7 +139,7 @@ export async function portalAction(): Promise<void> {
   if (cfg.mode === "off" || !account.stripeCustomerId) redirect("/account/billing");
   const session = await stripePost<{ url: string }>(cfg, "billing_portal/sessions", {
     customer: account.stripeCustomerId,
-    return_url: `${APP}/account/billing`,
+    return_url: `${await appOrigin()}/account/billing`,
   });
   redirect(session.url);
 }
