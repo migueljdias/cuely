@@ -52,6 +52,12 @@ export default function Privacy() {
           last used. The full key is shown to you once and never stored.
         </li>
         <li>
+          <strong>Saved stacks:</strong> if you save a stack on your account pages, Cuely stores the name, the tools and the
+          optional description you typed, plus those tools&apos; prices and compliance answers on the day you last looked, so
+          it can show you what changed. You can edit or delete a stack at any time. Questions you ask on the Ask Cuely page
+          aren&apos;t stored unless you save the answer as a stack.
+        </li>
+        <li>
           <strong>Connector sign-in:</strong> when you connect Cuely in Claude or another AI tool, Clerk signs you in and
           gives that tool an access token for Cuely. Cuely checks the token on each call and doesn&apos;t store it.
         </li>

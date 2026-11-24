@@ -115,3 +115,20 @@ create table if not exists api_usage (
   minute_calls integer not null default 0,
   primary key (user_id, day)
 );
+
+-- Stacks an account holder saved on their account page, to watch for price, health and
+-- compliance changes. Only what they typed or picked in the web app: a name, an optional
+-- plain description and catalog tool slugs. MCP calls never write here.
+-- baseline holds each tool's facts as they were when the holder last marked the stack seen.
+create table if not exists saved_stacks (
+  id          bigserial primary key,
+  user_id     text not null references accounts(user_id) on delete cascade,
+  name        text not null,
+  description text not null default '',
+  tools       text[] not null default '{}',
+  baseline    jsonb not null default '{}',
+  seen_at     timestamptz not null default now(),
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+create index if not exists saved_stacks_user_idx on saved_stacks (user_id);

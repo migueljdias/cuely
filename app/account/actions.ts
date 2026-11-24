@@ -36,7 +36,7 @@ export async function createKeyAction(_prev: KeyState, form: FormData): Promise<
     };
   }
   const key = await store.createKey(user.id, String(form.get("name") ?? "").trim() || "default");
-  revalidatePath("/account");
+  revalidatePath("/account", "layout");
   return { key };
 }
 
@@ -44,15 +44,15 @@ export async function createKeyAction(_prev: KeyState, form: FormData): Promise<
 export async function productUpdatesAction(form: FormData): Promise<void> {
   const { user, store } = await requireUser();
   await store.setProductUpdates(user.id, form.get("product_updates") === "on");
-  revalidatePath("/account");
-  redirect("/account?updates=saved#email");
+  revalidatePath("/account/settings");
+  redirect("/account/settings?updates=saved");
 }
 
 export async function revokeKeyAction(form: FormData): Promise<void> {
   const { user, store } = await requireUser();
   const id = Number(form.get("id"));
   if (Number.isInteger(id)) await store.revokeKey(user.id, id);
-  revalidatePath("/account");
+  revalidatePath("/account", "layout");
 }
 
 /** Starts Stripe Checkout for Pro. Only runs where checkoutOpen() allows it. */
@@ -62,9 +62,9 @@ export async function checkoutAction(): Promise<void> {
   if (cfg.mode === "off" || !checkoutOpen(cfg)) {
     // Payments aren't switched on yet: grant nothing, start nothing, and note the interest in the logs.
     console.info(JSON.stringify({ event: "pro_interest", account: account.userId }));
-    redirect("/account?checkout=soon");
+    redirect("/account/billing?checkout=soon");
   }
-  if (account.plan === "pro") redirect("/account");
+  if (account.plan === "pro") redirect("/account/billing");
 
   // Never charge a different amount from the one the pricing page shows.
   const price = await stripeGet<StripePrice>(cfg, `prices/${cfg.priceId}`);
@@ -87,7 +87,7 @@ export async function checkoutAction(): Promise<void> {
     client_reference_id: user.id,
     line_items: [{ price: cfg.priceId, quantity: 1 }],
     allow_promotion_codes: "true",
-    success_url: `${APP}/account?checkout=done`,
+    success_url: `${APP}/account/billing?checkout=done`,
     cancel_url: `${SITE}/pricing`,
     subscription_data: { metadata: { cuely_user_id: user.id } },
     // Stripe as merchant of record: it collects and files sales tax and VAT.
@@ -100,10 +100,10 @@ export async function checkoutAction(): Promise<void> {
 export async function portalAction(): Promise<void> {
   const { account } = await requireUser();
   const cfg = paymentsConfig();
-  if (cfg.mode === "off" || !account.stripeCustomerId) redirect("/account");
+  if (cfg.mode === "off" || !account.stripeCustomerId) redirect("/account/billing");
   const session = await stripePost<{ url: string }>(cfg, "billing_portal/sessions", {
     customer: account.stripeCustomerId,
-    return_url: `${APP}/account`,
+    return_url: `${APP}/account/billing`,
   });
   redirect(session.url);
 }

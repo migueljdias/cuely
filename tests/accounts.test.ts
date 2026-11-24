@@ -280,7 +280,7 @@ describe("MCP access and plan limits", () => {
     expect(body.id).toBe(999);
     expect(body.error.data.limit).toBe("day");
     expect(body.error.data.reset_at).toBe(new Date(nextUtcMidnight(t)).toISOString());
-    expect(body.error.data.upgrade_url).toBe("https://app.cuely.dev/account");
+    expect(body.error.data.upgrade_url).toBe("https://app.cuely.dev/account/billing");
     expect(body.error.message).toContain(`${PLANS.free.perDay} tool calls a day`);
     expect(Number(over.headers.get("retry-after"))).toBeGreaterThan(0);
     // Listing tools still works, so the client can connect and show the error on the call.
