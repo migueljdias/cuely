@@ -1,1 +1,1 @@
-Cuely: honest stack picks for coding agents. cuely.dev
+Cuely: your coding agent asks, Cuely picks the stack. A sample answer lists hosting, database, auth, payments and email picks. Free MCP server, no paid placement. cuely.dev
