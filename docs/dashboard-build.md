@@ -4,7 +4,7 @@ Brief for building the approved signed-in design. Branch: `claude/relaxed-curie-
 
 ## The design
 
-Design canvas: https://claude.ai/artifact/1oMAGABsDWMAJVfCoSUJWZ, page **Screens**. Read it with the Artifact tool (`action: "read"`, then `path` for each `.dc.html` file). Files:
+Design canvas: a private Claude design artifact (ask the maintainer for the link), page **Screens**. Files:
 
 - `Sidebar.dc.html`: shared, collapsible rail (248px open, 72px collapsed). Groups: Workspace (Home, Projects, Alerts, Ask Cuely), Account (API keys, Usage, Plan & billing, Settings), Build (external links), profile.
 - `Home`, `Project`, `Projects`, `Alerts`, `Ask`, `Keys`, `Usage`, `Billing`, `Settings`.
