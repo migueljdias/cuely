@@ -3566,6 +3566,203 @@ a.app-stat:hover {
   }
 }
 
+/* Projects list: add cards and the projects table. */
+.projects {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.projects > .card {
+  margin-bottom: 0;
+}
+.add-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.add-card {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color var(--fast) var(--ease);
+}
+a.add-card:hover {
+  border-color: var(--line-2);
+}
+.add-card.is-primary {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+}
+.add-card.is-primary:hover {
+  border-color: var(--accent);
+}
+.add-card.is-soon {
+  opacity: 0.7;
+}
+.add-card strong {
+  margin-top: 2px;
+  font-size: 19px;
+  font-weight: 500;
+}
+.add-card > span:last-child {
+  font-size: 15px;
+  color: var(--text-2);
+}
+.add-kicker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.add-card.is-primary .add-kicker {
+  color: var(--accent-ink);
+}
+.add-kicker .badge {
+  font-family: var(--sans);
+  letter-spacing: 0;
+  text-transform: none;
+  font-size: 12px;
+  padding: 1px 8px;
+}
+.app .table-card {
+  padding: 0;
+  overflow: hidden;
+}
+.table-scroll {
+  overflow-x: auto;
+}
+.data-table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+.data-table th {
+  padding: 14px 12px;
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-3);
+}
+.data-table td {
+  padding: 18px 12px;
+  border-top: 1px solid var(--line);
+  vertical-align: middle;
+}
+.data-table th:first-child,
+.data-table td:first-child {
+  padding-left: 22px;
+}
+.data-table th:last-child,
+.data-table td:last-child {
+  padding-right: 22px;
+}
+.table-name {
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.table-name:hover {
+  color: var(--accent-ink);
+}
+.table-sub {
+  display: block;
+  max-width: 320px;
+  font-size: 14px;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.table-stack {
+  max-width: 340px;
+  color: var(--text-2);
+}
+.table-ready {
+  width: 190px;
+}
+.table-ready > span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.table-ready .app-meter {
+  flex: 1;
+  margin: 0;
+}
+@media (max-width: 900px) {
+  .add-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* Phones: each project becomes a small card with labelled lines. */
+@media (max-width: 700px) {
+  .data-table,
+  .data-table tbody {
+    display: block;
+    min-width: 0;
+  }
+  .data-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+  .data-table tr {
+    display: block;
+    padding: 16px 18px;
+    border-top: 1px solid var(--line);
+  }
+  .data-table tbody tr:first-child {
+    border-top: 0;
+  }
+  .data-table td,
+  .data-table td:first-child,
+  .data-table td:last-child {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 4px 0;
+    border: 0;
+    max-width: none;
+    width: auto;
+  }
+  .data-table td:first-child {
+    display: block;
+    padding-bottom: 8px;
+  }
+  .data-table td[data-label]::before {
+    content: attr(data-label);
+    flex: none;
+    font-size: 14px;
+    color: var(--text-3);
+  }
+  .data-table td.table-stack {
+    text-align: right;
+  }
+  .table-ready > span {
+    width: 160px;
+  }
+  .table-sub {
+    max-width: none;
+    white-space: normal;
+  }
+}
+
 /* Announcement bar above the header (announce-bar.tsx). */
 .announce {
   display: flex;
@@ -3644,7 +3841,7 @@ a.app-stat:hover {
   flex: none;
 }
 
-/* Signed-in app pages: lists, badges, Ask Cuely, saved stacks. Shares tokens with the app shell above. */
+/* Signed-in app pages: lists, badges, Ask Cuely, projects. Shares tokens with the app shell above. */
 /* Small status badges are the only pill shapes in the app. */
 .badge {
   flex: none;

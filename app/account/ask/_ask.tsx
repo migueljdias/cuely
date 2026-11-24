@@ -19,14 +19,14 @@ const EXAMPLES: Record<AskMode, string> = {
   compare: "B2B SaaS that will need SSO for enterprise customers",
 };
 
-/** "Save as a stack" under an answer: keeps the tools (and description) on the account. */
+/** "Save as a project" under an answer: keeps the tools (and description) on the account. */
 function SaveStack({ tools, description, name, canSave }: { tools: string[]; description: string; name: string; canSave: boolean }) {
   const [state, action, pending] = useActionState<StackFormState, FormData>(createStackAction, null);
   if (!tools.length) return null;
   if (!canSave) {
     return (
       <p className="muted small">
-        You&apos;ve saved as many stacks as your plan allows. <Link href="/account/projects">Manage stacks</Link>
+        You&apos;ve saved as many projects as your plan allows. <Link href="/account/projects">Manage projects</Link>
       </p>
     );
   }
@@ -37,11 +37,11 @@ function SaveStack({ tools, description, name, canSave }: { tools: string[]; des
       ))}
       <input type="hidden" name="description" value={description} />
       <label className="field field-inline">
-        <span className="sr-only">Stack name</span>
+        <span className="sr-only">Project name</span>
         <input name="name" type="text" defaultValue={name} maxLength={80} />
       </label>
       <button type="submit" className="btn btn-quiet btn-small" disabled={pending}>
-        {pending ? "Saving…" : "Save as a stack to watch"}
+        {pending ? "Saving…" : "Save as a project to watch"}
       </button>
       {state?.error && (
         <p className="form-error" role="alert">

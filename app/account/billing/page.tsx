@@ -62,7 +62,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
           </h2>
           <p className="muted">
             {plan.perDay.toLocaleString("en-US")} tool calls a day, {plan.perMinute} requests a minute, {plan.maxKeys} API key
-            {plan.maxKeys === 1 ? "" : "s"}, {plan.maxStacks} saved stacks
+            {plan.maxKeys === 1 ? "" : "s"}, {plan.maxStacks} projects
             {account?.currentPeriodEnd && plan.id === "pro" && <>. Renews {day(account.currentPeriodEnd)}</>}
           </p>
         </div>
