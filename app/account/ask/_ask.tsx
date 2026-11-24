@@ -40,8 +40,8 @@ function SaveStack({ tools, description, name, canSave }: { tools: string[]; des
         <span className="sr-only">Project name</span>
         <input name="name" type="text" defaultValue={name} maxLength={80} />
       </label>
-      <button type="submit" className="btn btn-quiet btn-small" disabled={pending}>
-        {pending ? "Saving…" : "Save as a project to watch"}
+      <button type="submit" className="btn-app btn-app-primary btn-app-small" disabled={pending}>
+        {pending ? "Saving…" : "Save as project"}
       </button>
       {state?.error && (
         <p className="form-error" role="alert">
@@ -52,7 +52,18 @@ function SaveStack({ tools, description, name, canSave }: { tools: string[]; des
   );
 }
 
-export function Ask({ options, initialMode, canSave }: { options: ToolOption[]; initialMode: AskMode; canSave: boolean }) {
+export function Ask({
+  options,
+  initialMode,
+  canSave,
+  usage,
+}: {
+  options: ToolOption[];
+  initialMode: AskMode;
+  canSave: boolean;
+  /** Tool calls used today and the plan's daily limit, or null without an account database. */
+  usage: { today: number; perDay: number } | null;
+}) {
   const [mode, setMode] = useState<AskMode>(initialMode);
   const [state, action, pending] = useActionState<AskState, FormData>(askAction, null);
   const current = MODES.find((m) => m.id === mode)!;
@@ -64,8 +75,8 @@ export function Ask({ options, initialMode, canSave }: { options: ToolOption[]; 
   };
 
   return (
-    <>
-      <section className="panel" aria-labelledby="ask-form-title">
+    <div className="ask-grid">
+      <section className="card ask-form" aria-labelledby="ask-form-title">
         <div className="seg" role="tablist" aria-label="What to ask">
           {MODES.map((m) => (
             <button key={m.id} type="button" role="tab" aria-selected={m.id === mode} className={m.id === mode ? "is-on" : undefined} onClick={() => pick(m.id)}>
@@ -76,7 +87,7 @@ export function Ask({ options, initialMode, canSave }: { options: ToolOption[]; 
         <h2 id="ask-form-title" className="sr-only">
           {current.label}
         </h2>
-        <p className="muted">{current.lede}</p>
+        <p className="card-sub">{current.lede}</p>
 
         <form action={action} className="form" key={mode}>
           <input type="hidden" name="mode" value={mode} />
@@ -142,20 +153,33 @@ export function Ask({ options, initialMode, canSave }: { options: ToolOption[]; 
               {state.error}
             </p>
           )}
-          <div>
-            <button type="submit" className="btn btn-primary" disabled={pending}>
+          <div className="ask-submit">
+            <button type="submit" className="btn-app btn-app-primary" disabled={pending}>
               {pending ? "Asking…" : "Ask Cuely"}
             </button>
-            <span className="muted small" style={{ marginLeft: 12 }}>
-              Counts as one tool call.
+            <span className="muted small">
+              {usage
+                ? `Counts as one tool call · ${usage.today.toLocaleString("en-US")} of ${usage.perDay.toLocaleString("en-US")} used today`
+                : "Counts as one tool call."}
             </span>
           </div>
         </form>
       </section>
 
-      {shown && (
-        <section className="panel" aria-label="Answer" aria-live="polite">
-          {shown.mode === "start" && (
+      <section className="card ask-answer" aria-label="Answer" aria-live="polite">
+        {!shown && (
+          <div className="ask-empty">
+            <strong>Your answer shows here</strong>
+            <span>
+              {mode === "start"
+                ? "The stack, what it costs a month at 1,000 users, the catches that matter and a launch checklist."
+                : mode === "check"
+                  ? "Keep or change for each tool, with today's prices, outages and compliance answers."
+                  : "Free plans, prices and strengths side by side, with a verdict for your case."}
+            </span>
+          </div>
+        )}
+        {shown?.mode === "start" && (
             <>
               <StartView result={shown.result} />
               <SaveStack
@@ -166,7 +190,7 @@ export function Ask({ options, initialMode, canSave }: { options: ToolOption[]; 
               />
             </>
           )}
-          {shown.mode === "check" && (
+        {shown?.mode === "check" && (
             <>
               <CheckView result={shown.result} />
               <SaveStack
@@ -177,9 +201,8 @@ export function Ask({ options, initialMode, canSave }: { options: ToolOption[]; 
               />
             </>
           )}
-          {shown.mode === "compare" && <CompareView result={shown.result} />}
-        </section>
-      )}
-    </>
+        {shown?.mode === "compare" && <CompareView result={shown.result} />}
+      </section>
+    </div>
   );
 }

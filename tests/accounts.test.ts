@@ -316,3 +316,67 @@ describe("OAuth metadata", () => {
     expect(meta.resource).toBe("https://cuely.dev/api/mcp");
   });
 });
+
+describe("Usage detail and theme", () => {
+  const db = new PGlite();
+  const query = async (text: string, params?: unknown[]) => (await db.query(text, params)).rows as Record<string, any>[];
+  const store = accountStore(query);
+
+  beforeAll(async () => {
+    await db.exec(schema);
+    await store.ensure("user_u", "u@example.com");
+    await store.ensure("user_v", "v@example.com");
+  });
+
+  it("counts calls by Cuely tool and source, storing nothing a client made up", async () => {
+    await store.countDetail("user_u", "key:7", ["check_project", "check_project", "not-a-tool; drop table"]);
+    await store.countDetail("user_u", "connector", ["recommend_stack"]);
+    await store.countDetail("user_u", "anything else", ["get_recipe"]);
+    await store.countDetail("user_v", "ask", ["start_project"]);
+    const rows = await store.usageDetail("user_u");
+    expect(rows).toEqual(
+      expect.arrayContaining([
+        { tool: "check_project", source: "key:7", calls: 2 },
+        { tool: "other", source: "key:7", calls: 1 },
+        { tool: "recommend_stack", source: "connector", calls: 1 },
+        { tool: "get_recipe", source: "other", calls: 1 },
+      ]),
+    );
+    expect(rows).toHaveLength(4);
+    expect(rows[0]).toMatchObject({ tool: "check_project", calls: 2 });
+  });
+
+  it("saves a valid theme and ignores anything else", async () => {
+    expect((await store.get("user_u"))!.theme).toBe("dark");
+    await store.setTheme("user_u", "light");
+    expect((await store.get("user_u"))!.theme).toBe("light");
+    await store.setTheme("user_u", "neon" as any);
+    expect((await store.get("user_u"))!.theme).toBe("light");
+  });
+});
+
+describe("MCP usage detail", () => {
+  it("records each tool call with the key that made it, after the limits pass", async () => {
+    const seen: { userId: string; source: string; tools: string[] }[] = [];
+    const handle = createMcpHandler({
+      repo: memoryRepository(),
+      keyLookup: async (k) => (k === "cuely_test" ? { keyId: 42, userId: "user_d", plan: "pro" } : null),
+      countUsage: memoryUsageCounter(),
+      countDetail: async (userId, source, tools) => {
+        seen.push({ userId, source, tools });
+      },
+    });
+    const post = (body: object) =>
+      handle(
+        new Request("http://x/api/mcp", {
+          method: "POST",
+          headers: { authorization: "Bearer cuely_test", "content-type": "application/json", accept: "application/json, text/event-stream" },
+          body: JSON.stringify(body),
+        }),
+      );
+    await post({ jsonrpc: "2.0", id: 1, method: "tools/list" });
+    expect(seen).toEqual([]);
+    await post({ jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: "list_categories", arguments: {} } });
+    expect(seen).toEqual([{ userId: "user_d", source: "key:42", tools: ["list_categories"] }]);
+  });
+});

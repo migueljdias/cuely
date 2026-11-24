@@ -28,7 +28,8 @@ import { Avatar } from "./_avatar";
   The signed-in app: a left sidebar instead of the site's top bar. On wide screens the sidebar
   can shrink to a 72px icon rail (remembered in this browser); under 900px it becomes a drawer
   opened from the top bar. Styles: the "App shell" block in globals.css, which also holds the
-  app's colour tokens (dark by default, light when [data-theme="light"], or the system's).
+  app's colour tokens (dark by default, light when [data-theme="light"], or the system's). The
+  theme comes from the account, so the first paint is already right.
 
   Every item is its own page under /account, so the layout (and this shell) stays mounted
   while the content changes. Old links to /account#keys and friends are sent to their page.
@@ -68,8 +69,6 @@ const OLD_ANCHORS: Record<string, string> = {
 };
 
 const RAIL_KEY = "cuely-sidebar-rail";
-/** "dark" (the default), "light" or "system". Settings will write it; the shell only reads it. */
-export const THEME_KEY = "cuely-theme";
 
 function isActive(pathname: string, href: string) {
   return href === "/account" ? pathname === "/account" : pathname === href || pathname.startsWith(`${href}/`);
@@ -81,6 +80,7 @@ export function AppShell({
   imageUrl,
   plan,
   counts,
+  theme,
   logOut,
   children,
 }: {
@@ -91,6 +91,8 @@ export function AppShell({
   plan: string;
   /** Saved projects, and the changes across them since they were last looked at. */
   counts: { projects: number; alerts: number };
+  /** Saved on the account and chosen on Settings: "dark", "light" or "system". */
+  theme: string;
   /** The sign-out item, passed in so the shell itself doesn't need Clerk. */
   logOut: ReactNode;
   children: ReactNode;
@@ -99,13 +101,10 @@ export function AppShell({
   const router = useRouter();
   const [rail, setRail] = useState(false);
   const [open, setOpen] = useState(false);
-  const [theme, setTheme] = useState("dark");
 
   useEffect(() => {
     try {
       setRail(localStorage.getItem(RAIL_KEY) === "1");
-      const t = localStorage.getItem(THEME_KEY);
-      if (t === "light" || t === "system") setTheme(t);
     } catch {}
   }, []);
 

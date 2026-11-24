@@ -15,7 +15,7 @@ export function NewKey() {
           <span className="sr-only">Key name</span>
           <input name="name" type="text" placeholder="Name, like laptop or CI" maxLength={60} />
         </label>
-        <button type="submit" className="btn btn-quiet" disabled={pending}>
+        <button type="submit" className="btn-app btn-app-primary" disabled={pending}>
           {pending ? "Creating…" : "Create key"}
         </button>
       </form>

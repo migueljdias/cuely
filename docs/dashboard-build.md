@@ -59,3 +59,6 @@ Database changes reach production on their own: a production deploy on Vercel ru
 - [ ] `saved_stacks.checks` (step 2, launch checklist ticks): already added on Neon `staging`. Comes to `main` with the first production deploy after the merge. Check it's there afterwards:
       `select column_name from information_schema.columns where table_name = 'saved_stacks' and column_name = 'checks'`
 - [ ] Old `/account/stacks` links redirect to `/account/projects` (308).
+- [ ] `accounts.theme` and the `api_usage_detail` table (step 5: theme picker, usage by tool and by key or app): already on Neon `staging`. Come to `main` with the first production deploy. Check afterwards:
+      `select (select count(*) from information_schema.columns where table_name = 'accounts' and column_name = 'theme') as theme, (select count(*) from information_schema.tables where table_name = 'api_usage_detail') as detail`
+      Both should be 1. Usage split starts counting from that deploy; earlier days show totals only.

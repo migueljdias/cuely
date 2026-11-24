@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { getAccountStore } from "@/accounts/store";
+import { getAccountStore, THEMES, type Theme } from "@/accounts/store";
 import { currentUser } from "@/auth/server";
 import { checkoutOpen, paymentsConfig, priceMatches, stripeGet, stripePost, type StripePrice } from "@/billing/stripe";
 import { PLANS, planFor } from "@/plans";
@@ -59,6 +59,20 @@ export async function productUpdatesAction(form: FormData): Promise<void> {
   await store.setProductUpdates(user.id, form.get("product_updates") === "on");
   revalidatePath("/account/settings");
   redirect("/account/settings?updates=saved");
+}
+
+/** Saves the app theme to the account, so it follows the holder to every browser. */
+export async function setThemeAction(theme: string): Promise<{ ok: boolean }> {
+  if (!THEMES.includes(theme as Theme)) return { ok: false };
+  try {
+    const { user, store } = await requireUser();
+    await store.setTheme(user.id, theme as Theme);
+  } catch (err) {
+    console.error("setTheme failed", err);
+    return { ok: false };
+  }
+  revalidatePath("/account", "layout");
+  return { ok: true };
 }
 
 export async function revokeKeyAction(form: FormData): Promise<void> {
