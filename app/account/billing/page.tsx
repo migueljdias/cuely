@@ -16,6 +16,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
   const payments = paymentsConfig();
   const canCheckout = checkoutOpen(payments);
   const { checkout, session_id } = await searchParams;
+  const canManage = payments.mode !== "off" && Boolean(account?.stripeCustomerId);
 
   // Back from Stripe: apply the subscription now rather than waiting for the webhook.
   if (checkout === "done" && session_id && store) {
@@ -28,10 +29,10 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
   }
 
   return (
-    <div className="account">
-      <div className="app-section">
-        <h1 className="app-title">Plan &amp; billing</h1>
-        <p className="app-lede">Every plan gets the same recommendations. Plans change limits, never answers.</p>
+    <div className="billing-page">
+      <div>
+        <h1 className="app-h1">Plan &amp; billing</h1>
+        <p className="project-desc">Every plan gets the same recommendations. Plans change limits, never answers.</p>
       </div>
 
       {checkout === "soon" && (
@@ -54,35 +55,42 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
         </p>
       )}
 
-      <section className="panel" aria-labelledby="plan-title">
-        <div className="panel-head">
-          <h2 id="plan-title">
-            {plan.name} plan
-            {payments.mode === "test" && canCheckout && <span className="tag">Test mode</span>}
-          </h2>
-          <p className="muted">
-            {plan.perDay.toLocaleString("en-US")} tool calls a day, {plan.perMinute} requests a minute, {plan.maxKeys} API key
-            {plan.maxKeys === 1 ? "" : "s"}, {plan.maxStacks} projects
-            {account?.currentPeriodEnd && plan.id === "pro" && <>. Renews {day(account.currentPeriodEnd)}</>}
-          </p>
-        </div>
-        {plan.id === "pro" ? (
-          payments.mode !== "off" && account?.stripeCustomerId ? (
-            <>
-              <p>Cards, invoices and cancelling are in Stripe&apos;s billing portal.</p>
+      <div className="billing-grid">
+        <div className="billing-main">
+          <section className="card current-plan" aria-labelledby="h-current">
+            <div>
+              <p className="add-kicker">
+                Current plan {payments.mode === "test" && canCheckout && <span className="badge">Test mode</span>}
+              </p>
+              <h2 id="h-current">
+                {plan.name} · {plan.priceLabel}
+              </h2>
+              <p className="muted">
+                {plan.id === "pro" && account?.currentPeriodEnd
+                  ? `Renews ${day(account.currentPeriodEnd)}`
+                  : `${plan.perDay.toLocaleString("en-US")} tool calls a day, ${plan.maxKeys} API key${plan.maxKeys === 1 ? "" : "s"}, ${plan.maxStacks} projects`}
+              </p>
+            </div>
+            {canManage ? (
               <form action={portalAction}>
-                <button type="submit" className="btn btn-quiet">
+                <button type="submit" className="btn-app">
                   Manage billing
                 </button>
               </form>
-            </>
-          ) : null
-        ) : (
-          <div className="plan-compare">
+            ) : plan.id === "free" ? (
+              <form action={checkoutAction}>
+                <button type="submit" className="btn-app btn-app-primary">
+                  Upgrade to Pro
+                </button>
+              </form>
+            ) : null}
+          </section>
+
+          <section className="plan-pair" aria-label="Compare plans">
             {[PLANS.free, PLANS.pro].map((p) => (
-              <div key={p.id} className={`plan-card${p.id === plan.id ? " is-current" : ""}`}>
+              <div key={p.id} className={`card plan-tile${p.id === "pro" ? " is-pro" : ""}`}>
                 <h3>
-                  {p.name} <span className="muted">{p.priceLabel}</span>
+                  {p.name} <span>{p.priceLabel}</span>
                 </h3>
                 <ul>
                   {p.features.map((f) => (
@@ -93,22 +101,43 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
                   ))}
                 </ul>
                 {p.id === plan.id ? (
-                  <span className="badge">Your plan</span>
-                ) : (
-                  <form action={checkoutAction}>
-                    <button type="submit" className="btn btn-primary">
+                  <span className="badge badge-info plan-tile-foot">Your plan</span>
+                ) : p.id === "pro" ? (
+                  <form action={checkoutAction} className="plan-tile-foot">
+                    <button type="submit" className="btn-app btn-app-primary btn-app-small">
                       Upgrade to Pro
                     </button>
                   </form>
+                ) : (
+                  <span className="muted small plan-tile-foot">Cancel anytime in the billing portal; Free applies when the period ends.</span>
                 )}
               </div>
             ))}
-          </div>
-        )}
-        <p className="muted small">
-          Details and the full comparison: <a href={`${SITE_URL}/pricing`}>Pricing</a>.
-        </p>
-      </section>
+          </section>
+          <p className="muted small">
+            Details and the full comparison: <a href={`${SITE_URL}/pricing`}>Pricing</a>.
+          </p>
+        </div>
+
+        <aside className="card" aria-labelledby="h-invoices">
+          <h2 id="h-invoices" className="card-title">
+            Invoices
+          </h2>
+          {canManage ? (
+            <>
+              <p className="card-sub">Invoices, receipts, your card and cancelling are all in Stripe&apos;s billing portal.</p>
+              <form action={portalAction}>
+                <button type="submit" className="btn-app btn-app-small">
+                  Open billing portal
+                </button>
+              </form>
+            </>
+          ) : (
+            <p className="card-sub">No invoices yet. They&apos;ll be in Stripe&apos;s billing portal once you subscribe.</p>
+          )}
+          <p className="card-text muted small">Payments are handled by Stripe. Cuely never sees or stores card details.</p>
+        </aside>
+      </div>
     </div>
   );
 }

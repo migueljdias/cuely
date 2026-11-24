@@ -1,84 +1,136 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { accountSession } from "../_session";
+import { SUPPORT_EMAIL } from "@/site";
+import { Avatar } from "../_avatar";
+import { accountSession, projectsOverview } from "../_session";
 import { productUpdatesAction } from "../actions";
+import { ThemePicker } from "./_theme-picker";
 
 export const metadata: Metadata = { title: "Settings · Cuely", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ updates?: string }> }) {
-  const { user, account } = await accountSession();
+  const [{ user, store, account }, { projects }] = await Promise.all([accountSession(), projectsOverview()]);
   const { updates } = await searchParams;
+  const [keys, usage] = await Promise.all([store ? store.listKeys(user.id) : [], store ? store.usage(user.id, 400) : []]);
+  const label = user.name || user.email || "You";
+  const deleteMail = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("Delete my Cuely account")}&body=${encodeURIComponent(
+    "Please delete my Cuely account and everything it holds. I'm writing from the email on the account.",
+  )}`;
 
   return (
-    <div className="account">
-      <div className="app-section">
-        <h1 className="app-title">Settings</h1>
-        <p className="app-lede">Email and what Cuely keeps about you.</p>
+    <div className="settings">
+      <h1 className="app-h1">Settings</h1>
+
+      <div className="settings-grid">
+        <div className="settings-col">
+          <section className="card profile-card" aria-labelledby="h-profile">
+            <Avatar className="profile-avatar" imageUrl={user.imageUrl} label={label} />
+            <div>
+              <h2 id="h-profile">{label}</h2>
+              <p className="muted">{user.email}</p>
+            </div>
+            <Link className="btn-app btn-app-small" href="/account/profile">
+              Edit profile
+            </Link>
+          </section>
+
+          <section className="card" aria-labelledby="h-look">
+            <h2 id="h-look" className="card-title">
+              Appearance
+            </h2>
+            <p className="card-sub">Saved to your account, so it follows you to every browser.</p>
+            {account ? <ThemePicker initial={account.theme} /> : <p className="muted">Needs the account database.</p>}
+          </section>
+
+          <section className="card" aria-labelledby="h-email">
+            <h2 id="h-email" className="card-title">
+              Email
+            </h2>
+            <ul className="deliver-list settings-email">
+              <li className="is-soon">
+                <input type="checkbox" disabled aria-label="Alerts for my projects (coming soon)" />
+                <span>
+                  <strong>
+                    Alerts for my projects <span className="badge">Soon</span>
+                  </strong>
+                  <span>
+                    Weekly digest and launch blockers. Until then they show on <Link href="/account/alerts">Alerts</Link>.
+                  </span>
+                </span>
+              </li>
+            </ul>
+            {account && (
+              <form action={productUpdatesAction} className="settings-optin">
+                <label>
+                  <input type="checkbox" name="product_updates" defaultChecked={account.productUpdates} />
+                  <span>
+                    <strong>Product updates</strong>
+                    <span>A few emails a year when something big ships. Unsubscribe anytime.</span>
+                  </span>
+                </label>
+                <button type="submit" className="btn-app btn-app-small">
+                  Save
+                </button>
+              </form>
+            )}
+            {updates === "saved" && (
+              <p className="muted small" role="status">
+                Saved.
+              </p>
+            )}
+            <p className="deliver-foot">Account and billing email always goes to {user.email}.</p>
+          </section>
+        </div>
+
+        <div className="settings-col">
+          <section className="card" aria-labelledby="h-data">
+            <h2 id="h-data" className="card-title">
+              What Cuely keeps
+            </h2>
+            <p className="card-sub">What your agent sends isn&apos;t stored. Only what you save here is.</p>
+            <ul className="keeps">
+              <li>
+                <span>Projects: names, descriptions, tools, checklist ticks</span>
+                <Link href="/account/projects">{projects.length}</Link>
+              </li>
+              <li>
+                <span>API keys: a hash, the name and when it was last used</span>
+                <Link href="/account/keys">{keys.length}</Link>
+              </li>
+              <li>
+                <span>Usage: call counts per day, per Cuely tool and per key or app</span>
+                <Link href="/account/usage">
+                  {usage.length} day{usage.length === 1 ? "" : "s"}
+                </Link>
+              </li>
+              <li>
+                <span>Name, picture and sign-in: kept by Clerk</span>
+                <Link href="/account/profile">Profile</Link>
+              </li>
+            </ul>
+            <a className="btn-app btn-app-small" href="/account/data" download>
+              Download my data
+            </a>
+            <p className="card-text muted small">
+              More at <a href="https://cuely.dev/privacy">Privacy</a> and <a href="https://cuely.dev/trust">Trust</a>.
+            </p>
+          </section>
+
+          <section className="card danger-card" aria-labelledby="h-danger">
+            <h2 id="h-danger" className="card-title">
+              Delete account
+            </h2>
+            <p className="card-sub">
+              Removes your projects, keys and usage, and cancels Pro at the end of the period. This can&apos;t be undone.
+              Send the request from your account email.
+            </p>
+            <a className="btn-app btn-app-small btn-app-danger" href={deleteMail}>
+              Ask to delete my account
+            </a>
+          </section>
+        </div>
       </div>
-
-      <section className="panel" aria-labelledby="email-title">
-        <div className="panel-head">
-          <h2 id="email-title">Email</h2>
-          <p className="muted">Account and billing email always goes to {user.email}. Everything else is your call.</p>
-        </div>
-        {account && (
-          <form action={productUpdatesAction} className="optin">
-            <label>
-              <input type="checkbox" name="product_updates" defaultChecked={account.productUpdates} />
-              <span>
-                <strong>Product updates</strong>
-                <span className="muted"> A few emails a year when something big ships. Unsubscribe anytime.</span>
-              </span>
-            </label>
-            <button type="submit" className="btn btn-quiet btn-small">
-              Save
-            </button>
-          </form>
-        )}
-        {updates === "saved" && (
-          <p className="muted small" role="status">
-            Saved.
-          </p>
-        )}
-      </section>
-
-      <section className="panel" aria-labelledby="data-title">
-        <div className="panel-head">
-          <h2 id="data-title">Your data</h2>
-          <p className="muted">What your account holds, and where to change it.</p>
-        </div>
-        <ul className="row-list">
-          <li>
-            <Link className="row-link" href="/account/profile">
-              <span className="row-main">
-                <strong>Name, picture, email addresses and password</strong>
-                <span className="muted small">Kept by Clerk, which runs sign-in.</span>
-              </span>
-            </Link>
-          </li>
-          <li>
-            <Link className="row-link" href="/account/projects">
-              <span className="row-main">
-                <strong>Saved stacks</strong>
-                <span className="muted small">Only the names, descriptions and tools you save. Delete any of them there.</span>
-              </span>
-            </Link>
-          </li>
-          <li>
-            <Link className="row-link" href="/account/keys">
-              <span className="row-main">
-                <strong>API keys</strong>
-                <span className="muted small">A hash of each key, its name and when it was last used.</span>
-              </span>
-            </Link>
-          </li>
-        </ul>
-        <p className="muted small">
-          What your agent sends Cuely isn&apos;t kept, and neither is what you type into Ask Cuely unless you save it as a
-          stack. More at <a href="https://cuely.dev/privacy">Privacy</a> and <a href="https://cuely.dev/trust">Trust</a>.
-        </p>
-      </section>
     </div>
   );
 }

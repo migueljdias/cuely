@@ -14,61 +14,59 @@ export default async function KeysPage() {
   const keys = store ? await store.listKeys(user.id) : [];
 
   return (
-    <div className="account">
-      <div className="app-section">
-        <h1 className="app-title">API keys</h1>
-        <p className="app-lede">
-          For Cursor, VS Code, Claude Code and scripts. The Claude app signs in on its own and needs no key.{" "}
-          {plan.id === "free" ? "Free includes one key." : `Pro includes up to ${plan.maxKeys}.`}
-        </p>
+    <div className="keys-page">
+      <div>
+        <h1 className="app-h1">API keys</h1>
+        <p className="project-desc">For Claude Code, Cursor, VS Code and scripts. The Claude app signs in on its own and needs no key.</p>
       </div>
 
-      <section className="panel" aria-labelledby="keys-title">
-        <div className="panel-head">
-          <h2 id="keys-title">
-            Your keys <span className="tag">{keys.length} / {plan.maxKeys}</span>
-          </h2>
-          <p className="muted">Only a hash of each key is stored. Lost one? Revoke it and make a new one.</p>
-        </div>
-        {keys.length > 0 ? (
-          <ul className="key-list">
-            {keys.map((k) => (
-              <li key={k.id}>
-                <div>
-                  <code>{k.prefix}…</code>
-                  <span className="key-name">{k.name}</span>
-                </div>
-                <span className="muted">
-                  Created {day(k.createdAt)} · {k.lastUsedAt ? `Last used ${day(k.lastUsedAt)}` : "Not used yet"}
-                </span>
-                <form action={revokeKeyAction}>
-                  <input type="hidden" name="id" value={k.id} />
-                  <button type="submit" className="btn btn-quiet btn-small">
-                    Revoke
-                  </button>
-                </form>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="muted">No keys yet.</p>
-        )}
-        <NewKey />
-      </section>
+      <div className="keys-grid">
+        <section className="card" aria-labelledby="h-keys">
+          <div className="card-head">
+            <h2 id="h-keys">Your keys</h2>
+            <span className="muted small">
+              {keys.length} of {plan.maxKeys} on {plan.name} · only a hash is stored
+            </span>
+          </div>
+          {keys.length > 0 ? (
+            <ul className="app-keys">
+              {keys.map((k) => (
+                <li key={k.id}>
+                  <div>
+                    <code>{k.prefix}…</code>
+                    <span className="app-key-name">{k.name}</span>
+                    <span className="app-key-sub">{k.lastUsedAt ? `Last used ${day(k.lastUsedAt)}` : "Not used yet"}</span>
+                  </div>
+                  <span className="muted small">Created {day(k.createdAt)}</span>
+                  <form action={revokeKeyAction}>
+                    <input type="hidden" name="id" value={k.id} />
+                    <button type="submit" className="btn-app btn-app-small">
+                      Revoke
+                    </button>
+                  </form>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="muted">No keys yet. Lost one? Revoke it and make a new one.</p>
+          )}
+          <NewKey />
+        </section>
 
-      <section id="connect" className="panel" aria-labelledby="connect-title">
-        <div className="panel-head">
-          <h2 id="connect-title">Connect your AI tool</h2>
-          <p className="muted">
-            Replace YOUR_CUELY_KEY with a key from above (a new key shows this with it filled in), then start a new chat
-            and ask: <q>Use Cuely to choose the stack for what I&apos;m building.</q>
+        <section id="connect" className="card" aria-labelledby="h-connect">
+          <h2 id="h-connect" className="card-title">
+            Connect your AI tool
+          </h2>
+          <p className="card-sub">
+            Replace YOUR_CUELY_KEY with a key from this page (a new key shows this with it filled in).
           </p>
-        </div>
-        <ConnectTabs options={connectOptions()} />
-        <p className="muted small">
-          Step-by-step help: <a href={`${SITE_URL}/start`}>Get started</a>.
-        </p>
-      </section>
+          <ConnectTabs options={connectOptions()} />
+          <p className="card-text muted small">
+            Then start a new chat and ask: <q>Use Cuely to choose the stack for what I&apos;m building.</q> Step-by-step help:{" "}
+            <a href={`${SITE_URL}/start`}>Get started</a>.
+          </p>
+        </section>
+      </div>
     </div>
   );
 }

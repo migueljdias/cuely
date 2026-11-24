@@ -84,6 +84,8 @@ create table if not exists accounts (
 -- Product-update emails: off unless the account holder turns them on. The time records when they chose.
 alter table accounts add column if not exists product_updates boolean not null default false;
 alter table accounts add column if not exists product_updates_at timestamptz;
+-- The app's colour theme, chosen on Settings: dark (the default), light, or system.
+alter table accounts add column if not exists theme text not null default 'dark' check (theme in ('dark', 'light', 'system'));
 
 -- Optional MCP API keys. Only a SHA-256 hash is stored, the key is shown once.
 create table if not exists api_keys (
@@ -114,6 +116,18 @@ create table if not exists api_usage (
   minute_start timestamptz not null default date_trunc('minute', now()),
   minute_calls integer not null default 0,
   primary key (user_id, day)
+);
+
+-- Tool calls per day split by Cuely tool and by where they came from, for the Usage page.
+-- Counts only: the tool name (from Cuely's fixed list) and the source ("key:<id>" for an API
+-- key, "connector" for a signed-in MCP client, "ask" for Ask Cuely). Never what was asked.
+create table if not exists api_usage_detail (
+  user_id text not null references accounts(user_id) on delete cascade,
+  day     date not null,
+  tool    text not null,
+  source  text not null,
+  calls   integer not null default 0,
+  primary key (user_id, day, tool, source)
 );
 
 -- Stacks an account holder saved on their account page, to watch for price, health and

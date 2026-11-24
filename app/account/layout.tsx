@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 /** The signed-in app: one shell around every /account page, so moving between them keeps the sidebar. */
 export default async function AccountLayout({ children }: { children: ReactNode }) {
-  const [{ user, plan }, { projects, alertCount }] = await Promise.all([accountSession(), projectsOverview()]);
+  const [{ user, plan, account }, { projects, alertCount }] = await Promise.all([accountSession(), projectsOverview()]);
   return (
     <AppShell
       email={user.email ?? ""}
@@ -17,6 +17,7 @@ export default async function AccountLayout({ children }: { children: ReactNode 
       imageUrl={user.imageUrl}
       plan={plan.name}
       counts={{ projects: projects.length, alerts: alertCount }}
+      theme={account?.theme ?? "dark"}
       logOut={<LogOutItem />}
     >
       {children}

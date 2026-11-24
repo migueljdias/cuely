@@ -46,6 +46,10 @@ export async function askAction(_prev: AskState, form: FormData): Promise<AskSta
 
   if (store) {
     const usage = await store.countRequest(user.id, 1);
+    if (usage.calls <= plan.perDay) {
+      const tool = mode === "start" ? "start_project" : mode === "check" ? "check_project" : "compare_tools";
+      await store.countDetail(user.id, "ask", [tool]).catch((err) => console.error("usage detail failed", err));
+    }
     if (usage.calls > plan.perDay) {
       return {
         error: `You've used today's ${plan.perDay.toLocaleString("en-US")} tool calls on the ${plan.name} plan. They reset at 00:00 UTC.${plan.id === "free" ? " Pro raises the limit." : ""}`,

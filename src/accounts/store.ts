@@ -10,6 +10,21 @@ export interface Account {
   currentPeriodEnd: string | null;
   /** Opted in to product-update emails. Off by default; only the account holder turns it on. */
   productUpdates: boolean;
+  /** The app's colour theme. */
+  theme: Theme;
+}
+
+export type Theme = "dark" | "light" | "system";
+export const THEMES: Theme[] = ["dark", "light", "system"];
+
+/** Cuely's MCP tools: the only names the usage breakdown stores. Anything else counts as "other". */
+export const USAGE_TOOLS = ["start_project", "recommend_stack", "check_project", "get_recipe", "compare_tools", "list_categories"] as const;
+
+export interface UsageDetail {
+  tool: string;
+  /** "key:<id>", "connector" or "ask". */
+  source: string;
+  calls: number;
 }
 
 export interface UsageCount {
@@ -37,6 +52,7 @@ const toAccount = (r: Record<string, any>): Account => ({
   stripeCustomerId: r.stripe_customer_id ?? null,
   currentPeriodEnd: r.current_period_end ? new Date(r.current_period_end).toISOString() : null,
   productUpdates: r.product_updates === true,
+  theme: THEMES.includes(r.theme) ? r.theme : "dark",
 });
 
 /** Subscription statuses that keep Pro on. Anything else falls back to Free. */
@@ -67,6 +83,11 @@ export function accountStore(query: QueryFn) {
          where user_id = $1 and product_updates is distinct from $2`,
         [userId, on],
       );
+    },
+
+    async setTheme(userId: string, theme: Theme): Promise<void> {
+      if (!THEMES.includes(theme)) return;
+      await query("update accounts set theme = $2, updated_at = now() where user_id = $1", [userId, theme]);
     },
 
     async setStripeCustomer(userId: string, customerId: string): Promise<void> {
@@ -169,6 +190,38 @@ export function accountStore(query: QueryFn) {
         [userId, days],
       );
       return rows.map((r) => ({ day: String(r.day), calls: Number(r.calls) }));
+    },
+
+    /**
+     * Adds tool calls to the per-tool, per-source counts for today (UTC). Unknown tool names
+     * are counted as "other", so nothing a client sends ends up stored as text.
+     */
+    async countDetail(userId: string, source: string, tools: string[]): Promise<void> {
+      const src = /^(key:\d{1,12}|connector|ask)$/.test(source) ? source : "other";
+      const tally = new Map<string, number>();
+      for (const t of tools) {
+        const name = (USAGE_TOOLS as readonly string[]).includes(t) ? t : "other";
+        tally.set(name, (tally.get(name) ?? 0) + 1);
+      }
+      for (const [tool, n] of tally) {
+        await query(
+          `insert into api_usage_detail as d (user_id, day, tool, source, calls)
+           values ($1, (now() at time zone 'utc')::date, $2, $3, $4)
+           on conflict (user_id, day, tool, source) do update set calls = d.calls + excluded.calls`,
+          [userId, tool, src, n],
+        );
+      }
+    },
+
+    /** Tool calls over the last `days` days, summed by tool and source. */
+    async usageDetail(userId: string, days = 14): Promise<UsageDetail[]> {
+      const rows = await query(
+        `select tool, source, sum(calls)::int as calls from api_usage_detail
+         where user_id = $1 and day > (now() at time zone 'utc')::date - $2::int
+         group by tool, source order by calls desc`,
+        [userId, days],
+      );
+      return rows.map((r) => ({ tool: String(r.tool), source: String(r.source), calls: Number(r.calls) }));
     },
 
     /** Looks a presented key up. Returns its id and the owner's plan, or null. */
