@@ -106,6 +106,26 @@ export function stackChanges(baseline: Record<string, ToolFacts>, tools: Tool[])
 }
 
 /** A health score with its sign, rounded to one decimal so float sums don't show as -0.30000000000000004. */
+/**
+ * The baseline facts for one tool with only the fields behind one kind of change moved to
+ * today's, so marking that change seen leaves the tool's other changes in place.
+ */
+export function seenFacts(was: ToolFacts | undefined, now: ToolFacts, kind: StackChange["kind"]): ToolFacts {
+  if (!was) return now;
+  switch (kind) {
+    case "free_tier":
+      return { ...was, freeTier: now.freeTier };
+    case "price":
+      return { ...was, paidStartsAt: now.paidStartsAt };
+    case "cost":
+      return { ...was, monthlyCost: now.monthlyCost };
+    case "health":
+      return { ...was, health: now.health };
+    case "compliance":
+      return { ...was, compliance: now.compliance };
+  }
+}
+
 const signed = (n: number) => {
   const r = Math.round(n * 10) / 10;
   return r > 0 ? `+${r}` : String(r);
@@ -181,6 +201,18 @@ export function stackStore(query: QueryFn) {
     /** Takes today's facts as the new baseline, clearing the stack's changes. */
     async markSeen(userId: string, id: number, baseline: Record<string, ToolFacts>): Promise<void> {
       await query("update saved_stacks set baseline = $3, seen_at = now() where user_id = $1 and id = $2", [userId, id, JSON.stringify(baseline)]);
+    },
+
+    /**
+     * Takes today's facts as the baseline for one tool in the project, clearing that tool's
+     * changes while the rest of the project's changes stay. Does nothing for a tool the
+     * project doesn't use.
+     */
+    async markToolSeen(userId: string, id: number, tool: string, facts: ToolFacts): Promise<void> {
+      await query(
+        "update saved_stacks set baseline = jsonb_set(baseline, array[$3::text], $4::jsonb) where user_id = $1 and id = $2 and $3 = any(tools)",
+        [userId, id, tool, JSON.stringify(facts)],
+      );
     },
 
     /** Ticks or unticks one launch checklist item. Stores the practice id and today's date only. */

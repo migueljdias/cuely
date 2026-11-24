@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { baselineFor, MAX_STACK_TOOLS } from "@/accounts/stacks";
+import { baselineFor, MAX_STACK_TOOLS, seenFacts, toolFacts, type StackChange } from "@/accounts/stacks";
 import { resolveTool } from "@/engine/recommend";
 import { getRepository } from "@/repo";
 import { accountSession } from "../_session";
@@ -88,4 +88,26 @@ export async function setCheckAction(id: number, practiceId: string, done: boole
   }
   revalidatePath("/account", "layout");
   return { ok: true };
+}
+
+const KINDS: StackChange["kind"][] = ["free_tier", "price", "cost", "health", "compliance"];
+
+/**
+ * Clears one alert: in each project the alert names, the fields behind that kind of change
+ * take today's value, so the tool's other changes stay.
+ */
+export async function markToolSeenAction(form: FormData): Promise<void> {
+  const { user, stacks } = await accountSession();
+  const slug = String(form.get("tool") ?? "");
+  const kind = String(form.get("kind") ?? "") as StackChange["kind"];
+  const ids = form.getAll("id").map(Number).filter((id) => Number.isInteger(id) && id > 0);
+  if (!stacks || !slug || !KINDS.includes(kind) || !ids.length) return;
+  const tool = (await (await getRepository()).snapshot()).tools.find((t) => t.slug === slug);
+  if (!tool) return;
+  const now = toolFacts(tool);
+  for (const id of ids) {
+    const stack = await stacks.get(user.id, id);
+    if (stack) await stacks.markToolSeen(user.id, id, slug, seenFacts(stack.baseline[slug], now, kind));
+  }
+  revalidatePath("/account", "layout");
 }

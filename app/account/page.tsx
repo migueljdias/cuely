@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Check, Layers } from "lucide-react";
-import type { StackChange } from "@/accounts/stacks";
+import { buildAlerts } from "@/accounts/alerts";
 import type { Tool } from "@/catalog";
 import { SITE_URL } from "@/site";
 import { ToolLogo } from "../_components/tool-logo";
@@ -12,14 +12,6 @@ export const dynamic = "force-dynamic";
 
 const n = (v: number) => v.toLocaleString("en-US");
 const plural = (v: number, one: string, many = `${one}s`) => `${n(v)} ${v === 1 ? one : many}`;
-
-const KIND_LABEL: Record<StackChange["kind"], string> = {
-  free_tier: "Free plan",
-  price: "Price",
-  cost: "Cost",
-  health: "Health",
-  compliance: "Compliance",
-};
 
 /** What a tool costs a month at 1,000 users, when the catalog has worked it out. Staff-tool costs are left out. */
 const monthlyAt1k = (t: Tool) => (t.cost && t.cost.scale !== "10_staff" ? t.cost.monthly : null);
@@ -41,44 +33,17 @@ export default async function HomePage() {
   const spend = priced.reduce((sum, v) => sum + v, 0);
   const toolCount = projects.reduce((sum, p) => sum + p.tools.length, 0);
 
-  // Alerts: changes since each project was last seen, worst first; then measured problems in your tools.
-  const rank = { worse: 0, neutral: 1, better: 2 } as const;
-  const changes = projects
-    .flatMap((p) => p.changes.map((c) => ({ ...c, project: p.stack.name, projectId: p.stack.id })))
-    .sort((a, b) => rank[a.tone] - rank[b.tone]);
-  const mine = new Set(projects.flatMap((p) => p.stack.tools));
-  const troubled = snap.tools
-    .filter((t) => (t.health?.score ?? 0) < 0 && mine.has(t.slug))
-    .sort((a, b) => a.health!.score - b.health!.score);
-  // The same change in several projects (a shared tool) is one alert naming each project.
-  const grouped = new Map<string, (typeof changes)[number] & { projects: string[] }>();
-  for (const c of changes) {
-    const k = `${c.tool}|${c.kind}|${c.text}`;
-    const g = grouped.get(k);
-    if (g) g.projects.push(c.project);
-    else grouped.set(k, { ...c, projects: [c.project] });
-  }
-  const healthChanged = new Set(changes.filter((c) => c.kind === "health").map((c) => c.tool));
-  const feed = [
-    ...[...grouped.values()].map((c) => ({
-      key: `c-${c.tool}-${c.kind}-${c.text}`,
-      tone: c.tone,
-      label: `${KIND_LABEL[c.kind]} · ${c.name}`,
-      text: plain(c.text),
-      where: c.projects.join(", "),
-      href: c.projects.length === 1 ? `/account/projects/${c.projectId}` : "/account/alerts",
-    })),
-    ...troubled
-      .filter((t) => !healthChanged.has(t.slug))
-      .map((t) => ({
-        key: `h-${t.slug}`,
-        tone: "worse" as const,
-        label: `Measured · ${t.name}`,
-        text: plain(t.health!.reasons.join(" ")),
-        where: projects.filter((p) => p.stack.tools.includes(t.slug)).map((p) => p.stack.name).join(", "),
-        href: `${SITE_URL}/tools/${t.slug}`,
-      })),
-  ].slice(0, 5);
+  // The alerts panel: the same alerts as the Alerts page, worst first.
+  const feed = buildAlerts(projects)
+    .slice(0, 5)
+    .map((a) => ({
+      key: a.key,
+      tone: a.tone,
+      label: `${a.kind} · ${a.toolName}`,
+      text: plain(a.text),
+      where: a.projects.map((p) => p.name).join(", "),
+      href: a.source === "measured" ? `${SITE_URL}/tools/${a.tool}` : a.projects.length === 1 ? `/account/projects/${a.projects[0].id}` : "/account/alerts",
+    }));
 
   // Launch checklists across projects; the card opens the project with the most left to do.
   const checksDone = projects.reduce((sum, p) => sum + p.ready.done, 0);

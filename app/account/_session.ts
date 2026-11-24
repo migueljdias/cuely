@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { getAccountStore } from "@/accounts/store";
+import { buildAlerts } from "@/accounts/alerts";
 import { projectChecklist, readiness } from "@/accounts/checklist";
 import { getStackStore, stackChanges } from "@/accounts/stacks";
 import { getRepository } from "@/repo";
@@ -37,7 +38,9 @@ export const projectsOverview = cache(async () => {
     const tools = stack.tools.map((t) => bySlug.get(t)).filter((t) => t !== undefined);
     return { stack, tools, changes: stackChanges(stack.baseline, tools), ready: readiness(projectChecklist(stack, tools)) };
   });
-  const alertCount = projects.reduce((sum, p) => sum + p.changes.length, 0);
+  const alerts = buildAlerts(projects);
+  // Open alerts: changes not yet marked seen (a change shared by several projects counts once).
+  const alertCount = alerts.filter((a) => a.source === "change").length;
   const lastRead = snap.tools.reduce((max, t) => (t.verifiedOn > max ? t.verifiedOn : max), "");
-  return { projects, alertCount, snap, lastRead, hasStore: Boolean(store) };
+  return { projects, alerts, alertCount, snap, lastRead, hasStore: Boolean(store) };
 });
