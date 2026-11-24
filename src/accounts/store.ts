@@ -7,6 +7,7 @@ export interface Account {
   plan: "free" | "pro";
   planStatus: string | null;
   stripeCustomerId: string | null;
+  stripeSubscriptionId: string | null;
   currentPeriodEnd: string | null;
   /** Opted in to product-update emails. Off by default; only the account holder turns it on. */
   productUpdates: boolean;
@@ -50,6 +51,7 @@ const toAccount = (r: Record<string, any>): Account => ({
   plan: r.plan === "pro" ? "pro" : "free",
   planStatus: r.plan_status ?? null,
   stripeCustomerId: r.stripe_customer_id ?? null,
+  stripeSubscriptionId: r.stripe_subscription_id ?? null,
   currentPeriodEnd: r.current_period_end ? new Date(r.current_period_end).toISOString() : null,
   productUpdates: r.product_updates === true,
   theme: THEMES.includes(r.theme) ? r.theme : "dark",
@@ -83,6 +85,11 @@ export function accountStore(query: QueryFn) {
          where user_id = $1 and product_updates is distinct from $2`,
         [userId, on],
       );
+    },
+
+    /** Deletes the account row; keys, usage and projects go with it (on delete cascade). */
+    async deleteAccount(userId: string): Promise<void> {
+      await query("delete from accounts where user_id = $1", [userId]);
     },
 
     async setTheme(userId: string, theme: Theme): Promise<void> {

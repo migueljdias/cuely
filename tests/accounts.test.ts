@@ -380,3 +380,61 @@ describe("MCP usage detail", () => {
     expect(seen).toEqual([{ userId: "user_d", source: "key:42", tools: ["list_categories"] }]);
   });
 });
+
+describe("Deleting an account", () => {
+  const steps = (log: string[], fail?: "cancel" | "rows" | "auth") => ({
+    cancelSubscription: async (id: string) => {
+      log.push(`cancel ${id}`);
+      if (fail === "cancel") throw new Error("stripe down");
+    },
+    deleteRows: async () => {
+      log.push("rows");
+      if (fail === "rows") throw new Error("db down");
+    },
+    deleteAuthUser: async () => {
+      log.push("auth");
+      if (fail === "auth") throw new Error("clerk down");
+    },
+  });
+
+  it("stops Pro first, then the data, then the sign-in", async () => {
+    const log: string[] = [];
+    const { deleteAccount } = await import("@/accounts/delete");
+    expect(await deleteAccount({ subscriptionId: "sub_1", ...steps(log) })).toEqual({ ok: true, authDeleted: true });
+    expect(log).toEqual(["cancel sub_1", "rows", "auth"]);
+  });
+
+  it("deletes nothing when Stripe can't stop the subscription", async () => {
+    const log: string[] = [];
+    const { deleteAccount } = await import("@/accounts/delete");
+    const r = await deleteAccount({ subscriptionId: "sub_1", ...steps(log, "cancel") });
+    expect(r.ok).toBe(false);
+    expect(log).toEqual(["cancel sub_1"]);
+  });
+
+  it("skips Stripe on Free, and reports a sign-in that couldn't be removed", async () => {
+    const log: string[] = [];
+    const { deleteAccount } = await import("@/accounts/delete");
+    expect(await deleteAccount({ subscriptionId: null, ...steps(log, "auth") })).toEqual({ ok: true, authDeleted: false });
+    expect(log).toEqual(["rows", "auth"]);
+  });
+
+  it("removes the account's keys, usage and projects with the account row", async () => {
+    const db = new PGlite();
+    const query = async (text: string, params?: unknown[]) => (await db.query(text, params)).rows as Record<string, any>[];
+    await db.exec(schema);
+    const store = accountStore(query);
+    await store.ensure("user_x", "x@example.com");
+    await store.ensure("user_y", "y@example.com");
+    await store.createKey("user_x", "laptop");
+    await store.countRequest("user_x", 1);
+    await store.countDetail("user_x", "ask", ["start_project"]);
+    await query("insert into saved_stacks (user_id, name) values ('user_x', 'P'), ('user_y', 'Q')");
+    await store.deleteAccount("user_x");
+    for (const t of ["accounts", "api_keys", "api_usage", "api_usage_detail", "saved_stacks"]) {
+      const rows = await query(`select count(*)::int as n from ${t} where user_id = 'user_x'`);
+      expect(rows[0].n, t).toBe(0);
+    }
+    expect((await query("select count(*)::int as n from saved_stacks where user_id = 'user_y'"))[0].n).toBe(1);
+  });
+});

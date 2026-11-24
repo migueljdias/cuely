@@ -106,9 +106,11 @@ export default function Privacy() {
 
       <h2>Keeping and deleting data</h2>
       <p>
-        Your account data is kept while your account is open. Email{" "}
+        Your account data is kept while your account is open. On your account&apos;s Settings page you can download all of
+        it as a file, or delete your account: that removes your projects, keys and usage straight away, deletes your
+        sign-in at Clerk, and stops a Pro subscription from renewing. You can also email{" "}
         <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> to see, correct or delete it, and it will be removed within
-        30 days, except records the law requires to be kept, such as payment records held by Stripe. Anonymous usage counts
+        30 days. Records the law requires to be kept, such as payment records held by Stripe, stay with Stripe. Anonymous usage counts
         are kept to improve the catalog and can&apos;t be linked back to you.
       </p>
 
