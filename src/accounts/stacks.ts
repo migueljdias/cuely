@@ -28,6 +28,8 @@ export interface SavedStack {
   /** Each tool's facts when the holder last marked the stack seen. */
   baseline: Record<string, ToolFacts>;
   seenAt: string;
+  /** Launch checklist items the holder ticked: practice id -> date ticked (YYYY-MM-DD). */
+  checks: Record<string, string>;
   createdAt: string;
   updatedAt: string;
 }
@@ -123,6 +125,7 @@ const toStack = (r: Record<string, any>): SavedStack => ({
   tools: Array.isArray(r.tools) ? r.tools : [],
   baseline: (parse(r.baseline) ?? {}) as Record<string, ToolFacts>,
   seenAt: new Date(r.seen_at).toISOString(),
+  checks: (parse(r.checks) ?? {}) as Record<string, string>,
   createdAt: new Date(r.created_at).toISOString(),
   updatedAt: new Date(r.updated_at).toISOString(),
 });
@@ -178,6 +181,19 @@ export function stackStore(query: QueryFn) {
     /** Takes today's facts as the new baseline, clearing the stack's changes. */
     async markSeen(userId: string, id: number, baseline: Record<string, ToolFacts>): Promise<void> {
       await query("update saved_stacks set baseline = $3, seen_at = now() where user_id = $1 and id = $2", [userId, id, JSON.stringify(baseline)]);
+    },
+
+    /** Ticks or unticks one launch checklist item. Stores the practice id and today's date only. */
+    async setCheck(userId: string, id: number, practiceId: string, done: boolean): Promise<void> {
+      if (!/^[a-z0-9-]{1,80}$/.test(practiceId)) return;
+      if (done) {
+        await query(
+          "update saved_stacks set checks = checks || jsonb_build_object($3::text, $4::text) where user_id = $1 and id = $2",
+          [userId, id, practiceId, new Date().toISOString().slice(0, 10)],
+        );
+      } else {
+        await query("update saved_stacks set checks = checks - $3::text where user_id = $1 and id = $2", [userId, id, practiceId]);
+      }
     },
 
     async remove(userId: string, id: number): Promise<void> {

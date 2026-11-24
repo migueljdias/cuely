@@ -46,7 +46,7 @@ export default async function StacksPage() {
               const changes = stackChanges(s.baseline, tools);
               return (
                 <li key={s.id}>
-                  <Link href={`/account/stacks/${s.id}`} className="row-link">
+                  <Link href={`/account/projects/${s.id}`} className="row-link">
                     <span className="logo-stack" aria-hidden="true">
                       {tools.slice(0, 5).map((t) => (
                         <ToolLogo key={t.slug} slug={t.slug} name={t.name} size={22} />

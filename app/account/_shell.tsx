@@ -38,7 +38,7 @@ type Item = { href: string; label: string; icon: typeof House; badge?: "projects
 
 const WORKSPACE: Item[] = [
   { href: "/account", label: "Home", icon: House },
-  { href: "/account/stacks", label: "Projects", icon: Layers, badge: "projects" },
+  { href: "/account/projects", label: "Projects", icon: Layers, badge: "projects" },
   { href: "/account/alerts", label: "Alerts", icon: Bell, badge: "alerts" },
   { href: "/account/ask", label: "Ask Cuely", icon: MessageCircle },
 ];

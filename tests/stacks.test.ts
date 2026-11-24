@@ -3,6 +3,7 @@ import path from "node:path";
 import { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
 import { accountStore } from "@/accounts/store";
+import { checklistMarkdown, projectChecklist, readiness } from "@/accounts/checklist";
 import { baselineFor, stackChanges, stackStore } from "@/accounts/stacks";
 import { tools } from "@/catalog";
 import type { Tool } from "@/catalog";
@@ -74,5 +75,52 @@ describe("Stack store", () => {
     expect(await stacks.count("user_a")).toBe(1);
     await stacks.remove("user_a", id);
     expect(await stacks.list("user_a")).toEqual([]);
+  });
+
+  it("ticks and unticks checklist items, scoped to the owner, storing only ids and dates", async () => {
+    const id = await stacks.create("user_a", { name: "Notes", description: "", tools: ["vercel"], baseline: {} });
+    expect((await stacks.get("user_a", id))!.checks).toEqual({});
+    await stacks.setCheck("user_a", id, "secrets-out-of-git", true);
+    await stacks.setCheck("user_b", id, "server-side-authz", true);
+    await stacks.setCheck("user_a", id, "not a valid id; drop table", true);
+    const ticked = (await stacks.get("user_a", id))!.checks;
+    expect(Object.keys(ticked)).toEqual(["secrets-out-of-git"]);
+    expect(ticked["secrets-out-of-git"]).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    await stacks.setCheck("user_a", id, "secrets-out-of-git", false);
+    expect((await stacks.get("user_a", id))!.checks).toEqual({});
+    await stacks.remove("user_a", id);
+  });
+});
+
+describe("Project checklist and readiness", () => {
+  const ts = [tool("vercel"), tool("supabase"), tool("stripe")];
+  const description = "A web app where therapists keep patient notes, with EU customers who pay a subscription";
+
+  it("picks practices from the description and saved tools, and marks compliance items as blocking", () => {
+    const items = projectChecklist({ description, checks: {} }, ts);
+    expect(items.map((i) => i.id)).toContain("secrets-out-of-git");
+    expect(items.every((i) => i.blocks === (i.area === "compliance"))).toBe(true);
+    expect(items.some((i) => i.phase === "day_one")).toBe(true);
+  });
+
+  it("works out readiness from ticks", () => {
+    const all = projectChecklist({ description, checks: {} }, ts);
+    const blocking = all.filter((i) => i.blocks).map((i) => i.id);
+    const checks = Object.fromEntries([...blocking, all[0].id].map((id) => [id, "2026-11-24"]));
+    const r = readiness(projectChecklist({ description, checks }, ts));
+    expect(r.total).toBe(all.length);
+    expect(r.done).toBe(new Set([...blocking, all[0].id]).size);
+    expect(r.blockersLeft).toBe(0);
+    expect(r.pct).toBe(Math.round((r.done / r.total) * 100));
+    expect(r.areas.reduce((s, a) => s + a.total, 0)).toBe(r.total);
+    expect(readiness([])).toMatchObject({ pct: 0, total: 0, blockersLeft: 0 });
+  });
+
+  it("exports the checklist as Markdown with ticks", () => {
+    const items = projectChecklist({ description, checks: { "secrets-out-of-git": "2026-11-24" } }, ts);
+    const md = checklistMarkdown("Notes", items);
+    expect(md).toContain("# Launch checklist: Notes");
+    expect(md).toContain("- [x] **Keep keys and passwords out of the code**");
+    expect(md).toContain("## Before real data goes in");
   });
 });

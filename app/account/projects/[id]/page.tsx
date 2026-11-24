@@ -1,28 +1,40 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { Download, ExternalLink } from "lucide-react";
+import { PHASE_LABELS, projectChecklist, readiness } from "@/accounts/checklist";
 import { stackChanges } from "@/accounts/stacks";
-import { checkProject } from "@/engine/check";
+import type { Tool } from "@/catalog";
+import { checkProject, type CheckItem } from "@/engine/check";
 import { statedCompliance } from "@/freshness/compliance";
 import { getRepository } from "@/repo";
 import { SITE_URL } from "@/site";
 import { ToolLogo } from "../../../_components/tool-logo";
-import { CheckView } from "../../ask/_results";
 import { plain, toolOptions } from "../../_options";
 import { accountSession, day } from "../../_session";
 import { deleteStackAction, markSeenAction } from "../actions";
 import { StackForm } from "../_stack-form";
+import { ReadinessBoard } from "./_checklist";
 
 export const metadata: Metadata = { title: "Project · Cuely", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
-export default async function StackPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ saved?: string }> }) {
+const n = (v: number) => v.toLocaleString("en-US");
+/** What a tool costs a month at 1,000 users, when the catalog has worked it out. */
+const at1k = (t: Tool) => (t.cost && t.cost.scale !== "10_staff" ? t.cost.monthly : null);
+
+function verdictText(item: CheckItem): { text: string; tone: "good" | "warn" | "info" } {
+  if (item.verdict === "switch" && item.suggestion) return { text: `Change → ${item.suggestion.name}`, tone: "warn" };
+  if (item.verdict === "add" && item.suggestion) return { text: `Add ${item.suggestion.name}`, tone: "info" };
+  return { text: "Keep", tone: "good" };
+}
+
+export default async function ProjectPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ saved?: string }> }) {
   const { id } = await params;
   const { saved } = await searchParams;
   const { user, stacks } = await accountSession();
-  const n = Number(id);
-  const stack = stacks && Number.isInteger(n) ? await stacks.get(user.id, n) : null;
+  const num = Number(id);
+  const stack = stacks && Number.isInteger(num) ? await stacks.get(user.id, num) : null;
   if (!stack) notFound();
 
   const snap = await (await getRepository()).snapshot();
@@ -31,47 +43,132 @@ export default async function StackPage({ params, searchParams }: { params: Prom
   const tools = stack.tools.map((t) => bySlug.get(t)).filter((t) => t !== undefined);
   const changes = stackChanges(stack.baseline, tools);
   const review = stack.description.trim().length >= 3 ? checkProject(snap, { description: stack.description, using: tools.map((t) => t.slug) }) : null;
-  const monthly = tools.reduce((sum, t) => sum + (t.cost?.monthly ?? 0), 0);
+
+  const items = projectChecklist(stack, tools);
+  const score = readiness(items);
+
+  const costs = tools.map((t) => ({ tool: t, monthly: at1k(t) })).filter((c): c is { tool: Tool; monthly: number } => c.monthly !== null);
+  const monthly = costs.reduce((sum, c) => sum + c.monthly, 0);
+  const priciest = [...costs].sort((a, b) => b.monthly - a.monthly).filter((c) => c.monthly > 0);
+  const variable = tools.filter((t) => t.cost?.variable);
+
+  // Keep / change / add for each tool, from the stack check when there's a description.
+  const verdicts = new Map((review?.status === "ok" ? review.items : []).filter((i) => i.current).map((i) => [i.current!.slug, i]));
+  const adds = review?.status === "ok" ? review.items.filter((i) => i.verdict === "add" && i.suggestion && i.role === "core") : [];
 
   return (
-    <div className="account">
-      <div className="app-section">
-        <Link href="/account/stacks" className="back-link">
-          <ArrowLeft size={14} aria-hidden="true" /> Projects
-        </Link>
-        <h1 className="app-title">{stack.name}</h1>
-        <p className="app-lede">{stack.description || `${tools.length} tools. Add a description to get keep-or-change advice.`}</p>
-        <div className="app-stats">
-          <div className="app-stat">
-            <span className="app-stat-label">Tools</span>
-            <span className="app-stat-value">{tools.length}</span>
-          </div>
-          <div className="app-stat">
-            <span className="app-stat-label">At 1,000 users</span>
-            <span className="app-stat-value">
-              ${monthly.toLocaleString("en-US")}
-              <small> / month</small>
-            </span>
-            <span className="app-stat-note">Sum of each tool at Cuely&apos;s usage profile</span>
-          </div>
-          <div className="app-stat">
-            <span className="app-stat-label">Changes</span>
-            <span className="app-stat-value">{changes.length}</span>
-            <span className="app-stat-note">Since {day(stack.seenAt)}</span>
-          </div>
+    <div className="project">
+      <div className="home-head">
+        <div>
+          <h1 className="app-h1">{stack.name}</h1>
+          <p className="project-desc">{stack.description || "Add a description to get keep-or-change advice and a checklist that fits."}</p>
+        </div>
+        <div className="home-actions">
+          <a className="btn-app" href={`/account/projects/${stack.id}/checklist`} download>
+            <Download size={16} aria-hidden="true" /> Export checklist
+          </a>
+          <a className="btn-app btn-app-primary" href="#edit">
+            Edit project
+          </a>
         </div>
       </div>
 
       {saved && (
         <p className="notice" role="status">
-          Saved. Cuely will flag changes to these tools here and on your overview.
+          Saved. Cuely will flag changes to these tools here and on Home.
         </p>
       )}
 
-      <section className="panel" aria-labelledby="changes-title">
-        <div className="panel-head">
+      <nav className="project-tabs" aria-label="Project sections">
+        <a href="#ready">Readiness</a>
+        <a href="#stack">Stack</a>
+        <a href="#cost">Cost</a>
+        <a href="#changes">Alerts ({changes.length})</a>
+      </nav>
+
+      <div id="ready" className="ready-grid">
+        <ReadinessBoard
+          projectId={stack.id}
+          items={items}
+          areas={score.areas.map(({ area, label }) => ({ area, label }))}
+          phases={Object.entries(PHASE_LABELS).map(([phase, label]) => ({ phase, label }))}
+        />
+
+        <div className="project-side">
+          <section id="cost" className="card" aria-labelledby="h-cost">
+            <h2 className="card-title">Cost as you grow</h2>
+            <p className="card-sub">Priced from each vendor&apos;s own page.</p>
+            <div className="cost-tiles">
+              <div className="cost-tile is-on">
+                <span>1k users</span>
+                <strong>{costs.length ? `$${n(monthly)}` : "–"}</strong>
+              </div>
+              <div className="cost-tile">
+                <span>10k users</span>
+                <strong className="muted">Soon</strong>
+              </div>
+              <div className="cost-tile">
+                <span>50k users</span>
+                <strong className="muted">Soon</strong>
+              </div>
+            </div>
+            {priciest.length > 0 && (
+              <p className="card-text">
+                Most of it: {priciest.slice(0, 2).map((c) => `${c.tool.name} ($${n(c.monthly)})`).join(" and ")}.
+              </p>
+            )}
+            {variable.length > 0 && (
+              <p className="card-text muted small">
+                On top, as you earn: {variable.map((t) => `${t.name} ${t.cost!.variable}`).join("; ")}.
+              </p>
+            )}
+            {costs.length < tools.length && (
+              <p className="card-text muted small">{tools.length - costs.length} tool(s) have no cost figure in the catalog yet.</p>
+            )}
+          </section>
+
+          <section id="stack" className="card" aria-labelledby="h-stack">
+            <h2 id="h-stack" className="card-title">
+              Stack
+            </h2>
+            <ul className="stack-rows">
+              {tools.map((t) => {
+                const item = verdicts.get(t.slug);
+                const v = item ? verdictText(item) : null;
+                const down = (t.health?.score ?? 0) < 0;
+                return (
+                  <li key={t.slug}>
+                    <span>
+                      {t.name} <span className="muted">{(cat.get(t.category) ?? t.category).toLowerCase()}</span>
+                    </span>
+                    {v ? (
+                      <span className={`stack-verdict is-${down && v.tone === "good" ? "warn" : v.tone}`}>
+                        {v.text}
+                        {down ? " · health down" : ""}
+                      </span>
+                    ) : down ? (
+                      <span className="stack-verdict is-warn">Health down</span>
+                    ) : null}
+                  </li>
+                );
+              })}
+              {adds.map((a) => (
+                <li key={`add-${a.category}`}>
+                  <span>{a.categoryName}</span>
+                  <span className="stack-verdict is-info">Add {a.suggestion!.name}</span>
+                </li>
+              ))}
+            </ul>
+            {!review && <p className="card-text muted small">Add a description and Cuely will say whether to keep or change each tool.</p>}
+            {review && review.status !== "ok" && <p className="card-text muted small">{review.headline}</p>}
+          </section>
+        </div>
+      </div>
+
+      <section id="changes" className="card" aria-labelledby="changes-title">
+        <div className="card-head">
           <h2 id="changes-title">What changed</h2>
-          <p className="muted">Since you saved this stack or last marked it seen ({day(stack.seenAt)}).</p>
+          <span className="muted small">Since you saved this project or last marked it seen ({day(stack.seenAt)}).</span>
         </div>
         {changes.length ? (
           <>
@@ -87,7 +184,7 @@ export default async function StackPage({ params, searchParams }: { params: Prom
             </ul>
             <form action={markSeenAction}>
               <input type="hidden" name="id" value={stack.id} />
-              <button type="submit" className="btn btn-quiet btn-small">
+              <button type="submit" className="btn-app btn-app-small">
                 Mark as seen
               </button>
             </form>
@@ -97,20 +194,10 @@ export default async function StackPage({ params, searchParams }: { params: Prom
         )}
       </section>
 
-      {review && review.status === "ok" && (
-        <section className="panel" aria-labelledby="review-title">
-          <div className="panel-head">
-            <h2 id="review-title">Keep or change</h2>
-            <p className="muted">Cuely&apos;s stack check on today&apos;s facts, for what you described.</p>
-          </div>
-          <CheckView result={review} />
-        </section>
-      )}
-
-      <section className="panel" aria-labelledby="tools-title">
-        <div className="panel-head">
+      <section className="card" aria-labelledby="tools-title">
+        <div className="card-head">
           <h2 id="tools-title">Tools</h2>
-          <p className="muted">Today&apos;s facts, each read from the vendor&apos;s own pages.</p>
+          <span className="muted small">Today&apos;s facts, each read from the vendor&apos;s own pages.</span>
         </div>
         <ul className="tool-facts">
           {tools.map((t) => {
@@ -174,7 +261,7 @@ export default async function StackPage({ params, searchParams }: { params: Prom
         </ul>
       </section>
 
-      <section className="panel" aria-labelledby="edit-title">
+      <section id="edit" className="card" aria-labelledby="edit-title">
         <details>
           <summary>
             <h2 id="edit-title" className="inline-h">
@@ -185,9 +272,9 @@ export default async function StackPage({ params, searchParams }: { params: Prom
             <StackForm options={toolOptions(snap)} stack={stack} />
             <form action={deleteStackAction} className="danger-row">
               <input type="hidden" name="id" value={stack.id} />
-              <span className="muted small">Deleting removes the stack and its history for good.</span>
-              <button type="submit" className="btn btn-quiet btn-small">
-                Delete stack
+              <span className="muted small">Deleting removes the project, its checklist ticks and its history for good.</span>
+              <button type="submit" className="btn-app btn-app-small">
+                Delete project
               </button>
             </form>
           </div>
