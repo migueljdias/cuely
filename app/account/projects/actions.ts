@@ -28,15 +28,15 @@ const stackId = (form: FormData) => {
 
 export async function createStackAction(_prev: StackFormState, form: FormData): Promise<StackFormState> {
   const { user, stacks, plan } = await accountSession();
-  if (!stacks) return { error: "Saved stacks need a database, and none is configured here." };
+  if (!stacks) return { error: "Projects need a database, and none is configured here." };
   const f = await readForm(form);
   if (!f.tools.length) return { error: "Add at least one tool Cuely knows. Start typing a name to see the list." };
   if ((await stacks.count(user.id)) >= plan.maxStacks) {
     return {
       error:
         plan.id === "free"
-          ? `The Free plan saves ${plan.maxStacks} stacks. Delete one, or upgrade to Pro for more.`
-          : `You have ${plan.maxStacks} stacks. Delete one to save another.`,
+          ? `The Free plan keeps ${plan.maxStacks} projects. Delete one, or upgrade to Pro for more.`
+          : `You have ${plan.maxStacks} projects. Delete one to add another.`,
     };
   }
   const id = await stacks.create(user.id, { name: f.name, description: f.description, tools: f.tools.map((t) => t.slug), baseline: baselineFor(f.tools) });
@@ -47,11 +47,11 @@ export async function createStackAction(_prev: StackFormState, form: FormData): 
 export async function updateStackAction(_prev: StackFormState, form: FormData): Promise<StackFormState> {
   const { user, stacks } = await accountSession();
   const id = stackId(form);
-  if (!stacks || !id) return { error: "That stack wasn't found." };
+  if (!stacks || !id) return { error: "That project wasn't found." };
   const f = await readForm(form);
-  if (!f.tools.length) return { error: "A stack needs at least one tool. Delete it instead if you're done with it." };
+  if (!f.tools.length) return { error: "A project needs at least one tool. Delete it instead if you're done with it." };
   const ok = await stacks.update(user.id, id, { name: f.name, description: f.description, tools: f.tools.map((t) => t.slug), fresh: baselineFor(f.tools) });
-  if (!ok) return { error: "That stack wasn't found." };
+  if (!ok) return { error: "That project wasn't found." };
   revalidatePath("/account", "layout");
   redirect(`/account/projects/${id}`);
 }

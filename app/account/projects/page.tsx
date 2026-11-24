@@ -1,91 +1,129 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { stackChanges } from "@/accounts/stacks";
-import { getRepository } from "@/repo";
-import { ToolLogo } from "../../_components/tool-logo";
+import type { Tool } from "@/catalog";
 import { toolOptions } from "../_options";
-import { accountSession, day } from "../_session";
+import { accountSession, day, projectsOverview } from "../_session";
 import { StackForm } from "./_stack-form";
 
 export const metadata: Metadata = { title: "Projects · Cuely", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
-export default async function StacksPage() {
-  const { user, stacks: store, plan } = await accountSession();
-  const [stacks, snap] = await Promise.all([store ? store.list(user.id) : [], getRepository().then((r) => r.snapshot())]);
-  const bySlug = new Map(snap.tools.map((t) => [t.slug, t]));
-  const full = stacks.length >= plan.maxStacks;
+const n = (v: number) => v.toLocaleString("en-US");
+const plural = (v: number, one: string) => `${n(v)} ${v === 1 ? one : `${one}s`}`;
+/** What a tool costs a month at 1,000 users, when the catalog has worked it out. */
+const at1k = (t: Tool) => (t.cost && t.cost.scale !== "10_staff" ? t.cost.monthly : null);
+
+export default async function ProjectsPage() {
+  const [{ plan }, { projects, snap, hasStore }] = await Promise.all([accountSession(), projectsOverview()]);
+  const full = projects.length >= plan.maxStacks;
 
   return (
-    <div className="account">
-      <div className="app-section">
-        <h1 className="app-title">Projects</h1>
-        <p className="app-lede">
-          Save the tools each project uses. Cuely re-reads vendor pricing and compliance pages and measures outages on a
-          schedule, and shows you here what changed since you last looked.
-        </p>
+    <div className="projects">
+      <div className="home-head">
+        <div>
+          <h1 className="app-h1">Projects</h1>
+          <p className="project-desc">Each project is watched for price, outage and compliance changes, with its own launch checklist.</p>
+        </div>
+        <span className="muted">
+          {n(projects.length)} of {n(plan.maxStacks)} on {plan.name}
+        </span>
       </div>
 
-      {!store && (
+      {!hasStore && (
         <p className="notice" role="status">
-          Saved stacks need a database, and none is configured on this deployment.
+          Projects need a database, and none is configured on this deployment.
         </p>
       )}
 
-      {stacks.length > 0 && (
-        <section className="panel" aria-labelledby="list-title">
-          <div className="panel-head">
-            <h2 id="list-title">
-              Saved <span className="tag">{stacks.length} / {plan.maxStacks}</span>
-            </h2>
+      <section className="add-grid" aria-label="Add a project">
+        <Link className="add-card is-primary" href="/account/ask?mode=start">
+          <span className="add-kicker">New build</span>
+          <strong>Describe what you&apos;re building</strong>
+          <span>Get the stack, the cost and the checklist, then save it as a project.</span>
+        </Link>
+        <div className="add-card is-soon" aria-disabled="true">
+          <span className="add-kicker">
+            Existing repo <span className="badge">Soon</span>
+          </span>
+          <strong>Import from GitHub</strong>
+          <span>Will read package and env variable names, never values.</span>
+        </div>
+        <a className="add-card" href="#new">
+          <span className="add-kicker">By hand</span>
+          <strong>Pick the tools you use</strong>
+          <span>Type Vercel, Supabase, Clerk… and Cuely starts watching them.</span>
+        </a>
+      </section>
+
+      {projects.length > 0 && (
+        <section className="card table-card" aria-label="Your projects">
+          <div className="table-scroll">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th scope="col">Project</th>
+                  <th scope="col">Stack</th>
+                  <th scope="col">Readiness</th>
+                  <th scope="col">At 1k users</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Last checked</th>
+                </tr>
+              </thead>
+              <tbody>
+                {projects.map(({ stack, tools, changes, ready }) => {
+                  const costs = tools.map(at1k).filter((v): v is number => v !== null);
+                  const worse = changes.some((c) => c.tone === "worse");
+                  return (
+                    <tr key={stack.id}>
+                      <td>
+                        <Link className="table-name" href={`/account/projects/${stack.id}`}>
+                          {stack.name}
+                        </Link>
+                        <span className="table-sub">{stack.description ? stack.description : "Saved by hand"}</span>
+                      </td>
+                      <td className="table-stack" data-label="Stack">{tools.map((t) => t.name).join(", ") || "–"}</td>
+                      <td className="table-ready" data-label="Readiness">
+                        {ready.total ? (
+                          <span>
+                            <span className="app-meter" aria-hidden="true">
+                              <i style={{ width: `${ready.pct}%` }} />
+                            </span>
+                            {ready.pct}%
+                          </span>
+                        ) : (
+                          "–"
+                        )}
+                      </td>
+                      <td data-label="At 1k users">{costs.length ? `$${n(costs.reduce((s, v) => s + v, 0))}` : "–"}</td>
+                      <td data-label="Status">
+                        {ready.blockersLeft ? (
+                          <span className="badge badge-warn">{plural(ready.blockersLeft, "blocker")}</span>
+                        ) : changes.length ? (
+                          <span className={`badge ${worse ? "badge-warn" : "badge-info"}`}>{plural(changes.length, "change")}</span>
+                        ) : (
+                          <span className="badge badge-good">Healthy</span>
+                        )}
+                      </td>
+                      <td className="muted" data-label="Last checked">{day(stack.seenAt)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-          <ul className="row-list">
-            {stacks.map((s) => {
-              const tools = s.tools.map((t) => bySlug.get(t)).filter((t) => t !== undefined);
-              const changes = stackChanges(s.baseline, tools);
-              return (
-                <li key={s.id}>
-                  <Link href={`/account/projects/${s.id}`} className="row-link">
-                    <span className="logo-stack" aria-hidden="true">
-                      {tools.slice(0, 5).map((t) => (
-                        <ToolLogo key={t.slug} slug={t.slug} name={t.name} size={22} />
-                      ))}
-                    </span>
-                    <span className="row-main">
-                      <strong>{s.name}</strong>
-                      <span className="muted small">
-                        {tools.map((t) => t.name).join(", ")} · checked {day(s.seenAt)}
-                      </span>
-                    </span>
-                    {changes.length ? (
-                      <span className={`badge ${changes.some((c) => c.tone === "worse") ? "badge-warn" : "badge-info"}`}>
-                        {changes.length} change{changes.length === 1 ? "" : "s"}
-                      </span>
-                    ) : (
-                      <span className="badge">Up to date</span>
-                    )}
-                    <ArrowRight size={16} aria-hidden="true" className="row-arrow" />
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
         </section>
       )}
 
-      {store && (
-        <section className="panel" aria-labelledby="new-title">
-          <div className="panel-head">
-            <h2 id="new-title">{stacks.length ? "Save another stack" : "Save your first stack"}</h2>
-            <p className="muted">
-              Only what you type here is stored: the name, the tools and the optional description. Delete it anytime.
-            </p>
+      {hasStore && (
+        <section id="new" className="card" aria-labelledby="new-title">
+          <div className="card-head">
+            <h2 id="new-title">{projects.length ? "Add a project by hand" : "Add your first project"}</h2>
+            <span className="muted small">Only what you type is stored: the name, the tools and the optional description.</span>
           </div>
           {full ? (
             <p>
-              You&apos;ve saved {plan.maxStacks} stacks, the most on the {plan.name} plan.{" "}
-              {plan.id === "free" ? <Link href="/account/billing">Pro saves up to 50.</Link> : "Delete one to save another."}
+              You have {n(plan.maxStacks)} projects, the most on the {plan.name} plan.{" "}
+              {plan.id === "free" ? <Link href="/account/billing">Pro keeps up to 50.</Link> : "Delete one to add another."}
             </p>
           ) : (
             <StackForm options={toolOptions(snap)} />

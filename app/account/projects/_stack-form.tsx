@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import { ToolPicker, type ToolOption } from "../_tool-picker";
 import { createStackAction, updateStackAction, type StackFormState } from "./actions";
 
-/** Create a stack, or edit one when `stack` is given. */
+/** Create a project, or edit one when `stack` is given. */
 export function StackForm({
   options,
   stack,
@@ -44,8 +44,8 @@ export function StackForm({
         </p>
       )}
       <div>
-        <button type="submit" className="btn btn-primary" disabled={pending}>
-          {pending ? "Saving…" : (submitLabel ?? (stack ? "Save changes" : "Save stack"))}
+        <button type="submit" className="btn-app btn-app-primary" disabled={pending}>
+          {pending ? "Saving…" : (submitLabel ?? (stack ? "Save changes" : "Save project"))}
         </button>
       </div>
     </form>
