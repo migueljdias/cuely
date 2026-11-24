@@ -51,3 +51,11 @@ Visual rules:
 ## Privacy rules
 
 MCP calls never store descriptions. Projects store only what the user typed or saved. Never send secrets or code anywhere.
+
+## When staging merges into main
+
+Database changes reach production on their own: a production deploy on Vercel runs `vercel-build`, which runs `scripts/seed.ts --production-only` and applies `db/schema.sql` (every statement is idempotent: `create ... if not exists`, `add column if not exists`). Preview and staging deploys skip it, so the Neon `staging` branch is changed by hand.
+
+- [ ] `saved_stacks.checks` (step 2, launch checklist ticks): already added on Neon `staging`. Comes to `main` with the first production deploy after the merge. Check it's there afterwards:
+      `select column_name from information_schema.columns where table_name = 'saved_stacks' and column_name = 'checks'`
+- [ ] Old `/account/stacks` links redirect to `/account/projects` (308).
