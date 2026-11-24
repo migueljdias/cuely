@@ -5,6 +5,8 @@ import { ALERT_TYPES, type AlertType } from "@/accounts/alerts";
 import { SITE_URL } from "@/site";
 import { plain } from "../_options";
 import { accountSession, day, projectsOverview } from "../_session";
+import { emailConfigured } from "@/email/send";
+import { alertPrefsAction } from "../actions";
 import { markToolSeenAction } from "../projects/actions";
 
 export const metadata: Metadata = { title: "Alerts · Cuely", robots: { index: false } };
@@ -13,9 +15,10 @@ export const dynamic = "force-dynamic";
 const KIND_TONE: Record<AlertType, string> = { compliance: "warn", outages: "warn", price: "info", better: "good" };
 
 /** Every alert across the holder's projects, filtered by type through ?type= so a view can be linked. */
-export default async function AlertsPage({ searchParams }: { searchParams: Promise<{ type?: string }> }) {
-  const { type } = await searchParams;
-  const [{ user }, { projects, alerts }] = await Promise.all([accountSession(), projectsOverview()]);
+export default async function AlertsPage({ searchParams }: { searchParams: Promise<{ type?: string; saved?: string }> }) {
+  const { type, saved } = await searchParams;
+  const [{ user, account }, { projects, alerts }] = await Promise.all([accountSession(), projectsOverview()]);
+  const mailOn = emailConfigured();
   const filter = ALERT_TYPES.some((t) => t.id === type) ? (type as AlertType) : null;
   const shown = filter ? alerts.filter((a) => a.type === filter) : alerts;
   const tabs = [{ id: null, label: "All", count: alerts.length }, ...ALERT_TYPES.map((t) => ({ ...t, count: alerts.filter((a) => a.type === t.id).length }))];
@@ -108,34 +111,54 @@ export default async function AlertsPage({ searchParams }: { searchParams: Promi
         <aside className="card deliver-card" aria-labelledby="h-deliver">
           <div className="card-head">
             <h2 id="h-deliver">How you hear about them</h2>
-            <span className="badge">Soon</span>
+            {!mailOn && <span className="badge">Soon</span>}
           </div>
-          <p className="card-sub">For now, alerts show here and on Home. Email is on the way:</p>
-          <ul className="deliver-list">
-            <li>
-              <input type="checkbox" disabled aria-label="Weekly digest email (coming soon)" />
-              <span>
-                <strong>Weekly digest email</strong>
-                <span>Mondays, one email for all projects. Skipped when nothing changed.</span>
-              </span>
-            </li>
-            <li>
-              <input type="checkbox" disabled aria-label="Right away for launch blockers (coming soon)" />
-              <span>
-                <strong>Right away for launch blockers</strong>
-                <span>A compliance &ldquo;no&rdquo; or a tool that stops fitting your data.</span>
-              </span>
-            </li>
-            <li>
-              <input type="checkbox" disabled aria-label="Price changes (coming soon)" />
-              <span>
-                <strong>Price changes</strong>
-                <span>Free plan or paid price moves on any tool you use.</span>
-              </span>
-            </li>
-          </ul>
+          <p className="card-sub">
+            {mailOn
+              ? "Alerts always show here and on Home. Pick the emails you want; each is off until you turn it on."
+              : "Alerts show here and on Home. Email isn't switched on yet: your choice is saved and applies once it is."}
+          </p>
+          {account ? (
+            <form action={alertPrefsAction}>
+              <ul className="deliver-list">
+                <li>
+                  <input id="al-digest" type="checkbox" name="digest" defaultChecked={account.alerts.digest} />
+                  <label htmlFor="al-digest">
+                    <strong>Weekly digest email</strong>
+                    <span>Mondays, one email for all projects. Skipped when nothing changed.</span>
+                  </label>
+                </li>
+                <li>
+                  <input id="al-blockers" type="checkbox" name="blockers" defaultChecked={account.alerts.blockers} />
+                  <label htmlFor="al-blockers">
+                    <strong>Right away for launch blockers</strong>
+                    <span>A compliance answer that changes for the worse, checked daily.</span>
+                  </label>
+                </li>
+                <li>
+                  <input id="al-prices" type="checkbox" name="prices" defaultChecked={account.alerts.prices} />
+                  <label htmlFor="al-prices">
+                    <strong>Price changes</strong>
+                    <span>Free plan or paid price moves on any tool you use, checked daily.</span>
+                  </label>
+                </li>
+              </ul>
+              <div className="deliver-save">
+                <button type="submit" className="btn-app btn-app-small">
+                  Save
+                </button>
+                {saved && (
+                  <span className="muted small" role="status">
+                    Saved.
+                  </span>
+                )}
+              </div>
+            </form>
+          ) : (
+            <p className="muted">Needs the account database.</p>
+          )}
           <p className="deliver-foot">
-            Will go to {user.email ?? "your account email"} · manage email in <Link href="/account/settings">Settings</Link>
+            Sent to {user.email ?? "your account email"}. Every email has a one-click unsubscribe.
           </p>
         </aside>
       </div>

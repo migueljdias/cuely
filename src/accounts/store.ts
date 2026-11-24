@@ -13,7 +13,13 @@ export interface Account {
   productUpdates: boolean;
   /** The app's colour theme. */
   theme: Theme;
+  /** Which alert emails the holder turned on. All off by default. */
+  alerts: AlertPrefs;
 }
+
+export type AlertKind = "digest" | "blockers" | "prices";
+export const ALERT_KINDS: AlertKind[] = ["digest", "blockers", "prices"];
+export type AlertPrefs = Record<AlertKind, boolean>;
 
 export type Theme = "dark" | "light" | "system";
 export const THEMES: Theme[] = ["dark", "light", "system"];
@@ -55,6 +61,7 @@ const toAccount = (r: Record<string, any>): Account => ({
   currentPeriodEnd: r.current_period_end ? new Date(r.current_period_end).toISOString() : null,
   productUpdates: r.product_updates === true,
   theme: THEMES.includes(r.theme) ? r.theme : "dark",
+  alerts: { digest: r.alert_digest === true, blockers: r.alert_blockers === true, prices: r.alert_prices === true },
 });
 
 /** Subscription statuses that keep Pro on. Anything else falls back to Free. */
@@ -90,6 +97,40 @@ export function accountStore(query: QueryFn) {
     /** Deletes the account row; keys, usage and projects go with it (on delete cascade). */
     async deleteAccount(userId: string): Promise<void> {
       await query("delete from accounts where user_id = $1", [userId]);
+    },
+
+    async setAlertPrefs(userId: string, prefs: AlertPrefs): Promise<void> {
+      await query("update accounts set alert_digest = $2, alert_blockers = $3, alert_prices = $4, updated_at = now() where user_id = $1", [
+        userId,
+        prefs.digest === true,
+        prefs.blockers === true,
+        prefs.prices === true,
+      ]);
+    },
+
+    /** Turns one kind of alert email off, from an unsubscribe link. */
+    async disableAlert(userId: string, kind: AlertKind): Promise<void> {
+      if (!ALERT_KINDS.includes(kind)) return;
+      await query(`update accounts set alert_${kind} = false, updated_at = now() where user_id = $1`, [userId]);
+    },
+
+    /** Accounts with an email address that turned this kind of alert email on. */
+    async alertRecipients(kind: AlertKind): Promise<{ userId: string; email: string }[]> {
+      if (!ALERT_KINDS.includes(kind)) return [];
+      const rows = await query(`select user_id, email from accounts where alert_${kind} = true and email is not null order by user_id`);
+      return rows.map((r) => ({ userId: String(r.user_id), email: String(r.email) }));
+    },
+
+    /** Change keys already emailed to this account in this kind of email. */
+    async sentAlertKeys(userId: string, kind: AlertKind): Promise<Set<string>> {
+      const rows = await query("select change_key from alert_sends where user_id = $1 and kind = $2", [userId, kind]);
+      return new Set(rows.map((r) => String(r.change_key)));
+    },
+
+    async recordAlertsSent(userId: string, kind: AlertKind, keys: string[]): Promise<void> {
+      for (const k of keys) {
+        await query("insert into alert_sends (user_id, kind, change_key) values ($1, $2, $3) on conflict do nothing", [userId, kind, k]);
+      }
     },
 
     async setTheme(userId: string, theme: Theme): Promise<void> {

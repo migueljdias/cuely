@@ -86,6 +86,11 @@ alter table accounts add column if not exists product_updates boolean not null d
 alter table accounts add column if not exists product_updates_at timestamptz;
 -- The app's colour theme, chosen on Settings: dark (the default), light, or system.
 alter table accounts add column if not exists theme text not null default 'dark' check (theme in ('dark', 'light', 'system'));
+-- Alert emails, each off until the account holder turns it on: the Monday digest, launch
+-- blockers (a compliance answer for the worse) and price changes, both checked daily.
+alter table accounts add column if not exists alert_digest boolean not null default false;
+alter table accounts add column if not exists alert_blockers boolean not null default false;
+alter table accounts add column if not exists alert_prices boolean not null default false;
 
 -- Optional MCP API keys. Only a SHA-256 hash is stored, the key is shown once.
 create table if not exists api_keys (
@@ -128,6 +133,16 @@ create table if not exists api_usage_detail (
   source  text not null,
   calls   integer not null default 0,
   primary key (user_id, day, tool, source)
+);
+
+-- Which alerts have been emailed, so each change is sent once per kind of email. The key
+-- names the change (tool, kind and wording), never anything the holder typed.
+create table if not exists alert_sends (
+  user_id    text not null references accounts(user_id) on delete cascade,
+  kind       text not null check (kind in ('digest', 'blockers', 'prices')),
+  change_key text not null,
+  sent_at    timestamptz not null default now(),
+  primary key (user_id, kind, change_key)
 );
 
 -- Stacks an account holder saved on their account page, to watch for price, health and

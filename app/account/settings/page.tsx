@@ -49,14 +49,14 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
               Email
             </h2>
             <ul className="deliver-list settings-email">
-              <li className="is-soon">
-                <input type="checkbox" disabled aria-label="Alerts for my projects (coming soon)" />
+              <li>
                 <span>
-                  <strong>
-                    Alerts for my projects <span className="badge">Soon</span>
-                  </strong>
+                  <strong>Alerts for my projects</strong>
                   <span>
-                    Weekly digest and launch blockers. Until then they show on <Link href="/account/alerts">Alerts</Link>.
+                    {account && (account.alerts.digest || account.alerts.blockers || account.alerts.prices)
+                      ? `On: ${[account.alerts.digest && "weekly digest", account.alerts.blockers && "launch blockers", account.alerts.prices && "price changes"].filter(Boolean).join(", ")}. `
+                      : "Off. "}
+                    Choose them on the <Link href="/account/alerts#h-deliver">Alerts</Link> page.
                   </span>
                 </span>
               </li>

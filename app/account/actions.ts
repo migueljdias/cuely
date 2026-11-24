@@ -182,3 +182,15 @@ export async function deleteAccountAction(_prev: DeleteState, form: FormData): P
   console.log(JSON.stringify({ event: "account_deleted", authDeleted: result.authDeleted }));
   redirect(`${SITE_URL}/`);
 }
+
+/** Saves which alert emails the holder wants. Each is off until they turn it on. */
+export async function alertPrefsAction(form: FormData): Promise<void> {
+  const { user, store } = await requireUser();
+  await store.setAlertPrefs(user.id, {
+    digest: form.get("digest") === "on",
+    blockers: form.get("blockers") === "on",
+    prices: form.get("prices") === "on",
+  });
+  revalidatePath("/account", "layout");
+  redirect("/account/alerts?saved=1#h-deliver");
+}
