@@ -50,23 +50,34 @@ export default async function HomePage() {
   const troubled = snap.tools
     .filter((t) => (t.health?.score ?? 0) < 0 && mine.has(t.slug))
     .sort((a, b) => a.health!.score - b.health!.score);
+  // The same change in several projects (a shared tool) is one alert naming each project.
+  const grouped = new Map<string, (typeof changes)[number] & { projects: string[] }>();
+  for (const c of changes) {
+    const k = `${c.tool}|${c.kind}|${c.text}`;
+    const g = grouped.get(k);
+    if (g) g.projects.push(c.project);
+    else grouped.set(k, { ...c, projects: [c.project] });
+  }
+  const healthChanged = new Set(changes.filter((c) => c.kind === "health").map((c) => c.tool));
   const feed = [
-    ...changes.map((c) => ({
-      key: `c-${c.projectId}-${c.tool}-${c.kind}-${c.text}`,
+    ...[...grouped.values()].map((c) => ({
+      key: `c-${c.tool}-${c.kind}-${c.text}`,
       tone: c.tone,
       label: `${KIND_LABEL[c.kind]} · ${c.name}`,
       text: plain(c.text),
-      where: c.project,
-      href: `/account/stacks/${c.projectId}`,
+      where: c.projects.join(", "),
+      href: c.projects.length === 1 ? `/account/stacks/${c.projectId}` : "/account/alerts",
     })),
-    ...troubled.map((t) => ({
-      key: `h-${t.slug}`,
-      tone: "worse" as const,
-      label: `Measured · ${t.name}`,
-      text: plain(t.health!.reasons.join(" ")),
-      where: projects.filter((p) => p.stack.tools.includes(t.slug)).map((p) => p.stack.name).join(", "),
-      href: `${SITE_URL}/tools/${t.slug}`,
-    })),
+    ...troubled
+      .filter((t) => !healthChanged.has(t.slug))
+      .map((t) => ({
+        key: `h-${t.slug}`,
+        tone: "worse" as const,
+        label: `Measured · ${t.name}`,
+        text: plain(t.health!.reasons.join(" ")),
+        where: projects.filter((p) => p.stack.tools.includes(t.slug)).map((p) => p.stack.name).join(", "),
+        href: `${SITE_URL}/tools/${t.slug}`,
+      })),
   ].slice(0, 5);
 
   const steps = [

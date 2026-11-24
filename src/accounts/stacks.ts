@@ -103,7 +103,11 @@ export function stackChanges(baseline: Record<string, ToolFacts>, tools: Tool[])
   return out;
 }
 
-const signed = (n: number) => (n > 0 ? `+${n}` : String(n));
+/** A health score with its sign, rounded to one decimal so float sums don't show as -0.30000000000000004. */
+const signed = (n: number) => {
+  const r = Math.round(n * 10) / 10;
+  return r > 0 ? `+${r}` : String(r);
+};
 
 /** Today's facts for every tool in the list, keyed by slug: the baseline to store. */
 export function baselineFor(tools: Tool[]): Record<string, ToolFacts> {

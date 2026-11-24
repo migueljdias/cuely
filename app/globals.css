@@ -3218,7 +3218,7 @@ a.app-stat:hover {
 .alert-feed li {
   border-top: 1px solid var(--line);
 }
-.alert-feed a {
+.app .alert-feed a {
   display: grid;
   gap: 4px;
   padding: 14px 0;
