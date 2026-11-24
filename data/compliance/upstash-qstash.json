@@ -1,0 +1,26 @@
+{
+  "slug": "upstash-qstash",
+  "readOn": "2026-11-21",
+  "pages": [
+    {
+      "url": "https://upstash.com/docs/common/help/compliance",
+      "lines": [
+        "For our current certifications, security controls and subprocessors, see the",
+        "Upstash Data Processing Agreement",
+        "Is Upstash SOC 2 Compliant?#",
+        "Yes. Upstash has a SOC 2 Type II report. SOC 2 controls apply across the",
+        "Is Upstash ISO 27001 Compliant?#",
+        "Is Upstash GDPR Compliant?#",
+        "Data Processing Agreement. We",
+        "Is Upstash HIPAA Compliant?#",
+        "Yes. Upstash Redis is HIPAA compliant and you can use it to store and process",
+        "Protected Health Information (PHI). A Business Associate Agreement (BAA) and",
+        "HIPAA enablement are available with the",
+        "Is Upstash SOC 2 Compliant?",
+        "Is Upstash ISO 27001 Compliant?",
+        "Is Upstash GDPR Compliant?",
+        "Is Upstash HIPAA Compliant?"
+      ]
+    }
+  ]
+}

@@ -6,6 +6,19 @@ Honest stack picks for coding agents. Cuely is a free, remote MCP server that an
 - Landing page: `https://cuely.dev`
 - Agent summary: `https://cuely.dev/llms.txt`
 
+## What Cuely receives
+
+Cuely never sees your code. It's a remote MCP server: it can't open files or run commands, and only sees what the agent puts in a call. For "check my stack" the agent reads `package.json` and config files locally and sends:
+
+```json
+{
+  "description": "Next.js app where therapists keep patient notes, now adding EU customers",
+  "using": ["Vercel", "Supabase", "Clerk", "Stripe", "Resend"]
+}
+```
+
+For each call Cuely stores one row: the tool, the matched recipe, the categories and detected needs, and a hash of the account that changes daily (`db/schema.sql`, `log()` in `src/mcp/server.ts`). It doesn't store the description, the tool list or IP addresses, and error logs leave out request bodies (`instrumentation.ts`). `tests/mcp.test.ts` calls every tool with marked text and fails if any of it is stored. The server's instructions tell agents never to send code, file contents, env values, secrets or names of people, customers or companies. Your MCP client shows the exact arguments before each call. More at [cuely.dev/trust](https://cuely.dev/trust).
+
 ## Tools
 
 | Tool | Input | Returns |
@@ -43,8 +56,8 @@ ChatGPT (web): turn on Developer mode (Settings → Apps → Advanced settings),
 
 The rule that can't bend: money never touches the ranking. There are no sponsored answers and no affiliate links (a test fails if a URL in the catalog carries query parameters).
 
-1. `src/engine/profile.ts` reads the kind of product: web, phone or both; who pays (nobody, users pay you, users pay each other); customers or your own staff; AI, documents, realtime; casual and daily web games and whether results get shared. It decides which categories are shown, which catches lead the answer, and when to ask instead of guess: a question is asked only when the fact is missing and would change the picks. It also flags products outside Cuely's coverage (engine, console, 3D and phone games, hardware, crypto) and partial ones (stores, SMS, video, fast real-time multiplayer).
-2. `src/engine/needs.ts` turns plain words in the description into needs (b2b, regulated, global_tax, open_source, eu, low_cost, edge, nextjs, realtime, fewer_vendors, per_tenant_db, long_running, high_volume, rag, usage_billing, google_workspace, counters, spiky, health_data). The profile adds mobile, marketplace and internal. Product names are masked first, so "Google Workspace" isn't a workspace and "React Native" isn't Next.js.
+1. `src/engine/profile.ts` reads the kind of product: web, phone or both, and whether a phone app is an iPhone app in Swift (Swift, SwiftUI, Xcode, "native iOS", with no Android or cross-platform word), which routes to the `native-ios-app` recipe instead of the Expo one; whether a phone app sends push notifications or reminders, which makes push a core pick instead of an optional one (browser push is flagged as partial coverage); who pays (nobody, users pay you, users pay each other); customers or your own staff; AI, documents, realtime; casual and daily web games and whether results get shared. It decides which categories are shown, which catches lead the answer, and when to ask instead of guess: a question is asked only when the fact is missing and would change the picks. It also flags products outside Cuely's coverage (engine, console, 3D and phone games, hardware, crypto) and partial ones (stores, SMS, video, fast real-time multiplayer).
+2. `src/engine/needs.ts` turns plain words in the description into needs (b2b, regulated, global_tax, open_source, eu, low_cost, edge, nextjs, realtime, fewer_vendors, per_tenant_db, long_running, high_volume, rag, usage_billing, google_workspace, counters, spiky, health_data, campaigns). The profile adds mobile, native_ios, marketplace and internal. Product names are masked first, so "Google Workspace" isn't a workspace and "React Native" isn't Next.js.
 3. Every tool in `src/catalog/tools.ts` has a published fit weight (−3 to +3) and a reason for each need it's good or bad at, plus an editorial default order in its category.
 4. `score = Σ fit[need] + 0.4 × (n − default_rank + 1) + health + compliance + (already_using ? 4 : 0) + (in_recipe ? 1 : 0)`, where `in_recipe` means the recipe Cuely routed to names that tool. Highest score wins; the default order settles ties.
 
@@ -77,6 +90,18 @@ data/signals.json       Measured incidents, advisories and downloads per tool (w
 scripts/                e2e check, SQL generation, seeding a database, pricing check
 tests/                  Vitest: catalog integrity, engine, Postgres (PGlite), MCP over HTTP
 ```
+
+## Run your own copy
+
+Running Cuely yourself keeps every call on your own machine or network. Without `DATABASE_URL` it serves the bundled catalog and needs no sign-in (outside a Vercel production deployment):
+
+```sh
+npm install
+npm run build && npm start -- -p 3100
+claude mcp add --transport http cuely-local http://localhost:3100/api/mcp
+```
+
+The catalog you get is the one in this checkout. Run `git pull` for the latest prices, measurements and compliance facts, which the scheduled workflows commit every day.
 
 ## Develop
 
@@ -223,3 +248,12 @@ All colour, type, radius and motion values are tokens at the top of `app/globals
 ### Tool marks and motion
 
 Tool logos come from [simple-icons](https://simpleicons.org) (CC0-1.0), vendored as path data in `src/logos.ts` and drawn in the current text colour at one size, so no tool looks louder than another. Each mark belongs to its owner and only identifies the tool. Tools without a simple-icons mark get a plain monogram. The hero example replays once when it scrolls into view and sections rise in once; both are skipped under `prefers-reduced-motion`, and the page reads fully without JavaScript.
+
+## Contributing
+
+Catalog corrections are the most useful contribution: see [CONTRIBUTING.md](CONTRIBUTING.md). Report security problems privately, as [SECURITY.md](SECURITY.md) describes.
+
+## License
+
+- **Code** is under the [Functional Source License, Version 1.1, ALv2 Future License](LICENSE) (FSL-1.1-ALv2). You can read, run, change and self-host it for any purpose except offering a competing commercial service. Each version becomes Apache 2.0 two years after it's published.
+- **Catalog data** (`src/catalog/`, `data/`, `db/seed.sql`) is under [CC BY-NC 4.0 with additional permissions](LICENSE-DATA). You can use it with your own copy of Cuely, even at work, and you can use Cuely's answers in any project. Republishing or selling the catalog itself needs permission.

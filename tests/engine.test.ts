@@ -205,7 +205,8 @@ describe("questions, coverage and misroutes", () => {
     const r = recommendStack(snap, { description: "a multiplayer game for phones" });
     expect(r.status).toBe("outside_coverage");
     expect(r.stack).toHaveLength(0);
-    expect(detectCoverage("an online store for candles").status).toBe("partial");
+    expect(detectCoverage("an online store for candles").status).toBe("covered"); // covered since 2026-11-20 (online-store recipe)
+    expect(detectCoverage("online store with multi-warehouse inventory").status).toBe("partial");
   });
 
   it("doesn't read Google Workspace, teams or subscriptions as B2B SaaS", () => {
@@ -230,6 +231,7 @@ describe("questions, coverage and misroutes", () => {
 describe("recipes beyond B2B SaaS", () => {
   const AGREE: [string, string][] = [
     ["mobile-subscription-app", EVAL.habit],
+    ["native-ios-app", "A SwiftUI iPhone app for journaling with a yearly subscription"],
     ["marketplace", EVAL.dogs],
     ["internal-tool", EVAL.bakery],
     ["ai-docs-app", EVAL.pdfs],
@@ -265,6 +267,40 @@ describe("recipes beyond B2B SaaS", () => {
     expect(route("An internal tool for our staff to track returns")).toBe("internal-tool");
   });
 
+  it("a Swift iPhone app gets the native recipe; Android or React Native keeps the Expo one", () => {
+    const route = (d: string) => recommendStack(snap, { description: d, assumeDefaults: true }).productType.recipe;
+    expect(route("A native iOS app for runners to log workouts, free")).toBe("native-ios-app");
+    expect(route("An iPhone app in Swift with a monthly subscription")).toBe("native-ios-app");
+    expect(route("A SwiftUI app for iOS and Android with a monthly plan")).toBe("mobile-subscription-app");
+    expect(route("A React Native iPhone app with a subscription")).toBe("mobile-subscription-app");
+    expect(route("I'm an iOS developer building a habit app for iPhone and Android")).toBe("mobile-subscription-app");
+    // Asked for by need, not by words.
+    expect(recommendStack(snap, { description: "An iPhone app for journaling", needs: ["native_ios"], assumeDefaults: true }).productType.recipe).toBe("native-ios-app");
+  });
+
+  it("a Swift iPhone app's answer is about Apple only: no Google Play fees or accounts", () => {
+    const r = recommendStack(snap, { description: "A SwiftUI iPhone app for journaling with a yearly subscription" });
+    expect(pick(r, "mobile_build")).toBe("xcode-cloud");
+    const catches = [...r.summary!.catches, ...r.summary!.moreCatches].map((c) => c.text).join(" ");
+    expect(catches).toMatch(/Small Business Program/);
+    expect(catches).toMatch(/Xcode 26/);
+    expect(catches).not.toMatch(/Google Play/);
+    expect(r.summary!.cost!.text).not.toMatch(/Google Play \$25/);
+    const expo = recommendStack(snap, { description: EVAL.habit });
+    expect([...expo.summary!.catches, ...expo.summary!.moreCatches].map((c) => c.text).join(" ")).toMatch(/Google Play/);
+  });
+
+  it("phone apps get a push pick: core when they ask for it, Expo for Expo, APNs for Swift, OneSignal for campaigns", () => {
+    const push = (d: string) => recommendStack(snap, { description: d, assumeDefaults: true }).stack.find((s) => s.category === "push");
+    expect(push("An iPhone and Android habit app with a subscription that sends daily reminders")).toMatchObject({ role: "core", pick: { slug: "expo-push" } });
+    expect(push("An iPhone and Android habit app with a subscription")).toMatchObject({ role: "optional", pick: { slug: "expo-push" } });
+    expect(push("A SwiftUI iPhone app for journaling with push notifications")?.pick.slug).toBe("apns-direct");
+    expect(push("An iPhone and Android app for a gym that sends marketing campaigns to segments of members")?.pick.slug).toBe("onesignal");
+    expect(push("A web app for teams with push notifications")).toBeUndefined();
+    expect(recommendStack(snap, { description: "A web app for teams with push notifications", assumeDefaults: true }).coverage?.notes.join(" ")).toMatch(/web push/);
+    expect(recommendStack(snap, { description: "An iPhone app with push notifications", assumeDefaults: true }).coverage?.status).toBe("covered");
+  });
+
   it("a mobile marketplace gets the marketplace recipe with a note on the phone parts", () => {
     const r = recommendStack(snap, { description: "An iOS and Android app where owners book and pay dog walkers; we keep 15%", assumeDefaults: true });
     expect(r.productType.recipe).toBe("marketplace");
@@ -284,6 +320,7 @@ describe("recipes beyond B2B SaaS", () => {
 
   it("get_recipe finds each recipe by plain words", () => {
     expect(matchRecipe(recipes, "react native app with in-app purchases")?.slug).toBe("mobile-subscription-app");
+    expect(matchRecipe(recipes, "swiftui app with storekit and testflight")?.slug).toBe("native-ios-app");
     expect(matchRecipe(recipes, "two-sided marketplace with payouts")?.slug).toBe("marketplace");
     expect(matchRecipe(recipes, "chatbot over pdfs")?.slug).toBe("ai-docs-app");
     expect(matchRecipe(recipes, "internal tool for inventory")?.slug).toBe("internal-tool");
@@ -374,5 +411,100 @@ describe("casual and daily web games", () => {
   it("get_recipe finds the game recipe by plain words", () => {
     expect(matchRecipe(recipes, "daily puzzle game with streaks")?.slug).toBe("daily-web-game");
     expect(matchRecipe(recipes, "browser trivia game")?.slug).toBe("daily-web-game");
+  });
+});
+
+describe("background jobs, SMS, search and CMS", () => {
+  const cats = (description: string) => {
+    const r = recommendStack(snap, { description, assumeDefaults: true });
+    return Object.fromEntries(r.stack.map((s) => [s.category, s.pick.slug]));
+  };
+
+  it("adds SMS for texts and one-time codes, with the 10DLC catch", () => {
+    const r = recommendStack(snap, { description: "Next.js SaaS for gyms that texts members class reminders", assumeDefaults: true });
+    expect(r.stack.some((s) => s.category === "sms")).toBe(true);
+    const all = [...(r.summary?.catches ?? []), ...(r.summary?.moreCatches ?? [])].map((c) => c.text).join(" ");
+    expect(all).toMatch(/10DLC/);
+    expect(cats("bootstrapped SaaS that sends one-time codes by text").sms).toBe("telnyx");
+  });
+
+  it("keeps free Postgres search as the default for a Next.js app", () => {
+    expect(cats("Next.js SaaS for dentists with a search bar").search).toBe("postgres-full-text");
+  });
+
+  it("adds a search category for a search bar, but not for semantic search", () => {
+    expect(cats("Marketplace for vintage furniture with a search bar and facets").search).toBe("postgres-full-text");
+    expect(cats("Web app for lawyers with semantic search over their documents").search).toBeUndefined();
+  });
+
+  it("adds a CMS for a blog, and Payload when the builder wants open source", () => {
+    expect(cats("Next.js marketing site with a blog our content team edits").cms).toBe("sanity");
+    expect(cats("Open source self-hosted Next.js site with a blog").cms).toBe("payload");
+  });
+
+  it("adds background jobs when the work runs outside a request", () => {
+    expect(cats("Web app that scrapes job boards nightly with background jobs").jobs).toBeDefined();
+    expect(cats("B2B SaaS for companies, per-seat subscriptions").jobs).toBeUndefined();
+  });
+
+  it("no longer marks SMS as outside coverage, but still flags voice", () => {
+    expect(recommendStack(snap, { description: "Web app that sends SMS alerts", assumeDefaults: true }).coverage.status).toBe("covered");
+    expect(recommendStack(snap, { description: "Web app for a call center with voice calls", assumeDefaults: true }).coverage.status).toBe("partial");
+  });
+});
+
+describe("AI agents and developer APIs", () => {
+  const rec = (description: string) => recommendStack(snap, { description, assumeDefaults: true });
+
+  it("routes AI agents to the agent recipe, with background jobs", () => {
+    for (const d of ["Web app with an AI agent that researches leads and drafts emails", "Agentic coding assistant web app that runs tasks with tool calling"]) {
+      const r = rec(d);
+      expect(r.productType.recipe, d).toBe("ai-agent-app");
+      expect(r.stack.some((s) => s.category === "jobs"), d).toBe(true);
+    }
+  });
+
+  it("keeps document Q&A on the docs recipe, and doesn't treat real-estate agents as AI", () => {
+    expect(rec("AI chatbot that answers questions over our help center PDFs").productType.recipe).toBe("ai-docs-app");
+    expect(rec("Real estate app where agents list homes and buyers book tours").profile.ai).toBe(false);
+  });
+
+  it("routes paid APIs and developer tools to the API recipe, with per-key rate limits", () => {
+    const r = rec("Paid REST API that returns company data, billed per API call");
+    expect(r.productType.recipe).toBe("developer-api");
+    expect(r.stack.find((s) => s.category === "kv")?.pick.slug).toBeDefined();
+    expect(rec("Developer tool: a public API and SDK for e-signatures").productType.recipe).toBe("developer-api");
+  });
+
+  it("doesn't route an ordinary SaaS or an app that uses someone else's API keys to the API recipe", () => {
+    expect(rec("Project management SaaS for software teams").productType.recipe).toBe("b2b-saas");
+    expect(rec("Web app where users paste their OpenAI api keys to summarize articles").productType.recipe).not.toBe("developer-api");
+    expect(rec("Web app where users paste their OpenAI api keys to summarize articles").stack.some((s) => s.category === "cms")).toBe(false);
+  });
+});
+
+describe("online stores and browser extensions", () => {
+  const rec = (description: string) => recommendStack(snap, { description, assumeDefaults: true });
+
+  it("routes an online store to Shopify first, with custom-build parts conditional", () => {
+    const r = rec("Online store selling handmade candles and soap");
+    expect(r.productType.recipe).toBe("online-store");
+    const commerce = r.stack.find((s) => s.category === "commerce");
+    expect(commerce?.pick.slug).toBe("shopify");
+    expect(commerce?.role).toBe("core");
+    expect(r.stack.find((s) => s.category === "hosting")?.role).toBe("if_you_build");
+    expect(r.stack.find((s) => s.category === "payments")?.role).toBe("if_you_build");
+  });
+
+  it("picks Medusa for an open-source store, and keeps marketplaces on the marketplace recipe", () => {
+    expect(rec("Open source self-hosted ecommerce store for sneakers").stack.find((s) => s.category === "commerce")?.pick.slug).toBe("medusa");
+    expect(rec("Marketplace where sellers list vintage clothes and we keep 10%").productType.recipe).toBe("marketplace");
+  });
+
+  it("routes browser extensions to the extension recipe", () => {
+    const r = rec("Chrome extension that summarizes articles, with a paid pro plan");
+    expect(r.productType.recipe).toBe("browser-extension");
+    expect(r.coverage.status).toBe("covered");
+    expect(r.stack.some((s) => s.category === "payments")).toBe(true); // "paid pro plan" charges money
   });
 });

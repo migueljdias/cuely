@@ -1,0 +1,58 @@
+{
+  "slug": "typesense",
+  "readOn": "2026-11-21",
+  "pages": [
+    {
+      "url": "https://cloud.typesense.org/security",
+      "lines": [
+        "inside your own cluster, in your chosen region. Raw analytics events expire after 28 days by default.",
+        "Snapshots of cluster data that we take for operational purposes are stored encrypted in the same region as your",
+        "the regions you choose and are deleted automatically when they expire.",
+        "Data Residency",
+        "When provisioning your cluster, we offer you the choice to pick which geographic region(s) you want your cluster to be",
+        "Data you send into the cluster will not leave the region you've chosen.",
+        "We offer the following regions:",
+        "Ireland",
+        "London",
+        "Paris",
+        "Frankfurt",
+        "Stockholm",
+        "We operate our services in multiple regions around the world, and also multiple physical data centers in every",
+        "region.",
+        "least 3 different physical data centers and automatically replicate data between them. This ensures that hardware",
+        "issues with any one particular node in a particular data center does not affect your clusters' up time.",
+        "Physical security and redundancy for these data centers are handled by our Cloud Providers.",
+        "We are SOC 2 (Type 2) certified, and evaluated by an independent AICPA certified external auditor.",
+        "We share our SOC 2 report with customers who purchase a",
+        "support@typesense.org to request our SOC 2 report. We can share it once",
+        "We are also HIPAA compliant and certified by an independent auditor. We are able to sign our standard Business Associate Agreement (BAA) with any Covered Entities",
+        "Here is our Data Processing Agreement which also has a link to our sub-processors."
+      ]
+    },
+    {
+      "url": "https://cloud.typesense.org/legal/dpa",
+      "lines": [
+        "Data Processing Agreement",
+        "This DPA amends and supplements our Terms of Service (\"ToS\") and requires no further action on your part.",
+        "If you do not agree to this DPA, you may discontinue the use of the Typesense service and cancel your account.",
+        "1.3. Data Protection Laws means the data privacy and security laws and regulations of any jurisdiction applicable to the Processing of Customer Personal Data, including, in each case to the extent applicable, European Data Protection Laws and the California Consumer Privacy Act of 2018, as amended by the California Privacy Rights Act of 2020, and its implementing regulations (collectively, CCPA ).",
+        "1.5. European Data Protection Laws means, in each case to the extent applicable: (a) the EU General Data Protection Regulation 2016/679 ( GDPR ); (b) the GDPR as it forms part of the law of England and Wales, Scotland and Northern Ireland by virtue of section 3 of the European Union (Withdrawal) Act 2018 ( UK GDPR ), the Data Protection Act of 2018, and all other laws relating to data protection, ",
+        "1.11. Standard Contractual Clauses means, as applicable, Module Two (Transfer controller to processor) or Module Three (Transfer processor to processor) of the standard contractual clauses approved by Commission Implementing Decision (EU) 2021/914 of 4 June 2021 on standard contractual clauses for the transfer of personal data to third countries pursuant to Regulation (EU) 2016/679 of the European",
+        "1.12. Subprocessor means any Processor appointed by Typesense to Process Customer Personal Data on behalf of Customer under the Agreement.",
+        "Subject to the requirements of this Section 5, Customer generally authorizes Typesense to engage Subprocessors as Typesense considers reasonably appropriate for the Processing of Customer Personal Data. A list of Typesense's current Subprocessors, including their functions and locations, is available at https://cloud.typesense.org/legal/sub_processors and may be updated by Typesense from time to t",
+        "Upon Customer's written request, Typesense will make available information and records and reasonably contribute to audits, including inspections, by providing Customer or Customer's mandated auditor with a copy of Typesense's then-most recent SOC 2 Type II or similar audit report (collectively, the Reports ) to demonstrate Typesense's compliance with Data Protection Laws and Typesense's obligatio",
+        "9.1. Data Processing Facilities. Typesense may, subject to Sections 9.2 and 9.3, Process Customer Personal Data in the United States or anywhere Typesense or its Subprocessors maintains facilities. When signing up for the Services, Customer will have the opportunity to select the region where Customer Personal Data will be stored. Customer is responsible for ensuring that its use of the Services c",
+        "9.2. European Transfers. If Customer transfers Customer Personal Data to Typesense that is subject to European Data Protection Laws, and such transfer is not subject to an alternative adequate transfer mechanism under European Data Protection Laws or otherwise exempt from cross-border transfer restrictions, then Customer (as data exporter ) and Typesense (as data importer ) agree that the applicab",
+        "9.3. Other Jurisdictions. If Customer transfers Customer Personal Data to Typesense that is subject to Data Protection Laws other than European Data Protection Laws which require the parties to enter into standard contractual clauses to ensure the protection of the transferred Customer Personal Data, and the transfer is not subject to an alternative adequate transfer mechanism under Data Protectio",
+        "8. For transfers to Subprocessors, the subject matter, nature and duration of the Processing of Customer Personal Data: For the same subject matter, nature, and duration set forth above.",
+        "1. Information Security Program. Implement, maintain, and comply with information security policies and procedures designed to protect the confidentiality, integrity, and availability of Customer Personal Data and any systems that store or otherwise Process it, which are: (a) aligned with an industry-standard control framework (SOC 2 Type II); (b) approved by executive management; (c) reviewed and",
+        "4. Vendor Management. Prior to engaging Subprocessors and other subcontractors, conduct reasonable due diligence and monitoring to ensure subcontractors are capable of maintaining the confidentiality, integrity, and availability of Customer Personal Data.",
+        "12. Physical Security. Ensure that applicable Subprocessors have taken steps to ensure the physical and environmental security of data centers, server room facilities and other areas containing Customer Personal Data, including by: (a) protecting information assets from unauthorized physical access; (b) managing, monitoring, and logging movement of persons into and out of the organization's facili",
+        "1. Application of Modules. If Customer is acting as a Controller with respect to Customer Personal Data, Module Two: Transfer controller to processor of the Standard Contractual Clauses shall apply. If Customer is acting as a Processor to a third-party Controller with respect to Customer Personal Data, Typesense is a sub-Processor and Module Three: Transfer processor to processor of the Standard C",
+        "2. Sections I-V. The parties agree to the following selections in Sections I-IV of the Standard Contractual Clauses: (a) the parties select Option 2 in Clause 9(a) and the specified time period shall be the notification time period set forth in Section 5 of the Addendum; (b) the optional language in Clause 11(a) is omitted; (c) the parties select Option 1 in Clause 17 and the governing law of the ",
+        "3. Annexes. The name, address, contact details, activities relevant to the transfer, and role of the parties set forth in the Agreement and the Addendum shall be used to complete Annex I.A. of the Standard Contractual Clauses. The information set forth in Appendix 1 to the Addendum shall be used to complete Annex I.B. of the Standard Contractual Clauses. The competent supervisory authority in Anne",
+        "6. Transfers from Switzerland. If Customer transfers Customer Personal Data to Typesense that is subject to the Swiss FADP, the following modifications shall apply to the Standard Contractual Clauses to the extent that the Swiss FADP applies to Customer's Processing when making that transfer: (a) the term member state as used in the Standard Contractual Clauses shall not be interpreted in such a w"
+      ]
+    }
+  ]
+}

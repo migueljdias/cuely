@@ -144,6 +144,19 @@ describe("Accounts and the Stripe webhook", () => {
     expect(cols.some((c) => /card|pan|cvc|number/.test(c))).toBe(false);
   });
 
+  it("keeps product-update emails off until the account holder turns them on", async () => {
+    const a = await store.ensure("user_optin", "o@example.com");
+    expect(a.productUpdates).toBe(false);
+    await store.setProductUpdates("user_optin", true);
+    expect((await store.get("user_optin"))?.productUpdates).toBe(true);
+    const [row] = await query("select product_updates_at from accounts where user_id = 'user_optin'");
+    expect(row.product_updates_at).not.toBeNull();
+    await store.setProductUpdates("user_optin", false);
+    expect((await store.get("user_optin"))?.productUpdates).toBe(false);
+    // Signing in again never turns it back on.
+    expect((await store.ensure("user_optin", "o@example.com")).productUpdates).toBe(false);
+  });
+
   it("turns Pro on and off from subscription events, once per event", async () => {
     const sub = (status: string, id: string, type = "customer.subscription.updated") => ({
       id,
@@ -267,7 +280,7 @@ describe("MCP access and plan limits", () => {
     expect(body.id).toBe(999);
     expect(body.error.data.limit).toBe("day");
     expect(body.error.data.reset_at).toBe(new Date(nextUtcMidnight(t)).toISOString());
-    expect(body.error.data.upgrade_url).toBe("https://app.cuely.dev/account");
+    expect(body.error.data.upgrade_url).toBe("https://app.cuely.dev/account/billing");
     expect(body.error.message).toContain(`${PLANS.free.perDay} tool calls a day`);
     expect(Number(over.headers.get("retry-after"))).toBeGreaterThan(0);
     // Listing tools still works, so the client can connect and show the error on the call.

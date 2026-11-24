@@ -77,6 +77,10 @@ export const SOURCES: Record<string, ToolSources> = {
   pusher: { status: "https://status.pusher.com", npm: "pusher-js" },
   // Mobile builds
   "expo-eas": { status: "https://status.expo.dev", npm: "eas-cli" },
+  // Push notifications
+  "expo-push": { status: "https://status.expo.dev", npm: "expo-notifications" },
+  "firebase-cloud-messaging": { npm: "@react-native-firebase/messaging" },
+  onesignal: { npm: "react-native-onesignal" },
   // Internal tool builders
   retool: { status: "https://status.retool.com" },
   airtable: { status: "https://status.airtable.com" },
@@ -85,4 +89,22 @@ export const SOURCES: Record<string, ToolSources> = {
   "cloudflare-durable-objects": { status: CLOUDFLARE },
   "cloudflare-kv": { status: CLOUDFLARE },
   "vercel-global-config": { status: VERCEL, npm: "@vercel/edge-config" },
+  // Background jobs, SMS, search, CMS and store platforms (added 2026-11-20). Status pages are
+  // listed only where <status>/api/v2/incidents.json returned Statuspage JSON on 2026-11-20.
+  // Trigger.dev, Algolia and Meilisearch publish status pages in other formats; Typesense's
+  // status host didn't resolve; Vonage's answered only through a proxy the daily job doesn't use.
+  inngest: { status: "https://status.inngest.com", npm: "inngest" },
+  "trigger-dev": { npm: "@trigger.dev/sdk" },
+  "upstash-qstash": { status: "https://status.upstash.com", npm: "@upstash/qstash" },
+  twilio: { status: "https://status.twilio.com", npm: "twilio" },
+  telnyx: { status: "https://status.telnyx.com", npm: "telnyx" },
+  vonage: { npm: "@vonage/server-sdk" },
+  algolia: { npm: "algoliasearch" },
+  typesense: { npm: "typesense" },
+  meilisearch: { npm: "meilisearch" },
+  sanity: { status: "https://www.sanity-status.com", npm: "@sanity/client" },
+  payload: { npm: "payload" },
+  contentful: { status: "https://www.contentfulstatus.com", npm: "contentful" },
+  shopify: { status: "https://www.shopifystatus.com", npm: "@shopify/shopify-api" },
+  medusa: { status: "https://status.medusajs.com", npm: "@medusajs/medusa" },
 };

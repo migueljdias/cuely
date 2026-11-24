@@ -758,6 +758,12 @@ section {
   max-width: 36em;
   margin: 0 0 32px;
 }
+.page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: -12px 0 28px;
+}
 .small {
   font-size: 14px;
 }
@@ -2818,4 +2824,747 @@ main.wrap :is(h2, h3) {
   .app .panel {
     background: var(--surface);
   }
+}
+
+/* Announcement bar above the header (announce-bar.tsx). */
+.announce {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 40px;
+  padding: 6px 48px;
+  position: relative;
+  background: var(--accent);
+  color: #fff;
+  font: 500 14px/1.4 var(--sans);
+  text-align: center;
+}
+.announce p {
+  margin: 0;
+}
+.announce a {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(255, 255, 255, 0.55);
+}
+.announce a:hover {
+  text-decoration-color: #fff;
+}
+.announce-close {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+}
+.announce-close:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+@media (max-width: 560px) {
+  .announce {
+    font-size: 13px;
+    padding-left: 16px;
+  }
+  .announce-sep,
+  .announce-repo {
+    display: none;
+  }
+}
+
+/* Product-updates checkbox on the account page. */
+.optin {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.optin label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  max-width: 36em;
+}
+.optin input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--accent);
+  flex: none;
+}
+
+/* Signed-in app pages: lists, badges, Ask Cuely, saved stacks. Shares tokens with the app shell above. */
+.app-crumbs a {
+  color: inherit;
+  text-decoration: none;
+}
+.app-crumbs a:hover {
+  color: var(--text);
+}
+a.app-who {
+  color: inherit;
+  text-decoration: none;
+}
+a.app-who:hover {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+}
+.badge {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.badge-info {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--accent-ink);
+}
+.badge-warn {
+  --warn: #b45309;
+  border-color: color-mix(in srgb, var(--warn) 40%, var(--line));
+  background: color-mix(in srgb, var(--warn) 9%, transparent);
+  color: var(--warn);
+}
+@media (prefers-color-scheme: dark) {
+  .badge-warn {
+    --warn: #fbbf24;
+  }
+}
+.sub-head {
+  margin: 24px 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+h4.sub-head {
+  margin-top: 18px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-3);
+}
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: var(--text-3);
+  text-decoration: none;
+}
+.back-link:hover {
+  color: var(--text);
+}
+
+/* Setup checklist on the overview. */
+.steps-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.steps-list li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+}
+.steps-list li > div {
+  display: grid;
+  gap: 2px;
+}
+.steps-dot {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid var(--line);
+  border-radius: 50%;
+  color: #fff;
+}
+.steps-list li.is-done .steps-dot {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+.steps-list li.is-done strong {
+  color: var(--text-3);
+  text-decoration: line-through;
+  text-decoration-color: var(--line);
+}
+
+/* Quick actions. */
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.quick {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color var(--fast) var(--ease), background-color var(--fast) var(--ease);
+}
+.quick svg {
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.quick span {
+  font-size: 14px;
+  color: var(--text-2);
+}
+.quick:hover {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+}
+
+/* Linked rows: stacks, tools with problems, settings. */
+.row-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+.row-list li {
+  border-bottom: 1px solid var(--line);
+}
+.row-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 6px;
+  color: var(--text);
+  text-decoration: none;
+  border-radius: 8px;
+}
+.row-link:hover {
+  background: var(--surface-2);
+}
+.row-main {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.row-main strong {
+  font-weight: 500;
+}
+.row-arrow {
+  flex: none;
+  color: var(--text-3);
+}
+.logo-stack {
+  flex: none;
+  display: inline-flex;
+}
+.logo-stack .tlogo + .tlogo {
+  margin-left: -6px;
+  box-shadow: 0 0 0 2px var(--bg);
+}
+.empty {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  padding: 20px;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  color: var(--text-2);
+}
+.empty p {
+  margin: 0;
+}
+
+/* Usage bars. */
+.bars {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 6px;
+  height: 160px;
+  margin: 8px 0 20px;
+}
+.bar {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 6px;
+}
+.bar i {
+  align-self: end;
+  display: block;
+  min-height: 2px;
+  border-radius: 4px 4px 1px 1px;
+  background: var(--accent);
+}
+.bar span {
+  font-size: 11px;
+  color: var(--text-3);
+  text-align: center;
+}
+
+/* Plan cards on billing. */
+.plan-compare {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.plan-card {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  justify-items: start;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.plan-card.is-current {
+  background: var(--surface-2);
+}
+.plan-card h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+.plan-card ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-2);
+}
+.plan-card li {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+.plan-card li svg {
+  flex: none;
+  color: var(--accent);
+  transform: translateY(2px);
+}
+
+/* Forms in the app. */
+.field textarea,
+.field select {
+  font: 400 16px var(--sans);
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+  padding: 10px 12px;
+  width: 100%;
+}
+.field select {
+  min-height: 44px;
+  padding: 0 12px;
+}
+.field textarea:focus-visible,
+.field select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+}
+.field-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.two-col {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.seg {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 14px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface-2);
+}
+.seg button {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--text-2);
+  font: 500 14px var(--sans);
+  cursor: pointer;
+}
+.seg button.is-on {
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(15, 22, 48, 0.12);
+}
+.save-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.save-row .form-error {
+  flex-basis: 100%;
+}
+.danger-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+details > summary {
+  cursor: pointer;
+}
+.inline-h {
+  display: inline;
+}
+
+/* Tool picker. */
+.picker {
+  position: relative;
+}
+.picker-box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 44px;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+  background: var(--bg);
+}
+.picker-box:focus-within {
+  outline: 2px solid var(--accent);
+}
+.picker-box input {
+  flex: 1;
+  min-width: 160px;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: 400 16px var(--sans);
+  outline: none;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 4px 3px 6px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-2);
+  font-size: 14px;
+}
+.chip button {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  color: var(--text-3);
+  cursor: pointer;
+}
+.chip button:hover {
+  background: var(--line);
+  color: var(--text);
+}
+.picker-list {
+  position: absolute;
+  z-index: 10;
+  left: 0;
+  right: 0;
+  margin: 4px 0 0;
+  padding: 4px;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  box-shadow: 0 18px 40px -20px rgba(10, 14, 26, 0.4);
+}
+.picker-list button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--text);
+  font: 400 15px var(--sans);
+  text-align: left;
+  cursor: pointer;
+}
+.picker-list button .muted {
+  margin-left: auto;
+}
+.picker-list button.is-hi,
+.picker-list button:hover {
+  background: var(--surface-2);
+}
+
+/* Answers. */
+.result + .result {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.result-head {
+  margin: 0 0 8px;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+}
+.cost-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  margin: 14px 0;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+.cost-num {
+  font-size: 26px;
+  letter-spacing: -0.02em;
+}
+.cost-num small {
+  font-size: 14px;
+  color: var(--text-3);
+}
+.pick-list,
+.verdict-list,
+.tool-facts,
+.change-list,
+.check-list,
+.diff-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.pick-list li,
+.verdict-list li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+.verdict-list li {
+  grid-template-columns: 64px auto minmax(0, 1fr);
+}
+.pick-list li > div,
+.verdict-list li > div {
+  display: grid;
+  gap: 3px;
+}
+.pick-list strong a {
+  color: var(--text);
+  text-decoration: none;
+}
+.pick-list strong a:hover {
+  text-decoration: underline;
+}
+.pick-cost {
+  display: grid;
+  justify-items: end;
+  font-size: 15px;
+}
+.pick-cost small {
+  font-size: 12px;
+  color: var(--text-3);
+}
+.verdict {
+  justify-self: start;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--surface-2);
+  color: var(--text-2);
+}
+.verdict-switch {
+  background: color-mix(in srgb, #b45309 12%, transparent);
+  color: #b45309;
+}
+.verdict-add {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent-ink);
+}
+.catch-list,
+.note-list {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+  font-size: 15px;
+  color: var(--text-2);
+}
+.check-list li {
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+  font-size: 15px;
+}
+.check-list summary .tag {
+  margin: 0 6px 0 0;
+}
+.check-list details p {
+  margin: 8px 0 0;
+}
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+.compare-col {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.diff-list li {
+  display: grid;
+  gap: 4px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+
+/* A saved stack's tools and changes. */
+.tool-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.tool-facts li {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.tool-facts-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.tool-facts-head > div {
+  flex: 1;
+  display: grid;
+}
+.tool-facts-head strong a {
+  color: var(--text);
+}
+.icon-link {
+  color: var(--text-3);
+}
+.tool-facts dl,
+.compare-col dl {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px 12px;
+  margin: 0 0 10px;
+  font-size: 14px;
+}
+.tool-facts dt,
+.compare-col dt {
+  color: var(--text-3);
+}
+.tool-facts dd,
+.compare-col dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.tool-facts p {
+  margin: 0;
+}
+.change-list {
+  margin-bottom: 16px;
+}
+.change-list li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  border-left: 3px solid var(--line);
+  border-radius: 0 8px 8px 0;
+  background: var(--surface-2);
+  font-size: 15px;
+}
+.change-list li.is-worse {
+  border-left-color: #d97706;
+}
+.change-list li.is-better {
+  border-left-color: var(--accent);
+}
+.stack-form {
+  max-width: 640px;
+}
+@media (max-width: 720px) {
+  .quick-grid,
+  .plan-compare,
+  .compare-grid,
+  .tool-facts,
+  .two-col {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .verdict-list li {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .verdict-list .tlogo {
+    display: none;
+  }
+  .steps-list li {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .steps-list li .btn {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
+summary .inline-h {
+  font-size: 20px;
+  font-weight: 500;
+  margin: 0;
 }

@@ -1,7 +1,7 @@
 {
   "slug": "upstash-redis",
   "url": "https://upstash.com/pricing/redis",
-  "readOn": "2026-11-12",
+  "readOn": "2026-11-18",
   "lines": [
     "$0",
     "250 MB",
@@ -35,7 +35,6 @@
     "$0.2 per 100K",
     "$0.25 per GB",
     "Free tier includes 250MB data size and 500K commands per month.",
-    "The database is deleted after 3 days unless you claim it into your account from the console link in the response. Once claimed, it follows the pricing on this page.",
     "Are paid databases' first 250MB data and 500K commands free?",
     "You can set a maximum monthly budget for your database so you won't be charged beyond that limit. We send email notifications when you reach 70% and 90% of your monthly budget so you can adjust the limit or upgrade to a Fixed plan.",
     "Yes. But for Global databases, the write commands are replicated to all read regions in addition to the primary region. Replications are also counted as commands. For example, if you have one primary and one read region, 100K writes cost $0.4 ($0.2 x 2).",

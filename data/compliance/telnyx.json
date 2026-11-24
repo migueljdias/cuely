@@ -1,0 +1,35 @@
+{
+  "slug": "telnyx",
+  "readOn": "2026-11-21",
+  "pages": [
+    {
+      "url": "https://telnyx.com/data-privacy",
+      "lines": [
+        "We maintain strict adherence to all international and regional data privacy regulations and standards, including GDPR, CCPA, and other relevant legislations. We have a proactive stance on privacy compliance, working diligently to adapt to the ever-evolving regulatory landscape. This compliance-focused approach underpins the trust our customers place in us, knowing their data is handled in accordan",
+        "How to navigate GDPR regulations",
+        "Check out our article on the EU’s GDPR data protection laws.",
+        "What is GDPR and CCPA, and what is Telnyx doing to comply?",
+        "GDPR stands for the General Data Protection Regulation and came into effect on May 25, 2018. GDPR replaced national privacy and security laws that previously existed within the EU with a single, comprehensive EU-wide law that governs the use, sharing, transfer and processing of EU citizens’ personal data.",
+        "Our policy is to respect all laws that apply to our business, and this includes GDPR. We also appreciate that our customers have requirements under GDPR that are directly impacted by their use of Telnyx products and services. We are committed to helping our customers stay in compliance with GDPR and their local requirements.",
+        "As part of our commitment to GDPR compliance, we maintain a regularly updated Privacy Policy.",
+        "In addition, here are a few things that Telnyx is committed to doing to ensure our compliance with GDPR and that of our customers:",
+        "Where we are transferring data outside of the EU, Telnyx commits to having the appropriate data transfer mechanisms in place as required by GDPR.",
+        "Telnyx commits to follow appropriate security measures and precautions in accordance with GDPR.",
+        "We will hold any subprocessors that handle personal data, including our data center partners, to appropriate data management, security, and privacy practices and standards.",
+        "Where appropriate, we will offer contractual language documenting our commitments to our customers to support their GDPR obligations.",
+        "Telnyx will assist our customers, insofar as possible, to respond to data subject requests our customers may receive under the GDPR.",
+        "What are the Data Subject Rights under GDPR?",
+        "We provide a summary of Data Subject Rights available under GDPR, which can be accessed in our Privacy Policy section titled \"Data Subjects Rights\".",
+        "Our goal is to provide our customers with secure, fast, and reliable services. As a provider of global services, we run our services with common operational practices and features across multiple jurisdictions. We store data in data centers located in the US, or customers can elect to store data in Germany. We may also allow employees and contractors located around the world to access certain data",
+        "We need to transfer your personal data to other organizations to help us provide services to you. For example, we use Amazon Web Services data centers to assist us in storing your data. In some instances, these are other companies within the Telnyx family. For example, if you request support and assistance, you may speak to our agents at our headquarters in the US or to one of our other support ce",
+        "Telnyx understands and respects the rules for onward transfers of personal data outside of the EU. To that end, Telnyx offers customers a Data Processing Addendum (DPA) that includes the EU Standard Contractual Clauses to meet onward transfer requirements under the GDPR. The Telnyx DPA is available for all customers on request which can be electronically signed to meet onward transfer requirements",
+        "The European Data Protection Board issued guidance on supplementary measures to meet the adequacy requirement of GDPR. We will continue to analyze these requirements and any others issued by European data protection authorities as they arise.",
+        "Do you offer your customers a Data Processing Addendum?",
+        "Yes! We understand that our customers, and in particular, our European customers, will require that, where Telnyx is a processor of EU personal data, we execute additional terms that meet GDPR obligations with respect to the processing of that EU personal data. The Telnyx Data Processing Addendum is available on request and can be signed electronically in order to meet onward transfer requirements",
+        "Who can I contact with questions regarding GDPR?",
+        "Further, Telnyx has, and continues to build, best-in-class processes to ensure that all clients’ data is secure. We are also dedicated to providing exceptional data security management services. Accordingly, we are SOC 2 certified for both Type 1 and Type 2. These certifications outline and acknowledge our extensive, documented, and improvable processes and controls that we diligently follow to ke",
+        "ISO • PCI • HIPAA • GDPR • SOC2 Type II"
+      ]
+    }
+  ]
+}

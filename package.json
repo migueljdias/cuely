@@ -2,6 +2,7 @@
   "name": "cuely",
   "version": "0.1.0",
   "private": true,
+  "license": "FSL-1.1-ALv2",
   "type": "module",
   "scripts": {
     "dev": "next dev",
@@ -20,22 +21,22 @@
     "vercel-build": "tsx scripts/seed.ts --production-only && next build"
   },
   "dependencies": {
-    "@clerk/backend": "^3.27.0",
-    "@clerk/nextjs": "^7.9.25",
+    "@clerk/backend": "^3.30.0",
+    "@clerk/nextjs": "^7.10.2",
     "@modelcontextprotocol/sdk": "^1.32.2",
-    "@neondatabase/serverless": "^1.2.0",
+    "@neondatabase/serverless": "^1.2.1",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.1.0",
     "geist": "^1.9.2",
-    "lucide-react": "^1.72.0",
-    "next": "^16.4.5",
+    "lucide-react": "^1.74.0",
+    "next": "^16.4.6",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@anthropic-ai/sdk": "^1.8.0",
-    "@electric-sql/pglite": "^0.5.15",
+    "@anthropic-ai/sdk": "^1.10.0",
+    "@electric-sql/pglite": "^0.5.16",
     "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "tsx": "^4.23.15",

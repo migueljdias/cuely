@@ -23,6 +23,10 @@ export interface PracticeContext {
   tools: string[];
   /** Categories the stack covers. */
   categories: CategorySlug[];
+  /** The product sends push notifications (push is a core pick, not an optional one). */
+  push?: boolean;
+  /** An AI agent that takes actions with tools. */
+  agent?: boolean;
 }
 
 export type Phase = "day_one" | "before_launch";
@@ -151,7 +155,7 @@ export const PRACTICES: Practice[] = [
     detail: "Use hosted Checkout or the provider's embedded fields; card numbers never touch your server or logs.",
     why: "It keeps your PCI DSS scope to the shortest questionnaire.",
     source: "https://docs.stripe.com/security/guide",
-    applies: (c) => c.money !== "none" && !mobile(c),
+    applies: (c) => c.categories.includes("payments") && c.money !== "none" && !mobile(c),
   },
   {
     id: "verify-webhooks",
@@ -161,7 +165,7 @@ export const PRACTICES: Practice[] = [
     detail: "Check the webhook signature with the endpoint's signing secret before acting on an event, and make handlers safe to run twice.",
     why: "An unverified webhook lets anyone mark an order paid or a subscription active.",
     source: "https://docs.stripe.com/webhooks",
-    applies: (c) => c.money !== "none",
+    applies: (c) => c.categories.includes("payments") && c.money !== "none",
   },
   {
     id: "marketplace-kyc",
@@ -364,6 +368,66 @@ export const PRACTICES: Practice[] = [
     why: "Wrong or missing answers get an app rejected or pulled.",
     source: "https://support.google.com/googleplay/android-developer/answer/10787469",
     applies: mobile,
+  },
+  {
+    id: "ios-privacy-manifest",
+    area: "app_stores",
+    phase: "before_launch",
+    title: "Add an iOS privacy manifest with approved reasons",
+    detail: "Add PrivacyInfo.xcprivacy to the iOS app (Expo: ios.privacyManifests in app config) with an approved reason for each required-reason API the app or its SDKs call, such as UserDefaults and file timestamps, and use SDK versions that ship their own manifests.",
+    why: "Since May 1, 2024, App Store Connect doesn't accept a new app or update without approved reasons for those APIs, including ones used by third-party SDKs.",
+    source: "https://developer.apple.com/documentation/bundleresources/privacy-manifest-files",
+    applies: mobile,
+  },
+  {
+    id: "ios-tracking-permission",
+    area: "privacy",
+    phase: "before_launch",
+    title: "Ask before tracking, or don't track",
+    detail: "If the app or an SDK links its data with other companies' data for advertising or shares it with data brokers, ask with App Tracking Transparency first and set NSPrivacyTracking in the privacy manifest. Analytics you keep to yourself isn't tracking. Don't make the app's features depend on saying yes.",
+    why: "Apple requires explicit permission through App Tracking Transparency to track users (Guideline 5.1.2(i)), and apps that track without it are rejected.",
+    source: "https://developer.apple.com/app-store/user-privacy-and-data-use/",
+    applies: (c) => mobile(c) && customers(c),
+  },
+  {
+    id: "push-consent",
+    area: "app_stores",
+    phase: "before_launch",
+    title: "Ask for notifications in context, and opt in to marketing pushes",
+    detail: "Ask for notification permission when the user turns on something that needs it, keep the app usable without it, keep private details out of the notification text, and send promotional pushes only to people who opted in through consent text in the app, with an in-app way to opt out.",
+    why: "App Review Guideline 4.5.4 says push must not be required for the app to work, shouldn't carry sensitive information, and needs explicit opt-in for promotions or marketing.",
+    source: "https://developer.apple.com/app-store/review/guidelines/",
+    applies: (c) => mobile(c) && !!c.push,
+  },
+  {
+    id: "eu-trader-status",
+    area: "app_stores",
+    phase: "before_launch",
+    title: "Declare your EU trader status in App Store Connect",
+    detail: "Declare whether you're a trader under the EU Digital Services Act. A trader (anyone selling or running the app as a business) gives Apple an address, phone number and email to show on the App Store product page.",
+    why: "Apps without a trader status were removed from the App Store in the EU from February 17, 2025, and new apps ask for it at submission.",
+    source: "https://developer.apple.com/help/app-store-connect/manage-compliance-information/manage-european-union-digital-services-act-trader-requirements",
+    applies: (c) => mobile(c) && customers(c),
+  },
+  {
+    id: "sms-consent",
+    area: "compliance",
+    phase: "before_launch",
+    title: "Get consent before texting people, and honor STOP",
+    detail: "Collect a clear opt-in (a checkbox that says what you'll text and how often) before sending any automated text, store when and how each person agreed, and stop texting the moment someone replies STOP or opts out another way.",
+    why: "FCC rules require consent for autodialed texts (written consent for marketing texts), and people can opt out at any time in any reasonable manner.",
+    source: "https://www.fcc.gov/consumers/guides/stop-unwanted-robocalls-and-texts",
+    applies: (c) => c.categories.includes("sms"),
+  },
+  {
+    id: "agent-least-privilege",
+    area: "ai",
+    phase: "day_one",
+    title: "Give the agent the fewest permissions it needs, and ask a person before risky actions",
+    detail: "Give each tool its own narrowly scoped credentials (read-only where possible, one user's data only), and require a person to approve actions that send, pay, delete or publish. Treat web pages, emails and files the agent reads as data that may contain instructions, never as commands.",
+    why: "Instructions hidden in a web page or file can steer an agent (indirect prompt injection), and the damage is limited by what its tools are allowed to do.",
+    source: "https://genai.owasp.org/llmrisk/llm01-prompt-injection/",
+    applies: (c) => !!c.agent,
   },
 ];
 

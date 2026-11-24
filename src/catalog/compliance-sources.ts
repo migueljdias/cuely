@@ -7,11 +7,12 @@
  * covers one product (R2's data location) isn't read as covering another.
  *
  * Left out on purpose:
- * - payments, secrets, DNS and mobile builds: they don't hold the product's user
- *   data, so these facts don't change the pick (see DATA_CATEGORIES).
+ * - payments, secrets, DNS, mobile builds and push: they don't hold the product's user
+ *   data (push services hold device tokens and the messages you send), so these facts don't change the pick (see DATA_CATEGORIES).
  * - tools with no vendor behind them (Better Auth, pgvector, cached polling): the
  *   answer is whatever your own host and database say.
  *
+ * - Vonage: no page of its own on these topics for its APIs turned up (checked 2026-11-20).
  * - Turso, the Gemini API and Pusher Channels: no page of theirs on these topics
  *   loads without a browser (checked 2026-11-12). Google Cloud's HIPAA page covers
  *   Vertex AI, not the Gemini API, so it isn't used.
@@ -75,4 +76,13 @@ export const COMPLIANCE_SOURCES: Record<string, string[]> = {
   "cloudflare-kv": CLOUDFLARE,
   "vercel-global-config": VERCEL,
   "redis-cloud": ["https://redis.io/trust/"],
+  // Background jobs, SMS and search (added 2026-11-20; each page checked to load without a browser)
+  inngest: ["https://www.inngest.com/security", "https://www.inngest.com/pricing"],
+  "trigger-dev": ["https://trigger.dev/security"],
+  "upstash-qstash": ["https://upstash.com/docs/common/help/compliance"],
+  twilio: ["https://www.twilio.com/en-us/hipaa"],
+  telnyx: ["https://telnyx.com/data-privacy"],
+  algolia: ["https://www.algolia.com/policies/security-measures", "https://www.algolia.com/policies/data-processing-addendum"],
+  typesense: ["https://cloud.typesense.org/security", "https://cloud.typesense.org/legal/dpa"],
+  meilisearch: ["https://www.meilisearch.com/eu", "https://www.meilisearch.com/docs/capabilities/platform/infrastructure/regions"],
 };

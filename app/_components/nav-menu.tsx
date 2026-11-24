@@ -39,7 +39,7 @@ export function NavMenu({ links, signInHref }: { links: { href: string; label: s
               </a>
             ))}
             <a href={signInHref} style={{ ["--i" as string]: links.length }}>
-              Account
+              Dashboard
             </a>
           </nav>
         </div>

@@ -1,0 +1,25 @@
+{
+  "slug": "inngest",
+  "readOn": "2026-11-21",
+  "pages": [
+    {
+      "url": "https://www.inngest.com/security",
+      "lines": [
+        "Inngest is SOC 2 Type II compliant.",
+        "Inngest offers a standard signed Data Processing Agreement (DPA) to customers on paid plans. File a support ticket to request one.",
+        "We have an Information Security Program in place that is communicated throughout the organization. Our Information Security Program follows the criteria set forth by the SOC 2 Framework. SOC 2 is a widely known information security auditing procedure created by the American Institute of Certified Public Accountants."
+      ]
+    },
+    {
+      "url": "https://www.inngest.com/pricing",
+      "lines": [
+        "HIPAA add-on",
+        "HIPAA included",
+        "HIPAA",
+        "BAAs for healthcare compliance",
+        "Core execution, concurrency, seats, and workers are part of your plan's base allowance and overage rates. Advanced observability and HIPAA compliance are separate paid add-ons, not included in the base Pro, Business, or Enterprise price.",
+        "Inngest is SOC 2 Type II compliant."
+      ]
+    }
+  ]
+}

@@ -1,13 +1,34 @@
 {
   "tools": {
+    "amazon-route-53": {
+      "verifiedOn": "2026-11-21"
+    },
+    "amazon-s3": {
+      "verifiedOn": "2026-11-18"
+    },
+    "cached-polling": {
+      "verifiedOn": "2026-11-18"
+    },
+    "claude-api": {
+      "verifiedOn": "2026-11-19"
+    },
+    "cloudflare-workers": {
+      "verifiedOn": "2026-11-19"
+    },
     "lemon-squeezy": {
       "verifiedOn": "2026-11-16"
     },
     "neon": {
-      "verifiedOn": "2026-11-14"
+      "verifiedOn": "2026-11-20"
     },
     "neon-auth": {
-      "verifiedOn": "2026-11-14"
+      "verifiedOn": "2026-11-20"
+    },
+    "netlify": {
+      "verifiedOn": "2026-11-18"
+    },
+    "openai-api": {
+      "verifiedOn": "2026-11-20"
     },
     "paddle": {
       "verifiedOn": "2026-11-14"
@@ -15,14 +36,29 @@
     "pgvector": {
       "verifiedOn": "2026-11-14"
     },
+    "plausible": {
+      "verifiedOn": "2026-11-17"
+    },
     "render": {
       "verifiedOn": "2026-11-14"
     },
     "revenuecat": {
       "verifiedOn": "2026-11-16"
     },
+    "shopify": {
+      "verifiedOn": "2026-11-23"
+    },
+    "supabase-auth": {
+      "verifiedOn": "2026-11-20"
+    },
+    "supabase-realtime": {
+      "verifiedOn": "2026-11-20"
+    },
+    "upstash-redis": {
+      "verifiedOn": "2026-11-18"
+    },
     "vercel": {
-      "verifiedOn": "2026-11-12"
+      "verifiedOn": "2026-11-18"
     }
   }
 }

@@ -113,7 +113,7 @@ describe("MCP over Streamable HTTP", () => {
 
   it("list_categories lists all and expands one", async () => {
     const all: any = await client.callTool({ name: "list_categories", arguments: {} });
-    expect(all.structuredContent.categories).toHaveLength(16);
+    expect(all.structuredContent.categories).toHaveLength(22);
     const one: any = await client.callTool({ name: "list_categories", arguments: { category: "email" } });
     expect(text(one)).toMatch(/Resend/);
     expect(text(one)).toMatch(/3,000 emails per month/);
@@ -129,6 +129,31 @@ describe("MCP over Streamable HTTP", () => {
     expect(repo.events.length).toBeGreaterThan(0);
     expect(repo.events.some((e) => e.tool === "recommend_stack" && e.recipe === "b2b-saas")).toBe(true);
     expect(JSON.stringify(repo.events)).not.toMatch(/fintech startup/);
+  });
+
+  // The promise on cuely.dev/trust: descriptions, tool lists and other free text an agent sends
+  // are used to answer the call and never stored. Every tool, every free-text field.
+  it("stores no free text from any tool's input, only the published usage fields", async () => {
+    const before = repo.events.length;
+    const M = "zqxmarker";
+    const calls: [string, Record<string, unknown>][] = [
+      ["recommend_stack", { description: `B2B SaaS for ${M}1 clinics in the EU`, already_using: [`${M}2`], avoid: [`${M}3`], assume_defaults: true }],
+      ["start_project", { description: `Marketplace where ${M}4 tutors get paid`, already_using: [`${M}5`], avoid: [`${M}6`] }],
+      ["check_project", { description: `Next.js app for ${M}7 therapists, patient notes`, using: ["Vercel", "Supabase", `${M}8`] }],
+      ["get_recipe", { product_type: `${M}9 b2b saas`, include_steps: false }],
+      ["compare_tools", { a: "Clerk", b: "WorkOS AuthKit", context: `${M}10 HR software for enterprises` }],
+      ["list_categories", {}],
+    ];
+    for (const [name, args] of calls) {
+      const r: any = await client.callTool({ name, arguments: args });
+      expect(r.isError, name).toBeFalsy();
+    }
+    await new Promise((r) => setTimeout(r, 10));
+    const logged = repo.events.slice(before);
+    expect(logged.length).toBe(calls.length);
+    expect(JSON.stringify(logged)).not.toContain(M);
+    const allowed = new Set(["tool", "recipe", "categories", "needs", "callerHash"]);
+    for (const e of logged) for (const k of Object.keys(e)) expect(allowed.has(k), k).toBe(true);
   });
 });
 

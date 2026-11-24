@@ -1,7 +1,7 @@
 import { APP_URL, SITE_URL } from "./site";
 
 export const ENDPOINT = `${SITE_URL}/api/mcp`;
-export const KEY_PAGE = `${APP_URL}/account`;
+export const KEY_PAGE = `${APP_URL}/account/keys`;
 
 export interface ConnectOption {
   id: string;

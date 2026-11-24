@@ -2,14 +2,20 @@ import { categories } from "./categories";
 import { tools as coreTools } from "./tools";
 import { moreTools } from "./tools-more";
 import { gameTools } from "./tools-games";
+import { expansionTools } from "./tools-expansion";
 import { COSTS, COST_PROFILE } from "./costs";
 import { b2bSaas } from "./recipes/b2b-saas";
 import { mobileSubscriptionApp } from "./recipes/mobile-subscription-app";
+import { nativeIosApp } from "./recipes/native-ios-app";
 import { marketplace } from "./recipes/marketplace";
 import { aiDocsApp } from "./recipes/ai-docs-app";
 import { internalTool } from "./recipes/internal-tool";
 import { dailyWebGame } from "./recipes/daily-web-game";
 import { consumerWebApp } from "./recipes/consumer-web-app";
+import { aiAgentApp } from "./recipes/ai-agent-app";
+import { developerApi } from "./recipes/developer-api";
+import { onlineStore } from "./recipes/online-store";
+import { browserExtension } from "./recipes/browser-extension";
 import type { Recipe, Tool } from "./types";
 import { healthFrom, normsOf, outageRivals, type SignalsFile } from "@/freshness/health";
 import { applyFacts, type FactsFile } from "@/freshness/facts";
@@ -41,7 +47,7 @@ export const factUpdates: FactsFile = process.env.CUELY_NO_FACT_UPDATES === "1" 
 export const compliance: ComplianceFile = process.env.CUELY_NO_COMPLIANCE === "1" ? { tools: {} } : (complianceJson as ComplianceFile);
 
 /** Every tool, with its monthly cost at the published profile and its measured health attached. */
-const allTools = [...coreTools, ...moreTools, ...gameTools];
+const allTools = [...coreTools, ...moreTools, ...gameTools, ...expansionTools];
 const norms = normsOf(signals);
 const rivals = outageRivals(allTools, signals);
 export const tools: Tool[] = allTools.map((t) => {
@@ -53,7 +59,7 @@ export const tools: Tool[] = allTools.map((t) => {
 export { categories };
 
 /** Sorted by slug, the same order the Postgres repository returns. */
-export const recipes: Recipe[] = [b2bSaas, mobileSubscriptionApp, marketplace, aiDocsApp, internalTool, dailyWebGame, consumerWebApp].sort((a, b) => a.slug.localeCompare(b.slug));
+export const recipes: Recipe[] = [b2bSaas, mobileSubscriptionApp, nativeIosApp, marketplace, aiDocsApp, internalTool, dailyWebGame, consumerWebApp, aiAgentApp, developerApi, onlineStore, browserExtension].sort((a, b) => a.slug.localeCompare(b.slug));
 
 /** One statement every answer carries, so agents can repeat it to users. */
 export const POLICY =

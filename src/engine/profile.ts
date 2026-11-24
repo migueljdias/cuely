@@ -32,9 +32,27 @@ export interface Profile {
   game: boolean;
   /** Players share results, so traffic can arrive in viral spikes. */
   shareable: boolean;
+  /** An iPhone or iPad app written in Swift with Xcode, with no Android or cross-platform build. */
+  nativeIos: boolean;
+  /** The description asks for push notifications or reminders. */
+  push: boolean;
+  /** Sends or receives text messages (codes, alerts, reminders by text). */
+  sms: boolean;
+  /** Has a search bar over its own records (not semantic search over documents). */
+  search: boolean;
+  /** Non-developers write or edit content: a blog, marketing pages, articles. */
+  cms: boolean;
+  /** An AI agent: the model takes multi-step actions with tools, not just answers. */
+  agent: boolean;
+  /** The product is an API or developer tool that other developers call with keys. */
+  api: boolean;
+  /** An online store selling products to shoppers (not a marketplace where users sell to each other). */
+  store: boolean;
+  /** A browser extension (Chrome, Firefox, Edge, Safari). */
+  extension: boolean;
   /** Where each value came from. */
   source: Record<"platform" | "money" | "audience", "described" | "answered" | "assumed">;
-  matched: Partial<Record<"platform" | "money" | "audience" | "ai" | "game", string>>;
+  matched: Partial<Record<"platform" | "money" | "audience" | "ai" | "game" | "nativeIos", string>>;
 }
 
 export interface Question {
@@ -54,9 +72,16 @@ export interface Coverage {
 const any = (text: string, words: string[]) => words.find((w) => wordPattern(w).test(text)) ?? null;
 
 const MOBILE = ["ios", "android", "iphone", "ipad", "mobile app", "mobile apps", "phone app", "app store",
-  "play store", "google play", "react native", "expo", "flutter", "swift", "swiftui", "kotlin", "native app"];
+  "play store", "google play", "react native", "expo", "flutter", "swift", "swiftui", "uikit", "xcode", "kotlin", "native app"];
 const WEB = ["web", "web app", "webapp", "website", "site", "saas", "dashboard", "browser", "next.js", "nextjs",
   "landing page", "portal", "web first", "web-first", "chrome extension", "pwa"];
+/** Words that ask for notifications sent to the phone. */
+export const PUSH = ["push", "push notification", "push notifications", "notification", "notifications", "notify", "notifies",
+  "reminder", "reminders", "remind", "reminds", "nudge", "nudges", "alert", "alerts"];
+/** Words that say the app is written natively for Apple platforms. */
+const NATIVE_IOS = ["swift", "swiftui", "uikit", "xcode", "native ios", "native iphone", "native ipad", "storekit", "cloudkit"];
+/** Words that say it also ships on Android or through a cross-platform framework, so the Expo recipe fits better. */
+const CROSS_PLATFORM = ["android", "react native", "expo", "flutter", "kotlin", "play store", "google play", "cross-platform", "cross platform"];
 const BOTH = ["web and mobile", "mobile and web", "web and ios", "ios and web", "web plus mobile", "cross-platform web"];
 const APP_WORDS = ["app", "apps", "application"];
 
@@ -66,7 +91,7 @@ const MARKETPLACE = ["marketplace", "commission", "take rate", "our cut", "we ke
 const PAY_YOU = ["subscription", "subscriptions", "per month", "/month", "/mo", "monthly plan", "paid plan",
   "paid plans", "pricing", "per-seat", "per seat", "freemium", "charge users", "charge customers", "paywall",
   "in-app purchase", "in-app purchases", "one-time purchase", "sell it", "sell to", "usage-based", "usage based",
-  "billing", "monetize", "premium", "online store", "my store", "online shop", "web shop", "checkout", "sell", "selling", "subscription box", "shopify", "ecommerce", "e-commerce"];
+  "billing", "monetize", "premium", "pro plan", "paid pro", "paid tier", "paid api", "per api call", "billed per", "online store", "my store", "online shop", "web shop", "checkout", "sell", "selling", "subscription box", "shopify", "ecommerce", "e-commerce"];
 const TWO_SIDED = ["book a", "book and pay", "book appointments", "booking", "bookings", "hire", "hiring", "providers", "sellers", "buyers", "hosts",
   "freelancers", "walkers", "sitters", "tutors", "drivers", "cleaners", "creators", "vendors", "two-sided",
   "connects", "connect people"];
@@ -105,10 +130,42 @@ const GAME_3D = ["3d", "console", "consoles", "steam", "fps", "first-person shoo
 const FAST_MULTIPLAYER = ["multiplayer", "real-time multiplayer", "realtime multiplayer", "matchmaking", "netcode",
   "game server", "game servers", "pvp", "player vs player", "lobbies"];
 
+/** Text messages and phone verification: the SMS and voice category. */
+export const SMS = ["sms", "text message", "text messages", "texting", "text reminder", "text reminders", "send a text",
+  "sends a text", "by text", "via text", "otp", "one-time code", "one-time codes", "verification code", "verification codes",
+  "phone verification", "verify phone", "verify their phone", "two-way texting", "mms"];
+/** A search bar over the product's own records. Semantic search over documents is RAG, not this. */
+export const SEARCH = ["search bar", "search box", "full-text search", "full text search", "site search", "searchable",
+  "search across", "search and filter", "search and filters", "search their", "search our", "search the catalog",
+  "faceted", "facets", "typo-tolerant", "typo tolerance", "instant search", "search-as-you-type", "search as you type"];
+/** Content written by non-developers: the CMS category. */
+export const CMS = ["cms", "headless cms", "blog", "blog posts", "content site", "marketing site", "marketing pages",
+  "content editors", "content team", "editors publish", "publish articles", "write articles", "landing pages", "help center articles"];
+
+/** An AI that acts, not only answers. "agents" alone could be real-estate or support agents, so it needs an AI word too. */
+export const AGENT = ["ai agent", "ai agents", "agentic", "autonomous agent", "autonomous agents", "agent that", "agents that",
+  "tool use", "tool calling", "tool calls", "function calling", "takes actions", "take actions", "acts on", "multi-step tasks",
+  "research agent", "coding agent", "browser agent", "browses the web", "computer use", "agent workflows", "agent workflow"];
+/** Agent words that only ever mean an AI, so they count as AI on their own. */
+const AGENT_AI = ["ai agent", "ai agents", "agentic", "autonomous agent", "autonomous agents", "tool calling", "function calling",
+  "coding agent", "research agent", "browser agent", "computer use"];
+/** A product that developers call with API keys. */
+export const API_PRODUCT = ["public api", "rest api", "graphql api", "developer api", "api for developers", "api product",
+  "sdk", "sdks", "developer tool", "developer tools", "dev tool", "dev tools", "devtool", "devtools",
+  "developer platform", "per api call", "api-first", "api first", "sell api access", "paid api"];
+
+/** An online store selling products. */
+export const STORE = ["online store", "online shop", "web shop", "webshop", "ecommerce", "e-commerce", "shopify", "storefront",
+  "physical products", "dropshipping", "subscription box", "shopping cart", "sell products", "sells products", "sell merch",
+  "merch store", "product catalog", "my store", "our store"];
+/** A browser extension. */
+export const EXTENSION = ["chrome extension", "browser extension", "firefox add-on", "firefox addon", "firefox extension",
+  "edge extension", "safari extension", "web extension"];
+
 const ENGINE_NOTE = "Cuely doesn't cover game engines, console or 3D games; it covers casual and daily games that run in a web browser.";
 
 /** Things Cuely doesn't cover. "outside" means the core of the product is out of scope. */
-const OUTSIDE: { words: string[]; note: string; status: "partial" | "outside"; needs?: string[] }[] = [
+const OUTSIDE: { words: string[]; note: string; status: "partial" | "outside"; needs?: string[]; unless?: string[] }[] = [
   { words: GAME_ENGINE, status: "outside", note: ENGINE_NOTE },
   { words: GAME_3D, needs: GAME, status: "outside", note: ENGINE_NOTE },
   { words: PHONE_GAME, needs: GAME, status: "outside",
@@ -121,25 +178,23 @@ const OUTSIDE: { words: string[]; note: string; status: "partial" | "outside"; n
     note: "Cuely doesn't cover blockchain or crypto infrastructure." },
   { words: ["desktop app", "electron", "tauri", "macos app", "windows app"], status: "partial",
     note: "Cuely doesn't cover desktop packaging, signing or auto-updates; the stack below covers only the backend parts." },
-  { words: ["online store", "ecommerce", "e-commerce", "shopify", "shipping", "shipped", "physical products", "dropshipping", "subscription box"], status: "partial",
-    note: "Cuely doesn't compare store builders, shipping or inventory systems; for a standard online store, a hosted store builder may beat a custom build." },
-  { words: ["chrome extension", "browser extension"], status: "partial",
-    note: "Cuely doesn't cover browser-extension publishing or store rules." },
+  { words: ["warehouse management", "inventory across warehouses", "erp", "3pl", "multi-warehouse"], status: "partial",
+    note: "Cuely doesn't compare warehouse, ERP or 3PL systems; the store platform below covers products, orders, shipping labels and taxes." },
   { words: ["live streaming", "video streaming", "video calls", "video calling"], status: "partial",
     note: "Cuely doesn't cover video streaming or calling providers yet." },
   { words: ["train a model", "fine-tune", "fine tune", "fine-tuning", "gpu", "gpus", "training data"], status: "partial",
     note: "Cuely doesn't cover model training or GPU hosting; it covers calling hosted model APIs." },
   { words: ["wallet", "neobank", "lending", "hold customer money", "money transfer", "remittance"], status: "partial",
     note: "Apps that move or hold customer money need licensing review first; Cuely doesn't cover ledgers or banking partners." },
-  { words: ["sms", "text messages", "phone calls", "voice calls"], status: "partial",
-    note: "Cuely doesn't cover SMS or voice providers yet." },
-  { words: ["push notifications"], status: "partial",
-    note: "Cuely doesn't compare push-notification services yet (Expo and Firebase both include one)." },
+  { words: ["phone calls", "voice calls", "ivr", "call center", "call centre"], status: "partial",
+    note: "Cuely's SMS and voice picks also handle calls, but they're compared on US text message prices; check each provider's voice rates." },
+  { words: ["push notifications", "web push", "browser notifications"], status: "partial", unless: MOBILE,
+    note: "Cuely compares push services for phone apps, not browser (web push) notifications." },
 ];
 
 export function detectCoverage(text: string): Coverage {
   const t = maskText(text);
-  const hits = OUTSIDE.filter((o) => any(t, o.words) && (!o.needs || any(t, o.needs)));
+  const hits = OUTSIDE.filter((o) => any(t, o.words) && (!o.needs || any(t, o.needs)) && (!o.unless || !any(t, o.unless)));
   if (!hits.length) return { status: "covered", notes: [] };
   // When the core is out of scope, only the out-of-scope notes apply (there is no "stack below"),
   // and an engine game that is also a phone game gets one note, not two.
@@ -243,8 +298,8 @@ export function detectProfile(text: string, answers: Answers = {}): ProfileResul
     matched.audience = customer ?? "charges users";
   }
 
-  const ai = !!any(t, AI);
-  if (ai) matched.ai = any(t, AI)!;
+  const ai = !!any(t, AI) || !!any(t, AGENT_AI);
+  if (ai) matched.ai = any(t, AI) ?? any(t, AGENT_AI)!;
   const rag = ai && !!any(t, RAG);
   const realtime = !!any(t, ["realtime", "real-time", "real time", "live updates", "chat", "presence", "collaborative",
     "multiplayer", "websocket", "websockets", "retro", "retros", "retrospective", "retrospectives", "whiteboard",
@@ -255,6 +310,20 @@ export function detectProfile(text: string, answers: Answers = {}): ProfileResul
   const game = !!gameWord && audience !== "internal";
   if (game) matched.game = gameWord!;
   const shareable = game && !!any(t, SHARE);
+  // Checked on the raw text: masking turns "React Native" into a placeholder, and it must still count as cross-platform.
+  const nativeWord = platform !== "web" ? any(raw, NATIVE_IOS) : null;
+  const nativeIos = !!nativeWord && !any(raw, CROSS_PLATFORM);
+  if (nativeIos) matched.nativeIos = nativeWord!;
+  const push = !!any(t, PUSH);
+  // "texts members" is a text message; "legal texts" isn't, so the bare word only counts as a verb with a person after it.
+  const sms = !!any(t, SMS) || /\btext(s|ing)?\s+(users|members|customers|patients|clients|people|them|parents|students|staff|guests|riders|drivers|tenants)\b/.test(raw);
+  // "semantic search" is retrieval over documents (the vector category), so it doesn't count as a search bar.
+  const search = !!any(t.replace(/semantic search/g, " "), SEARCH);
+  const cms = !!any(t, CMS);
+  const agent = ai && !!any(t, AGENT);
+  const api = audience === "customers" && !!any(t, API_PRODUCT);
+  const store = audience === "customers" && money !== "users_pay_each_other" && !!any(t, STORE);
+  const extension = !!any(t, EXTENSION);
 
   // Unknown facts that would change the picks.
   const hasApp = !!any(t, APP_WORDS);
@@ -266,7 +335,7 @@ export function detectProfile(text: string, answers: Answers = {}): ProfileResul
   const vague = words.length < 4 && !web && !mob && !ai && !mk && !you && !internal && !game;
 
   return {
-    profile: { platform, money, audience, ai, rag, realtime, inPerson, socialLogin, game, shareable, source, matched },
+    profile: { platform, money, audience, ai, rag, realtime, inPerson, socialLogin, game, shareable, nativeIos, push, sms, search, cms, agent, api, store, extension, source, matched },
     unknown,
     vague,
   };

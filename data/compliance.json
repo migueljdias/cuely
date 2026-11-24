@@ -46,6 +46,29 @@
       },
       "readOn": "2026-11-13"
     },
+    "algolia": {
+      "facts": {
+        "dpa": {
+          "answer": "yes",
+          "detail": "The DPA forms part of the subscription agreement or Terms of Service and includes EU SCCs and the UK Addendum; Algolia SAS is the contracting entity for subscribers in Europe.",
+          "quote": "This Data Processing Addendum (&ldquo;DPA&rdquo;), including its Attachments and Appendices, forms part of the subscription agreement",
+          "source": "https://www.algolia.com/policies/data-processing-addendum"
+        },
+        "eu_region": {
+          "answer": "yes",
+          "detail": "End User Data stays in the EEA, Switzerland or the UK only if the subscriber keeps its services located there and meets the other listed conditions.",
+          "quote": "Subscriber&rsquo;s End User Data, as described in Attachment 1 to the DPA, will not be sent outside of the EEA, Switzerland, or the United Kingdom",
+          "source": "https://www.algolia.com/policies/data-processing-addendum"
+        },
+        "soc2": {
+          "answer": "yes",
+          "detail": "SOC 2 and SOC 3 audits; Algolia makes its most recent SOC 2 report available to subscribers for review and updates it at least every 18 months.",
+          "quote": "Algolia&rsquo;s information security control environment applicable to the Services undergoes an independent evaluation in the form of SOC2 and SOC 3 audits.",
+          "source": "https://www.algolia.com/policies/security-measures"
+        }
+      },
+      "readOn": "2026-11-21"
+    },
     "amazon-s3": {
       "facts": {
         "dpa": {
@@ -147,24 +170,24 @@
       "facts": {
         "dpa": {
           "answer": "yes",
-          "detail": "Cloudflare's Data Processing Addendum forms part of both the Enterprise and Self-Serve Subscription Agreements and includes the EU SCCs and UK and Swiss transfer terms.",
-          "quote": "This Data Processing Addendum, including the appendices",
+          "detail": "Cloudflare's DPA forms part of both Enterprise and Self-Serve subscription agreements and includes the EU SCCs for transfers.",
+          "quote": "This Data Processing Addendum, including the appendices (the “DPA ”) , forms part of the Main Agreement.",
           "source": "https://www.cloudflare.com/cloudflare-customer-dpa/"
         },
         "eu_region": {
           "answer": "yes",
-          "detail": "Create the namespace or object ID with jurisdiction(\"eu\") so it runs and stores data only in the EU; location hints such as Western Europe are best effort, not a guarantee.",
+          "detail": "Use jurisdiction(\"eu\") on a namespace or object ID to make a Durable Object run and store its data only in the EU; location hints alone are not a guarantee.",
           "quote": "that only run and store data within a region to comply with local regulations such as the GDPR",
           "source": "https://developers.cloudflare.com/durable-objects/reference/data-location/"
         },
         "soc2": {
           "answer": "yes",
-          "detail": "Cloudflare states it holds an AICPA SOC 2 Type II certification.",
+          "detail": "The DPA states Cloudflare holds an AICPA SOC 2 Type II certification.",
           "quote": "Cloudflare has undertaken other certifications such as the AICPA SOC 2 Type II certification in accordance with the AICPA Trust Service Criteria",
           "source": "https://www.cloudflare.com/cloudflare-customer-dpa/"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-19"
     },
     "cloudflare-kv": {
       "facts": {
@@ -187,24 +210,24 @@
       "facts": {
         "dpa": {
           "answer": "yes",
-          "detail": "Cloudflare's DPA forms part of both Enterprise and Self-Serve Subscription Agreements, with EU SCCs and the UK Addendum for transfers.",
+          "detail": "Cloudflare's DPA forms part of both Enterprise and Self-Serve subscription agreements and includes EU SCCs for transfers.",
           "quote": "This Data Processing Addendum, including the appendices (the “DPA ”) , forms part of the Main Agreement.",
           "source": "https://www.cloudflare.com/cloudflare-customer-dpa/"
         },
         "eu_region": {
           "answer": "yes",
-          "detail": "Create buckets in the 'eu' jurisdiction to keep data stored and processed in the EU; Western and Eastern Europe are also location choices.",
-          "quote": "The example below shows how to create an R2 bucket in the eu jurisdiction using the @aws-sdk/client-s3 ↗︎ package for JavaScript.",
+          "detail": "R2 buckets can be created in the EU jurisdiction, which restricts storage and processing to the EU; Western and Eastern Europe location hints are also listed.",
+          "quote": "The example below shows how to create an R2 bucket in the eu jurisdiction",
           "source": "https://developers.cloudflare.com/r2/reference/data-location/"
         },
         "soc2": {
           "answer": "yes",
-          "detail": "Cloudflare states a company-level SOC 2 Type II; the lines don't say whether R2 is in scope.",
+          "detail": "Cloudflare states it holds an AICPA SOC 2 Type II report company-wide; the lines do not name R2 specifically.",
           "quote": "Cloudflare has undertaken other certifications such as the AICPA SOC 2 Type II certification in accordance with the AICPA Trust Service Criteria",
           "source": "https://www.cloudflare.com/cloudflare-customer-dpa/"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-19"
     },
     "cloudflare-workers": {
       "facts": {
@@ -245,6 +268,29 @@
       },
       "readOn": "2026-11-13"
     },
+    "inngest": {
+      "facts": {
+        "baa": {
+          "answer": "plan",
+          "detail": "BAAs come with the HIPAA add-on, which is paid separately and not included in the base Pro, Business or Enterprise price.",
+          "quote": "Advanced observability and HIPAA compliance are separate paid add-ons, not included in the base Pro, Business, or Enterprise price.",
+          "source": "https://www.inngest.com/pricing"
+        },
+        "dpa": {
+          "answer": "plan",
+          "detail": "A signed DPA is available on paid plans; request it through a support ticket.",
+          "quote": "Inngest offers a standard signed Data Processing Agreement (DPA) to customers on paid plans.",
+          "source": "https://www.inngest.com/security"
+        },
+        "soc2": {
+          "answer": "yes",
+          "detail": "Inngest states it has SOC 2 Type II.",
+          "quote": "Inngest is SOC 2 Type II compliant.",
+          "source": "https://www.inngest.com/security"
+        }
+      },
+      "readOn": "2026-11-21"
+    },
     "liveblocks": {
       "facts": {
         "soc2": {
@@ -255,6 +301,29 @@
         }
       },
       "readOn": "2026-11-13"
+    },
+    "meilisearch": {
+      "facts": {
+        "dpa": {
+          "answer": "yes",
+          "detail": "Meilisearch acts as data processor and signs a DPA with Cloud customers; no plan restriction is stated.",
+          "quote": "We act as your data processor, sign a DPA with you, and give you the tools to honor access and erasure requests.",
+          "source": "https://www.meilisearch.com/eu"
+        },
+        "eu_region": {
+          "answer": "yes",
+          "detail": "Meilisearch Cloud EU regions are Paris (PAR, on AWS European Sovereign Cloud) and Frankfurt (FRA); London is UK, not EU; the region cannot be changed after project creation.",
+          "quote": "Pick Paris or Frankfurt when you create a project. Your documents, indexes, and backups stay in that region.",
+          "source": "https://www.meilisearch.com/eu"
+        },
+        "soc2": {
+          "answer": "yes",
+          "detail": "Meilisearch Cloud has a SOC 2 Type II report, available under NDA from the Trust Center.",
+          "quote": "Meilisearch Cloud is SOC 2 Type II certified. Our security documentation, including the SOC 2 report under NDA, is available from our Trust Center.",
+          "source": "https://www.meilisearch.com/eu"
+        }
+      },
+      "readOn": "2026-11-21"
     },
     "neon": {
       "facts": {
@@ -363,41 +432,41 @@
       "facts": {
         "dpa": {
           "answer": "yes",
-          "detail": "The DPA is an addendum to the Terms of Service and applies automatically to all customers; no separate signature is required.",
+          "detail": "DPA is an addendum to the Terms of Service, accepted by using the service; no separate signature required.",
           "quote": "This Data Processing Agreement (“DPA”) is an addendum to the Terms of Service between Plausible Analytics and the customer.",
           "source": "https://plausible.io/dpa"
         },
         "eu_region": {
           "answer": "yes",
-          "detail": "All visitor data is processed and stored in the EU on servers in Germany.",
+          "detail": "All visitor data is processed and stored in the EU: servers in Falkenstein, Germany (Hetzner) and database hosting in Finland (UpCloud).",
           "quote": "All visitor data is securely processed and stored in the EU on infrastructure owned by European companies.",
           "source": "https://plausible.io/data-policy"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-17"
     },
     "posthog": {
       "facts": {
         "baa": {
           "answer": "plan",
-          "detail": "BAA for PostHog Cloud only on Boost, Scale or Enterprise packages (custom BAA on Enterprise); managed reverse proxy and PostHog AI features are not covered.",
+          "detail": "BAA covers PostHog Cloud only on the Boost, Scale, or Enterprise package (custom BAA on Enterprise); the managed reverse proxy and PostHog AI features are not covered.",
           "quote": "PostHog only offers Business Associate Agreements (BAAs) for PostHog Cloud to users with the Boost, Scale, or Enterprise package.",
           "source": "https://posthog.com/docs/privacy/hipaa-compliance"
         },
         "dpa": {
           "answer": "yes",
-          "detail": "Self-serve DPA for all PostHog Cloud customers, including the free plan; redlines only with a long-term contract.",
+          "detail": "Self-serve DPA for all PostHog Cloud customers on any plan, including free; redlines generally only for long-term contracts.",
           "quote": "All PostHog Cloud customers can get a DPA, on any plan. This includes the free plan.",
           "source": "https://posthog.com/docs/privacy"
         },
         "eu_region": {
           "answer": "yes",
-          "detail": "PostHog Cloud EU is hosted on servers in Frankfurt.",
-          "quote": "we recommend using PostHog Cloud EU – a managed version of PostHog that's hosted on servers based in Frankfurt.",
+          "detail": "PostHog Cloud EU is hosted in Frankfurt.",
+          "quote": "If you require robust GDPR compliance, we recommend using PostHog Cloud EU – a managed version of PostHog that's hosted on servers based in Frankfurt.",
           "source": "https://posthog.com/docs/privacy/gdpr-compliance"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-17"
     },
     "postmark": {
       "facts": {
@@ -443,53 +512,53 @@
       "facts": {
         "baa": {
           "answer": "plan",
-          "detail": "Render signs a BAA for one HIPAA-enabled workspace on Scale or Enterprise plans; it adds a 20% fee on all usage and excludes free instances, Workflows and the Singapore region.",
+          "detail": "BAA is signed only for one HIPAA-enabled workspace on a Scale or Enterprise plan, with a 20% fee on all usage; the Singapore region, free instances and Workflows are excluded.",
           "quote": "HIPAA-enabled workspaces require a Scale or Enterprise plan.",
           "source": "https://render.com/docs/hipaa-compliance"
         },
         "eu_region": {
           "answer": "yes",
-          "detail": "Services and datastores can be deployed to Frankfurt, Germany; static sites run on a global CDN with no region choice, and an existing service's region cannot be changed.",
+          "detail": "Services and datastores can be deployed to the Frankfurt, Germany region; static sites are served from a global CDN with no region choice.",
           "quote": "Frankfurt, Germany",
           "source": "https://render.com/docs/regions"
         },
         "soc2": {
           "answer": "yes",
-          "detail": "Render lists a SOC 2 Type 2 report.",
+          "detail": "The security page lists a SOC 2 Type 2 report.",
           "quote": "SOC 2 Type 2",
           "source": "https://render.com/security"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-23"
     },
     "resend": {
       "facts": {
         "baa": {
           "answer": "no",
-          "detail": "Resend is not HIPAA compliant and will not sign a BAA.",
+          "detail": "Resend does not sign BAAs and says it is not HIPAA compliant.",
           "quote": "Resend is not HIPAA compliant and cannot sign a Business Associate Agreement.",
           "source": "https://resend.com/security"
         },
         "dpa": {
           "answer": "yes",
-          "detail": "A pre-signed standard DPA with EU SCCs applies to every account on any plan; country-specific DPAs are not signed.",
+          "detail": "A standard DPA with EU SCCs is pre-signed for every account on any plan and downloadable from Settings → Documents; country-specific DPAs are not signed.",
           "quote": "Our standard DPA applies to every account on any plan.",
           "source": "https://resend.com/security"
         },
         "eu_region": {
           "answer": "no",
-          "detail": "Email can be sent from Ireland (eu-west-1), but all account data, metadata and logs are stored in the US.",
+          "detail": "An Ireland (eu-west-1) sending region exists, but all account data, metadata and logs are stored in the US.",
           "quote": "All account data, including email metadata, logs, and API records, is stored in the United States regardless of the sending region you select.",
           "source": "https://resend.com/docs/dashboard/domains/regions"
         },
         "soc2": {
           "answer": "yes",
-          "detail": "SOC 2 Type II report.",
+          "detail": "SOC 2 Type II, audited by Advantage Partners via Vanta.",
           "quote": "Yes, Resend is SOC 2 Type II compliant.",
           "source": "https://resend.com/security"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-20"
     },
     "retool": {
       "facts": {
@@ -535,65 +604,36 @@
       "facts": {
         "baa": {
           "answer": "plan",
-          "detail": "BAA is available only to Team and Enterprise customers, requested from the dashboard; it covers the hosted platform, not self-hosted Supabase.",
-          "quote": "Enterprise and Team customers can request to sign our BAA on the dashboard.",
-          "source": "https://supabase.com/security"
-        },
-        "dpa": {
-          "answer": "yes",
-          "detail": "A GDPR Data Processing Agreement is available; no plan restriction is stated.",
-          "quote": "A Data Processing Agreement (DPA) is available for customers who need a formal GDPR data processing contract.",
-          "source": "https://supabase.com/security"
-        },
-        "eu_region": {
-          "answer": "yes",
-          "detail": "Choose a specific EU region (Ireland, Paris, Frankfurt or Stockholm); the general 'Europe' region may deploy to London or Zurich, which are not in the EU.",
-          "quote": "Projects hosted in EU regions keep your primary database data in-region",
-          "source": "https://supabase.com/security"
-        },
-        "soc2": {
-          "answer": "yes",
-          "detail": "SOC 2 Type 2; only Team and Enterprise customers can access the report, via the dashboard.",
-          "quote": "Supabase is SOC 2 Type 2 compliant.",
-          "source": "https://supabase.com/security"
-        }
-      },
-      "readOn": "2026-11-13"
-    },
-    "supabase-auth": {
-      "facts": {
-        "baa": {
-          "answer": "plan",
           "detail": "BAA is available only to Team and Enterprise customers, requested via the dashboard, and covers the hosted platform only, not self-hosted Supabase.",
           "quote": "Enterprise and Team customers can request to sign our BAA on the dashboard.",
           "source": "https://supabase.com/security"
         },
         "dpa": {
           "answer": "yes",
-          "detail": "A GDPR DPA is available; the lines state no plan restriction.",
+          "detail": "A GDPR DPA is available to customers who need one, with no plan restriction stated.",
           "quote": "A Data Processing Agreement (DPA) is available for customers who need a formal GDPR data processing contract.",
           "source": "https://supabase.com/security"
         },
         "eu_region": {
           "answer": "yes",
-          "detail": "Auth data is hosted in the project's region. Choose a specific EU region (Ireland, Paris, Frankfurt, Stockholm), because the general 'Europe' region may place data in London or Zurich.",
-          "quote": "When you create a project in an AWS region, your Postgres database, Auth service, and Storage objects are hosted in that region. Supabase offers regions across the US, EU, and Asia Pacific.",
+          "detail": "Pick a specific EU region (Ireland, Paris, Frankfurt, Stockholm); London and Zurich are not EU, and the general 'Europe' region may land in either; the region cannot be changed after creation.",
+          "quote": "Projects hosted in EU regions keep your primary database data in-region",
           "source": "https://supabase.com/security"
         },
         "soc2": {
           "answer": "yes",
-          "detail": "SOC 2 Type 2; only Team and Enterprise customers can access the report on the dashboard.",
+          "detail": "SOC 2 Type 2; the report itself is available on the dashboard only to Team and Enterprise customers.",
           "quote": "Supabase is SOC 2 Type 2 compliant.",
           "source": "https://supabase.com/security"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-23"
     },
-    "supabase-realtime": {
+    "supabase-auth": {
       "facts": {
         "baa": {
           "answer": "plan",
-          "detail": "BAA is available only to Team and Enterprise customers, who request it on the dashboard; it covers the hosted platform, not self-hosted Supabase.",
+          "detail": "Team and Enterprise customers can request to sign the BAA on the dashboard; it covers the hosted platform, not self-hosted Supabase.",
           "quote": "Enterprise and Team customers can request to sign our BAA on the dashboard.",
           "source": "https://supabase.com/security"
         },
@@ -605,18 +645,87 @@
         },
         "eu_region": {
           "answer": "yes",
-          "detail": "Choose a specific EU region: Ireland, Paris, Frankfurt or Stockholm. The 'Europe' general region can place data in London or Zurich, which are not in the EU. The pages name Postgres, Auth and Storage as in-region but do not name Realtime.",
-          "quote": "Projects hosted in EU regions keep your primary database data in-region",
+          "detail": "Auth data is hosted in the project's region; for EU-only storage pick a specific region (Ireland, Paris, Frankfurt, Stockholm), because the general Europe region can deploy to London or Zurich, which are outside the EU.",
+          "quote": "your Postgres database, Auth service, and Storage objects are hosted in that region. Supabase offers regions across the US, EU, and Asia Pacific.",
           "source": "https://supabase.com/security"
         },
         "soc2": {
           "answer": "yes",
-          "detail": "Supabase has a SOC 2 Type 2 report; only Team and Enterprise customers can access it on the dashboard.",
+          "detail": "Supabase states it is SOC 2 Type 2 compliant; only Team and Enterprise customers can access the report on the dashboard.",
           "quote": "Supabase is SOC 2 Type 2 compliant.",
           "source": "https://supabase.com/security"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-23"
+    },
+    "supabase-realtime": {
+      "facts": {
+        "baa": {
+          "answer": "plan",
+          "detail": "Team and Enterprise customers can sign a BAA via the dashboard; it covers the hosted Supabase platform, not self-hosted.",
+          "quote": "Enterprise and Team customers can request to sign our BAA on the dashboard.",
+          "source": "https://supabase.com/security"
+        },
+        "dpa": {
+          "answer": "yes",
+          "detail": "A GDPR DPA is available to request or view, with no plan restriction stated.",
+          "quote": "A Data Processing Agreement (DPA) is available for customers who need a formal GDPR data processing contract.",
+          "source": "https://supabase.com/security"
+        },
+        "soc2": {
+          "answer": "yes",
+          "detail": "Supabase has a SOC 2 Type 2 report, which Team and Enterprise customers can access in the dashboard.",
+          "quote": "Supabase is SOC 2 Type 2 compliant.",
+          "source": "https://supabase.com/security"
+        }
+      },
+      "readOn": "2026-11-23"
+    },
+    "telnyx": {
+      "facts": {
+        "dpa": {
+          "answer": "yes",
+          "detail": "A DPA with EU Standard Contractual Clauses is available to all customers on request and can be signed electronically.",
+          "quote": "The Telnyx DPA is available for all customers on request which can be electronically signed to meet onward transfer requirements",
+          "source": "https://telnyx.com/data-privacy"
+        },
+        "eu_region": {
+          "answer": "yes",
+          "detail": "Data is stored in the US by default; customers can choose storage in Germany, though staff worldwide may access certain data.",
+          "quote": "We store data in data centers located in the US, or customers can elect to store data in Germany.",
+          "source": "https://telnyx.com/data-privacy"
+        },
+        "soc2": {
+          "answer": "yes",
+          "detail": "Telnyx states it has both SOC 2 Type 1 and Type 2.",
+          "quote": "Accordingly, we are SOC 2 certified for both Type 1 and Type 2.",
+          "source": "https://telnyx.com/data-privacy"
+        }
+      },
+      "readOn": "2026-11-21"
+    },
+    "trigger-dev": {
+      "facts": {
+        "baa": {
+          "answer": "plan",
+          "detail": "A signed BAA for running PHI tasks on Trigger.dev Cloud is a $500/month add-on.",
+          "quote": "To run tasks that process PHI on Trigger.dev Cloud you'll need a signed BAA with us, which is available as a $500/month add-on.",
+          "source": "https://trigger.dev/security"
+        },
+        "dpa": {
+          "answer": "yes",
+          "detail": "The DPA is part of the Terms of Service and applies automatically on sign-up.",
+          "quote": "Yes, our Data Processing Agreement is formed as part of our Terms of Service and applies automatically upon sign-up.",
+          "source": "https://trigger.dev/security"
+        },
+        "soc2": {
+          "answer": "yes",
+          "detail": "SOC 2 Type II; the latest report is provided on request to Enterprise customers only.",
+          "quote": "Yes, Trigger.dev is SOC 2 Type II compliant.",
+          "source": "https://trigger.dev/security"
+        }
+      },
+      "readOn": "2026-11-21"
     },
     "turbopuffer": {
       "facts": {
@@ -647,6 +756,63 @@
       },
       "readOn": "2026-11-13"
     },
+    "twilio": {
+      "facts": {
+        "baa": {
+          "answer": "plan",
+          "detail": "A BAA requires the Security Edition or Enterprise Edition, and it only covers products on Twilio's HIPAA Eligible Products list; these lines do not say whether SMS is on it.",
+          "quote": "Customers wishing to sign a BAA with Twilio must have our Security Edition or Enterprise Edition.",
+          "source": "https://www.twilio.com/en-us/hipaa"
+        }
+      },
+      "readOn": "2026-11-21"
+    },
+    "typesense": {
+      "facts": {
+        "baa": {
+          "answer": "yes",
+          "detail": "Typesense signs its standard BAA with Covered Entities; no plan restriction is stated on the page.",
+          "quote": "We are able to sign our standard Business Associate Agreement (BAA) with any Covered Entities",
+          "source": "https://cloud.typesense.org/security"
+        },
+        "dpa": {
+          "answer": "yes",
+          "detail": "The DPA amends the Terms of Service automatically, with no signing step, and links to the sub-processor list.",
+          "quote": "This DPA amends and supplements our Terms of Service (\"ToS\") and requires no further action on your part.",
+          "source": "https://cloud.typesense.org/legal/dpa"
+        },
+        "eu_region": {
+          "answer": "yes",
+          "detail": "You choose the cluster region at provisioning; EU options are Ireland, Paris, Frankfurt and Stockholm (London is also offered), and data stays in the chosen region.",
+          "quote": "When provisioning your cluster, we offer you the choice to pick which geographic region(s) you want your cluster to be",
+          "source": "https://cloud.typesense.org/security"
+        },
+        "soc2": {
+          "answer": "yes",
+          "detail": "Typesense states it is SOC 2 Type 2 certified; the report is shared on request, and the page's wording suggests it may be limited to some customers.",
+          "quote": "We are SOC 2 (Type 2) certified, and evaluated by an independent AICPA certified external auditor.",
+          "source": "https://cloud.typesense.org/security"
+        }
+      },
+      "readOn": "2026-11-21"
+    },
+    "upstash-qstash": {
+      "facts": {
+        "dpa": {
+          "answer": "yes",
+          "detail": "Upstash has a Data Processing Agreement; the lines name no plan restriction.",
+          "quote": "Upstash Data Processing Agreement",
+          "source": "https://upstash.com/docs/common/help/compliance"
+        },
+        "soc2": {
+          "answer": "yes",
+          "detail": "Upstash states it has a SOC 2 Type II report; the lines do not say which products it covers.",
+          "quote": "Yes. Upstash has a SOC 2 Type II report.",
+          "source": "https://upstash.com/docs/common/help/compliance"
+        }
+      },
+      "readOn": "2026-11-21"
+    },
     "upstash-redis": {
       "facts": {
         "baa": {
@@ -674,117 +840,93 @@
       "facts": {
         "baa": {
           "answer": "plan",
-          "detail": "BAA only for eligible Pro (paid HIPAA BAA add-on in Billing settings) and Enterprise (on request) customers.",
+          "detail": "BAA is for eligible Pro customers as a paid add-on bought in Billing settings, or Enterprise customers on request.",
           "quote": "Signing Business Associate Agreements (BAAs) with eligible Pro and Enterprise customers",
           "source": "https://vercel.com/docs/security/compliance"
         },
         "dpa": {
           "answer": "plan",
-          "detail": "The published Data Processing Addendum is tied to Vercel Enterprise terms and services on an Enterprise plan.",
+          "detail": "The published Data Processing Addendum is part of the Enterprise terms, covering services on an Enterprise plan.",
           "quote": "This Data Processing Addendum (\"Addendum\") forms part of Vercel Enterprise Terms and Conditions or other agreement executed between Vercel and Customer for Vercel's provision of Services on an Enterprise plan",
           "source": "https://vercel.com/legal/dpa"
         },
-        "eu_region": {
-          "answer": "no",
-          "detail": "Data is not stored permanently in EU regions; EU regions only hold ephemeral caches of static assets and function responses.",
-          "quote": "No data is stored permanently inside EU regions.",
-          "source": "https://vercel.com/security"
-        },
         "soc2": {
           "answer": "yes",
-          "detail": "SOC 2 Type 2 covering Security, Confidentiality and Availability; report available on request.",
+          "detail": "SOC 2 Type 2 attestation covering Security, Confidentiality, and Availability.",
           "quote": "Vercel has a SOC 2 Type 2 attestation for Security, Confidentiality, and Availability.",
           "source": "https://vercel.com/docs/security/compliance"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-17"
     },
     "vercel-blob": {
       "facts": {
         "baa": {
           "answer": "plan",
-          "detail": "Vercel signs BAAs with eligible Pro (paid HIPAA BAA add-on) and Enterprise (by request) customers; the lines do not name Blob specifically.",
+          "detail": "Vercel signs BAAs only with eligible Pro (as a paid HIPAA BAA add-on) and Enterprise customers; the lines do not say whether Blob is covered.",
           "quote": "Signing Business Associate Agreements (BAAs) with eligible Pro and Enterprise customers",
           "source": "https://vercel.com/docs/security/compliance"
         },
         "dpa": {
           "answer": "plan",
-          "detail": "The DPA text says it forms part of Enterprise terms for services on an Enterprise plan, though the security page mentions a DPA without a plan restriction.",
+          "detail": "The published Data Processing Addendum forms part of the Enterprise terms and covers services on an Enterprise plan.",
           "quote": "This Data Processing Addendum (\"Addendum\") forms part of Vercel Enterprise Terms and Conditions or other agreement executed between Vercel and Customer for Vercel's provision of Services on an Enterprise plan",
           "source": "https://vercel.com/legal/dpa"
         },
-        "eu_region": {
-          "answer": "no",
-          "detail": "Vercel says no data is stored permanently in EU regions; only ephemeral caching happens there, and primary processing is in the US.",
-          "quote": "No data is stored permanently inside EU regions.",
-          "source": "https://vercel.com/security"
-        },
         "soc2": {
           "answer": "yes",
-          "detail": "Vercel-wide SOC 2 Type 2 attestation covering Security, Confidentiality, and Availability; the report is available on request.",
+          "detail": "Vercel holds a SOC 2 Type 2 attestation covering Security, Confidentiality and Availability.",
           "quote": "Vercel has a SOC 2 Type 2 attestation for Security, Confidentiality, and Availability.",
           "source": "https://vercel.com/docs/security/compliance"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-17"
     },
     "vercel-global-config": {
       "facts": {
         "baa": {
           "answer": "plan",
-          "detail": "Vercel-wide terms, not specific to Global Config: Pro teams buy a paid HIPAA BAA add-on in Billing settings, and Enterprise teams request a BAA from sales.",
+          "detail": "BAAs are signed only with eligible Pro (paid HIPAA BAA add-on in Billing settings) and Enterprise (on request) customers; the pages do not say whether Global Config/Edge Config is covered.",
           "quote": "Signing Business Associate Agreements (BAAs) with eligible Pro and Enterprise customers",
           "source": "https://vercel.com/docs/security/compliance"
         },
         "dpa": {
           "answer": "plan",
-          "detail": "The published DPA forms part of Vercel's Enterprise terms for services on an Enterprise plan.",
+          "detail": "The published DPA is part of the Enterprise Terms or another executed agreement for Services on an Enterprise plan.",
           "quote": "This Data Processing Addendum (\"Addendum\") forms part of Vercel Enterprise Terms and Conditions or other agreement executed between Vercel and Customer for Vercel's provision of Services on an Enterprise plan",
           "source": "https://vercel.com/legal/dpa"
         },
-        "eu_region": {
-          "answer": "no",
-          "detail": "Vercel-wide statement: no data is stored permanently in EU regions, only ephemeral caching, and primary processing is in the US.",
-          "quote": "No data is stored permanently inside EU regions.",
-          "source": "https://vercel.com/security"
-        },
         "soc2": {
           "answer": "yes",
-          "detail": "SOC 2 Type 2 covers Security, Confidentiality and Availability; the report is available on request.",
+          "detail": "Vercel-wide SOC 2 Type 2 attestation covering Security, Confidentiality and Availability.",
           "quote": "Vercel has a SOC 2 Type 2 attestation for Security, Confidentiality, and Availability.",
           "source": "https://vercel.com/docs/security/compliance"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-17"
     },
     "vercel-web-analytics": {
       "facts": {
         "baa": {
           "answer": "plan",
-          "detail": "Vercel signs BAAs only with eligible Pro teams (paid HIPAA BAA add-on in Billing settings) and Enterprise customers; the lines don't say whether Web Analytics is covered.",
+          "detail": "Vercel signs BAAs only with eligible Pro (paid HIPAA BAA add-on) and Enterprise customers; the statement is platform-wide and does not name Web Analytics specifically.",
           "quote": "Signing Business Associate Agreements (BAAs) with eligible Pro and Enterprise customers",
           "source": "https://vercel.com/docs/security/compliance"
         },
         "dpa": {
           "answer": "plan",
-          "detail": "The DPA text says it forms part of Vercel's Enterprise terms for Services on an Enterprise plan, although the security page mentions a DPA without naming a plan.",
+          "detail": "The published Data Processing Addendum is framed as part of Vercel's Enterprise Terms or an agreement for services on an Enterprise plan.",
           "quote": "This Data Processing Addendum (\"Addendum\") forms part of Vercel Enterprise Terms and Conditions or other agreement executed between Vercel and Customer for Vercel's provision of Services on an Enterprise plan",
           "source": "https://vercel.com/legal/dpa"
         },
-        "eu_region": {
-          "answer": "no",
-          "detail": "Vercel says no data is stored permanently in EU regions; only ephemeral caching happens there, and primary processing is in the US.",
-          "quote": "No data is stored permanently inside EU regions.",
-          "source": "https://vercel.com/security"
-        },
         "soc2": {
           "answer": "yes",
-          "detail": "Vercel has a SOC 2 Type 2 attestation covering Security, Confidentiality and Availability; the report is available on request.",
+          "detail": "Vercel has a SOC 2 Type 2 attestation covering Security, Confidentiality, and Availability.",
           "quote": "Vercel has a SOC 2 Type 2 attestation for Security, Confidentiality, and Availability.",
           "source": "https://vercel.com/docs/security/compliance"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-17"
     },
     "workos-authkit": {
       "facts": {

@@ -9,8 +9,8 @@ import { clientIp, createRateLimiter, type RateLimiter } from "./rate-limit";
 import { OAUTH_SCOPES, RESOURCE_METADATA_URL, verifyOAuthToken } from "./oauth";
 import { createCuelyServer } from "./server";
 
-export const KEY_URL = `${APP_URL}/account`;
-export const UPGRADE_URL = `${APP_URL}/account`;
+export const KEY_URL = `${APP_URL}/account/keys`;
+export const UPGRADE_URL = `${APP_URL}/account/billing`;
 
 export type KeyOwner = { keyId: number; userId: string; plan: PlanId };
 /** Resolves a presented key. null means unknown or revoked; a throw means the lookup itself failed. */

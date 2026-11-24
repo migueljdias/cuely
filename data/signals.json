@@ -1,10 +1,10 @@
 {
-  "measuredOn": "2026-11-16",
+  "measuredOn": "2026-11-23",
   "tools": {
     "vercel": {
       "incidents": {
         "minor": 9,
-        "major": 9,
+        "major": 8,
         "critical": 0,
         "source": "https://www.vercel-status.com"
       },
@@ -14,15 +14,15 @@
         "package": "vercel"
       },
       "downloads": {
-        "recent": 20593827,
-        "earlier": 13602849,
+        "recent": 22622260,
+        "earlier": 14196785,
         "package": "vercel"
       }
     },
     "cloudflare-workers": {
       "incidents": {
-        "minor": 49,
-        "major": 0,
+        "minor": 45,
+        "major": 1,
         "critical": 0,
         "source": "https://www.cloudflarestatus.com"
       },
@@ -32,8 +32,8 @@
         "package": "wrangler"
       },
       "downloads": {
-        "recent": 152478612,
-        "earlier": 70992346,
+        "recent": 176203576,
+        "earlier": 74051498,
         "package": "wrangler"
       }
     },
@@ -41,7 +41,7 @@
       "incidents": {
         "minor": 12,
         "major": 4,
-        "critical": 1,
+        "critical": 0,
         "source": "https://www.netlifystatus.com"
       },
       "advisories": {
@@ -50,15 +50,15 @@
         "package": "netlify-cli"
       },
       "downloads": {
-        "recent": 1838486,
-        "earlier": 1258580,
+        "recent": 2065398,
+        "earlier": 1287951,
         "package": "netlify-cli"
       }
     },
     "render": {
       "incidents": {
         "minor": 10,
-        "major": 5,
+        "major": 4,
         "critical": 0,
         "source": "https://status.render.com"
       },
@@ -73,14 +73,14 @@
         "package": "@neondatabase/serverless"
       },
       "downloads": {
-        "recent": 26514348,
-        "earlier": 12644597,
+        "recent": 31059665,
+        "earlier": 13234796,
         "package": "@neondatabase/serverless"
       }
     },
     "supabase": {
       "incidents": {
-        "minor": 16,
+        "minor": 15,
         "major": 3,
         "critical": 0,
         "source": "https://status.supabase.com"
@@ -91,8 +91,8 @@
         "package": "@supabase/supabase-js"
       },
       "downloads": {
-        "recent": 228061656,
-        "earlier": 97049812,
+        "recent": 268085364,
+        "earlier": 99561763,
         "package": "@supabase/supabase-js"
       }
     },
@@ -104,14 +104,14 @@
         "package": "@libsql/client"
       },
       "downloads": {
-        "recent": 20700200,
-        "earlier": 7868344,
+        "recent": 23323022,
+        "earlier": 8200312,
         "package": "@libsql/client"
       }
     },
     "workos-authkit": {
       "incidents": {
-        "minor": 5,
+        "minor": 6,
         "major": 10,
         "critical": 0,
         "source": "https://status.workos.com"
@@ -122,8 +122,8 @@
         "package": "@workos-inc/authkit-nextjs"
       },
       "downloads": {
-        "recent": 5371620,
-        "earlier": 2502682,
+        "recent": 6144873,
+        "earlier": 2604773,
         "package": "@workos-inc/authkit-nextjs"
       }
     },
@@ -140,8 +140,8 @@
         "package": "@clerk/nextjs"
       },
       "downloads": {
-        "recent": 13586011,
-        "earlier": 8169890,
+        "recent": 15204262,
+        "earlier": 8358013,
         "package": "@clerk/nextjs"
       }
     },
@@ -153,14 +153,14 @@
         "package": "better-auth"
       },
       "downloads": {
-        "recent": 67176366,
-        "earlier": 26056688,
+        "recent": 77033752,
+        "earlier": 26944375,
         "package": "better-auth"
       }
     },
     "supabase-auth": {
       "incidents": {
-        "minor": 16,
+        "minor": 15,
         "major": 3,
         "critical": 0,
         "source": "https://status.supabase.com"
@@ -171,8 +171,8 @@
         "package": "@supabase/auth-js"
       },
       "downloads": {
-        "recent": 234175502,
-        "earlier": 97901006,
+        "recent": 275765041,
+        "earlier": 100463550,
         "package": "@supabase/auth-js"
       }
     },
@@ -184,15 +184,15 @@
         "package": "stripe"
       },
       "downloads": {
-        "recent": 121900040,
-        "earlier": 69727236,
+        "recent": 136554912,
+        "earlier": 71645303,
         "package": "stripe"
       }
     },
     "paddle": {
       "incidents": {
-        "minor": 2,
-        "major": 1,
+        "minor": 3,
+        "major": 0,
         "critical": 0,
         "source": "https://paddlestatus.com"
       },
@@ -202,8 +202,8 @@
         "package": "@paddle/paddle-js"
       },
       "downloads": {
-        "recent": 969605,
-        "earlier": 626283,
+        "recent": 1107081,
+        "earlier": 636386,
         "package": "@paddle/paddle-js"
       }
     },
@@ -215,14 +215,14 @@
         "package": "@lemonsqueezy/lemonsqueezy.js"
       },
       "downloads": {
-        "recent": 616446,
-        "earlier": 426116,
+        "recent": 642432,
+        "earlier": 429090,
         "package": "@lemonsqueezy/lemonsqueezy.js"
       }
     },
     "resend": {
       "incidents": {
-        "minor": 16,
+        "minor": 15,
         "major": 1,
         "critical": 1,
         "source": "https://resend-status.com"
@@ -233,8 +233,8 @@
         "package": "resend"
       },
       "downloads": {
-        "recent": 64406671,
-        "earlier": 37304274,
+        "recent": 71334849,
+        "earlier": 38641164,
         "package": "resend"
       }
     },
@@ -246,8 +246,8 @@
         "package": "postmark"
       },
       "downloads": {
-        "recent": 5988901,
-        "earlier": 4708964,
+        "recent": 6673282,
+        "earlier": 4552915,
         "package": "postmark"
       }
     },
@@ -259,8 +259,8 @@
         "package": "@aws-sdk/client-sesv2"
       },
       "downloads": {
-        "recent": 31571521,
-        "earlier": 12574292,
+        "recent": 36707195,
+        "earlier": 13129952,
         "package": "@aws-sdk/client-sesv2"
       }
     },
@@ -277,8 +277,8 @@
         "package": "@infisical/sdk"
       },
       "downloads": {
-        "recent": 972841,
-        "earlier": 942859,
+        "recent": 1010945,
+        "earlier": 947355,
         "package": "@infisical/sdk"
       }
     },
@@ -294,8 +294,8 @@
     },
     "cloudflare-dns": {
       "incidents": {
-        "minor": 49,
-        "major": 0,
+        "minor": 45,
+        "major": 1,
         "critical": 0,
         "source": "https://www.cloudflarestatus.com"
       },
@@ -304,7 +304,7 @@
     },
     "sentry": {
       "incidents": {
-        "minor": 10,
+        "minor": 9,
         "major": 8,
         "critical": 6,
         "source": "https://status.sentry.io"
@@ -315,8 +315,8 @@
         "package": "@sentry/node"
       },
       "downloads": {
-        "recent": 202529738,
-        "earlier": 126161968,
+        "recent": 226677647,
+        "earlier": 128842152,
         "package": "@sentry/node"
       }
     },
@@ -328,8 +328,8 @@
         "package": "@logtail/node"
       },
       "downloads": {
-        "recent": 1880223,
-        "earlier": 1200673,
+        "recent": 2143955,
+        "earlier": 1229444,
         "package": "@logtail/node"
       }
     },
@@ -341,15 +341,15 @@
         "package": "posthog-js"
       },
       "downloads": {
-        "recent": 88998276,
-        "earlier": 44563742,
+        "recent": 102387523,
+        "earlier": 46123056,
         "package": "posthog-js"
       }
     },
     "vercel-web-analytics": {
       "incidents": {
         "minor": 9,
-        "major": 9,
+        "major": 8,
         "critical": 0,
         "source": "https://www.vercel-status.com"
       },
@@ -359,15 +359,15 @@
         "package": "@vercel/analytics"
       },
       "downloads": {
-        "recent": 39046757,
-        "earlier": 21645513,
+        "recent": 42431892,
+        "earlier": 22458741,
         "package": "@vercel/analytics"
       }
     },
     "cloudflare-r2": {
       "incidents": {
-        "minor": 49,
-        "major": 0,
+        "minor": 45,
+        "major": 1,
         "critical": 0,
         "source": "https://www.cloudflarestatus.com"
       },
@@ -377,7 +377,7 @@
     "vercel-blob": {
       "incidents": {
         "minor": 9,
-        "major": 9,
+        "major": 8,
         "critical": 0,
         "source": "https://www.vercel-status.com"
       },
@@ -387,8 +387,8 @@
         "package": "@vercel/blob"
       },
       "downloads": {
-        "recent": 42130787,
-        "earlier": 21912605,
+        "recent": 46487871,
+        "earlier": 23152482,
         "package": "@vercel/blob"
       }
     },
@@ -400,8 +400,8 @@
         "package": "@aws-sdk/client-s3"
       },
       "downloads": {
-        "recent": 261163763,
-        "earlier": 157425775,
+        "recent": 293833585,
+        "earlier": 161037250,
         "package": "@aws-sdk/client-s3"
       }
     },
@@ -413,15 +413,15 @@
         "package": "@google/genai"
       },
       "downloads": {
-        "recent": 112648365,
-        "earlier": 70875599,
+        "recent": 125433264,
+        "earlier": 75744478,
         "package": "@google/genai"
       }
     },
     "claude-api": {
       "incidents": {
-        "minor": 17,
-        "major": 27,
+        "minor": 14,
+        "major": 28,
         "critical": 1,
         "source": "https://status.claude.com"
       },
@@ -431,15 +431,15 @@
         "package": "@anthropic-ai/sdk"
       },
       "downloads": {
-        "recent": 242995493,
-        "earlier": 119887276,
+        "recent": 275861149,
+        "earlier": 126226129,
         "package": "@anthropic-ai/sdk"
       }
     },
     "openai-api": {
       "incidents": {
-        "minor": 18,
-        "major": 0,
+        "minor": 19,
+        "major": 1,
         "critical": 1,
         "source": "https://status.openai.com"
       },
@@ -449,8 +449,8 @@
         "package": "openai"
       },
       "downloads": {
-        "recent": 208402462,
-        "earlier": 129381469,
+        "recent": 233488523,
+        "earlier": 133366833,
         "package": "openai"
       }
     },
@@ -462,8 +462,8 @@
         "package": "pgvector"
       },
       "downloads": {
-        "recent": 3779326,
-        "earlier": 1709966,
+        "recent": 4199729,
+        "earlier": 1752213,
         "package": "pgvector"
       }
     },
@@ -480,8 +480,8 @@
         "package": "@pinecone-database/pinecone"
       },
       "downloads": {
-        "recent": 3963702,
-        "earlier": 3261728,
+        "recent": 4416282,
+        "earlier": 3444128,
         "package": "@pinecone-database/pinecone"
       }
     },
@@ -493,8 +493,8 @@
         "package": "@turbopuffer/turbopuffer"
       },
       "downloads": {
-        "recent": 6057263,
-        "earlier": 4042261,
+        "recent": 7278550,
+        "earlier": 4269893,
         "package": "@turbopuffer/turbopuffer"
       }
     },
@@ -506,14 +506,14 @@
         "package": "@liveblocks/client"
       },
       "downloads": {
-        "recent": 2339095,
-        "earlier": 1383628,
+        "recent": 2537029,
+        "earlier": 1418163,
         "package": "@liveblocks/client"
       }
     },
     "supabase-realtime": {
       "incidents": {
-        "minor": 16,
+        "minor": 15,
         "major": 3,
         "critical": 0,
         "source": "https://status.supabase.com"
@@ -524,8 +524,8 @@
         "package": "@supabase/realtime-js"
       },
       "downloads": {
-        "recent": 234050237,
-        "earlier": 98099915,
+        "recent": 275743322,
+        "earlier": 100680054,
         "package": "@supabase/realtime-js"
       }
     },
@@ -537,8 +537,8 @@
         "package": "ably"
       },
       "downloads": {
-        "recent": 5762917,
-        "earlier": 4994265,
+        "recent": 6226662,
+        "earlier": 5213396,
         "package": "ably"
       }
     },
@@ -555,8 +555,8 @@
         "package": "pusher-js"
       },
       "downloads": {
-        "recent": 15627371,
-        "earlier": 9134832,
+        "recent": 17616530,
+        "earlier": 9334494,
         "package": "pusher-js"
       }
     },
@@ -573,15 +573,15 @@
         "package": "eas-cli"
       },
       "downloads": {
-        "recent": 8008993,
-        "earlier": 4309841,
+        "recent": 8987345,
+        "earlier": 4362994,
         "package": "eas-cli"
       }
     },
     "retool": {
       "incidents": {
         "minor": 7,
-        "major": 2,
+        "major": 1,
         "critical": 0,
         "source": "https://status.retool.com"
       },
@@ -600,7 +600,7 @@
     },
     "revenuecat": {
       "incidents": {
-        "minor": 6,
+        "minor": 8,
         "major": 2,
         "critical": 0,
         "source": "https://status.revenuecat.com"
@@ -611,8 +611,8 @@
         "package": "react-native-purchases"
       },
       "downloads": {
-        "recent": 4558801,
-        "earlier": 2809599,
+        "recent": 5046993,
+        "earlier": 2870469,
         "package": "react-native-purchases"
       }
     },
@@ -624,8 +624,8 @@
         "package": "@stripe/connect-js"
       },
       "downloads": {
-        "recent": 4630752,
-        "earlier": 2445448,
+        "recent": 5250903,
+        "earlier": 2510300,
         "package": "@stripe/connect-js"
       }
     },
@@ -637,9 +637,53 @@
         "package": "firebase"
       },
       "downloads": {
-        "recent": 51448533,
-        "earlier": 36173325,
+        "recent": 57427474,
+        "earlier": 37111876,
         "package": "firebase"
+      }
+    },
+    "expo-push": {
+      "incidents": {
+        "minor": 16,
+        "major": 5,
+        "critical": 0,
+        "source": "https://status.expo.dev"
+      },
+      "advisories": {
+        "high": 0,
+        "critical": 0,
+        "package": "expo-notifications"
+      },
+      "downloads": {
+        "recent": 37214389,
+        "earlier": 15730625,
+        "package": "expo-notifications"
+      }
+    },
+    "firebase-cloud-messaging": {
+      "incidents": null,
+      "advisories": {
+        "high": 0,
+        "critical": 0,
+        "package": "@react-native-firebase/messaging"
+      },
+      "downloads": {
+        "recent": 5364570,
+        "earlier": 3427267,
+        "package": "@react-native-firebase/messaging"
+      }
+    },
+    "onesignal": {
+      "incidents": null,
+      "advisories": {
+        "high": 0,
+        "critical": 0,
+        "package": "react-native-onesignal"
+      },
+      "downloads": {
+        "recent": 1081527,
+        "earlier": 635378,
+        "package": "react-native-onesignal"
       }
     },
     "upstash-redis": {
@@ -655,15 +699,15 @@
         "package": "@upstash/redis"
       },
       "downloads": {
-        "recent": 27284176,
-        "earlier": 17724437,
+        "recent": 31734243,
+        "earlier": 17933286,
         "package": "@upstash/redis"
       }
     },
     "cloudflare-durable-objects": {
       "incidents": {
-        "minor": 49,
-        "major": 0,
+        "minor": 45,
+        "major": 1,
         "critical": 0,
         "source": "https://www.cloudflarestatus.com"
       },
@@ -672,8 +716,8 @@
     },
     "cloudflare-kv": {
       "incidents": {
-        "minor": 49,
-        "major": 0,
+        "minor": 45,
+        "major": 1,
         "critical": 0,
         "source": "https://www.cloudflarestatus.com"
       },
@@ -683,7 +727,7 @@
     "vercel-global-config": {
       "incidents": {
         "minor": 9,
-        "major": 9,
+        "major": 8,
         "critical": 0,
         "source": "https://www.vercel-status.com"
       },
@@ -693,9 +737,231 @@
         "package": "@vercel/edge-config"
       },
       "downloads": {
-        "recent": 4809465,
-        "earlier": 3543437,
+        "recent": 5319267,
+        "earlier": 3752118,
         "package": "@vercel/edge-config"
+      }
+    },
+    "inngest": {
+      "incidents": {
+        "minor": 7,
+        "major": 3,
+        "critical": 0,
+        "source": "https://status.inngest.com"
+      },
+      "advisories": {
+        "high": 0,
+        "critical": 0,
+        "package": "inngest"
+      },
+      "downloads": {
+        "recent": 4948572,
+        "earlier": 0,
+        "package": "inngest"
+      }
+    },
+    "trigger-dev": {
+      "incidents": null,
+      "advisories": {
+        "high": 0,
+        "critical": 0,
+        "package": "@trigger.dev/sdk"
+      },
+      "downloads": {
+        "recent": 6643002,
+        "earlier": 3158947,
+        "package": "@trigger.dev/sdk"
+      }
+    },
+    "upstash-qstash": {
+      "incidents": {
+        "minor": 2,
+        "major": 2,
+        "critical": 0,
+        "source": "https://status.upstash.com"
+      },
+      "advisories": {
+        "high": 0,
+        "critical": 0,
+        "package": "@upstash/qstash"
+      },
+      "downloads": {
+        "recent": 3343686,
+        "earlier": 2088114,
+        "package": "@upstash/qstash"
+      }
+    },
+    "twilio": {
+      "incidents": {
+        "minor": 49,
+        "major": 0,
+        "critical": 0,
+        "source": "https://status.twilio.com"
+      },
+      "advisories": {
+        "high": 0,
+        "critical": 0,
+        "package": "twilio"
+      },
+      "downloads": {
+        "recent": 38280313,
+        "earlier": 22453299,
+        "package": "twilio"
+      }
+    },
+    "telnyx": {
+      "incidents": {
+        "minor": 13,
+        "major": 6,
+        "critical": 1,
+        "source": "https://status.telnyx.com"
+      },
+      "advisories": {
+        "high": 0,
+        "critical": 0,
+        "package": "telnyx"
+      },
+      "downloads": {
+        "recent": 2903036,
+        "earlier": 1041327,
+        "package": "telnyx"
+      }
+    },
+    "vonage": {
+      "incidents": null,
+      "advisories": {
+        "high": 0,
+        "critical": 0,
+        "package": "@vonage/server-sdk"
+      },
+      "downloads": {
+        "recent": 829964,
+        "earlier": 500362,
+        "package": "@vonage/server-sdk"
+      }
+    },
+    "algolia": {
+      "incidents": null,
+      "advisories": {
+        "high": 0,
+        "critical": 0,
+        "package": "algoliasearch"
+      },
+      "downloads": {
+        "recent": 39190134,
+        "earlier": 30609251,
+        "package": "algoliasearch"
+      }
+    },
+    "typesense": {
+      "incidents": null,
+      "advisories": {
+        "high": 0,
+        "critical": 0,
+        "package": "typesense"
+      },
+      "downloads": {
+        "recent": 5039314,
+        "earlier": 3380090,
+        "package": "typesense"
+      }
+    },
+    "meilisearch": {
+      "incidents": null,
+      "advisories": {
+        "high": 0,
+        "critical": 0,
+        "package": "meilisearch"
+      },
+      "downloads": {
+        "recent": 4205106,
+        "earlier": 2124469,
+        "package": "meilisearch"
+      }
+    },
+    "sanity": {
+      "incidents": {
+        "minor": 9,
+        "major": 3,
+        "critical": 2,
+        "source": "https://www.sanity-status.com"
+      },
+      "advisories": {
+        "high": 0,
+        "critical": 0,
+        "package": "@sanity/client"
+      },
+      "downloads": {
+        "recent": 19607613,
+        "earlier": 8476503,
+        "package": "@sanity/client"
+      }
+    },
+    "payload": {
+      "incidents": null,
+      "advisories": {
+        "high": 10,
+        "critical": 3,
+        "package": "payload"
+      },
+      "downloads": {
+        "recent": 6142771,
+        "earlier": 2637315,
+        "package": "payload"
+      }
+    },
+    "contentful": {
+      "incidents": {
+        "minor": 3,
+        "major": 6,
+        "critical": 0,
+        "source": "https://www.contentfulstatus.com"
+      },
+      "advisories": {
+        "high": 0,
+        "critical": 0,
+        "package": "contentful"
+      },
+      "downloads": {
+        "recent": 6595038,
+        "earlier": 6087863,
+        "package": "contentful"
+      }
+    },
+    "shopify": {
+      "incidents": {
+        "minor": 0,
+        "major": 0,
+        "critical": 0,
+        "source": "https://www.shopifystatus.com"
+      },
+      "advisories": {
+        "high": 0,
+        "critical": 0,
+        "package": "@shopify/shopify-api"
+      },
+      "downloads": {
+        "recent": 3949388,
+        "earlier": 2131697,
+        "package": "@shopify/shopify-api"
+      }
+    },
+    "medusa": {
+      "incidents": {
+        "minor": 3,
+        "major": 1,
+        "critical": 0,
+        "source": "https://status.medusajs.com"
+      },
+      "advisories": {
+        "high": 0,
+        "critical": 0,
+        "package": "@medusajs/medusa"
+      },
+      "downloads": {
+        "recent": 1365800,
+        "earlier": 603072,
+        "package": "@medusajs/medusa"
       }
     }
   }

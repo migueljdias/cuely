@@ -172,6 +172,7 @@ export function decideCompliance(
  */
 export const DATA_CATEGORIES: ReadonlySet<CategorySlug> = new Set<CategorySlug>([
   "hosting", "database", "auth", "email", "monitoring", "analytics", "storage", "llm", "vector", "realtime", "internal_tools", "kv",
+  "jobs", "sms", "search",
 ]);
 
 /** Points per answer. A stated "no" costs more than a stated "yes" earns; an unstated answer is 0. */

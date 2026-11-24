@@ -20,7 +20,13 @@ export type CategorySlug =
   | "realtime"
   | "mobile_build"
   | "internal_tools"
-  | "kv";
+  | "kv"
+  | "push"
+  | "jobs"
+  | "sms"
+  | "search"
+  | "cms"
+  | "commerce";
 
 /**
  * Needs are what a builder's description can ask for. recommend_stack detects
@@ -42,6 +48,7 @@ export type Need =
   | "long_running" // background workers, long jobs, persistent servers
   | "high_volume" // large traffic or large send/storage volumes
   | "mobile" // native iOS or Android app
+  | "native_ios" // an iPhone or iPad app written in Swift with Xcode, not cross-platform
   | "marketplace" // users pay each other through the product and the platform takes a cut
   | "rag" // answers over the user's own documents (retrieval)
   | "usage_billing" // charges by usage (metered)
@@ -49,7 +56,8 @@ export type Need =
   | "google_workspace" // the organization already runs on Google Workspace
   | "counters" // votes, scores, leaderboards, streaks: many small writes to the same numbers
   | "spiky" // traffic arrives in bursts (a viral share, a launch), not evenly
-  | "health_data"; // stores patient or health information (HIPAA in the US)
+  | "health_data" // stores patient or health information (HIPAA in the US)
+  | "campaigns"; // marketing or re-engagement messages sent by non-developers, to segments of users
 
 export interface Category {
   slug: CategorySlug;

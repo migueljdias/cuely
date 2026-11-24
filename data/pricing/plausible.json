@@ -1,7 +1,7 @@
 {
   "slug": "plausible",
   "url": "https://plausible.io/",
-  "readOn": "2026-11-12",
+  "readOn": "2026-11-17",
   "lines": [
     "22k",
     "332B",
@@ -17,7 +17,6 @@
     "$19 /month",
     "Up to 10 team members",
     "Stats API (600 requests per hour)",
-    "10+ team members",
     "600+ Stats API requests per hour"
   ]
 }

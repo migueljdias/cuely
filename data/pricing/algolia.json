@@ -1,0 +1,30 @@
+{
+  "slug": "algolia",
+  "url": "https://www.algolia.com/pricing",
+  "readOn": "2026-11-21",
+  "lines": [
+    "99.99% availability",
+    "10K search requests /month included then $1.75 per additional 1K search requests",
+    "100K records included then $0.40 per additional 1K records",
+    "90 days analytics retention",
+    "10K search requests /month included then $0.50 per additional 1K search requests",
+    "30 days analytics retention",
+    "10K search requests/month",
+    "50K records included",
+    "5K recommendation requests/month",
+    "5K crawls/month",
+    "$0 / month",
+    "10,000 requests/mo included then $0.60 per additional 1K requests",
+    "7 days",
+    "30 days",
+    "90 days",
+    "10,000/mo then $0.80 per additional 1K Crawls/mo",
+    "1 GB",
+    "100GB",
+    "Note: To offer flexibility, Algolia ignores the 3 days with the most records in each month before calculating the total number of records.",
+    "10,000 Search Requests",
+    "10,000 Recommend Requests",
+    "100,000 Records",
+    "ROI varies by customer and use case, but Forrester Research performed an ROI analysis with several Algolia customers. They found ROI as high as 382% with a payback period of less than 6 months with $4.47M present value of benefit and $3.54M net present value. Read the full report here."
+  ]
+}

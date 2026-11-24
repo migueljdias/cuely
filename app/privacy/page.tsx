@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { OPERATOR, SUPPORT_EMAIL } from "@/site";
+import { OPERATOR, REPO_URL, SUPPORT_EMAIL } from "@/site";
 import { LegalPage } from "../_components/legal";
 
 export const metadata: Metadata = {
@@ -27,9 +27,11 @@ export default function Privacy() {
 
       <h2>Using the MCP server</h2>
       <p>
-        The MCP server needs a free account. For each call Cuely records which tool was used and which categories or
-        recipe were asked about, so it can see what builders need. It does not store the description your agent sends,
-        and it does not store your IP address. It counts your account&apos;s calls per day and per minute to apply your
+        The MCP server needs a free account. Your agent sends a plain description of the product and the names of the
+        tools it uses; Cuely never receives your code, files or secrets (<a href="/trust">what Cuely receives</a> shows a
+        real example). For each call Cuely records which tool was used and which categories, needs or recipe the answer
+        covered, so it can see what builders need. It does not store the description or tool list your agent sends, and
+        it does not store your IP address. It counts your account&apos;s calls per day and per minute to apply your
         plan&apos;s limits, and keeps those daily counts so you can see your usage. Requests without a valid key or
         sign-in are limited by IP address, in memory only.
       </p>
@@ -42,12 +44,18 @@ export default function Privacy() {
           basic profile with Clerk, and Cuely asks for nothing more.
         </li>
         <li>
-          <strong>Account record:</strong> Cuely stores your user ID, email, plan, and, if you subscribe, your Stripe customer
+          <strong>Account record:</strong> Cuely stores your user ID, email, plan, whether you chose to get product update emails (and when), and, if you subscribe, your Stripe customer
           and subscription IDs and renewal date.
         </li>
         <li>
           <strong>API keys:</strong> Cuely stores only a hash of each key, its name, its first few characters and when it was
           last used. The full key is shown to you once and never stored.
+        </li>
+        <li>
+          <strong>Saved stacks:</strong> if you save a stack on your account pages, Cuely stores the name, the tools and the
+          optional description you typed, plus those tools&apos; prices and compliance answers on the day you last looked, so
+          it can show you what changed. You can edit or delete a stack at any time. Questions you ask on the Ask Cuely page
+          aren&apos;t stored unless you save the answer as a stack.
         </li>
         <li>
           <strong>Connector sign-in:</strong> when you connect Cuely in Claude or another AI tool, Clerk signs you in and
@@ -77,10 +85,17 @@ export default function Privacy() {
           <strong>Stripe</strong> handles payments.
         </li>
         <li>
-          <strong>Resend</strong> sends account and billing email, if Cuely sends you any.
+          <strong>Resend</strong> sends account and billing email, if Cuely sends you any, and product updates only if you
+          turn them on in your account.
         </li>
       </ul>
       <p>These services process data only to run Cuely. Cuely doesn&apos;t sell or rent your data to anyone.</p>
+
+      <h2>Checking these claims</h2>
+      <p>
+        The code that runs Cuely is public at <a href={REPO_URL}>{REPO_URL}</a>, including the database schema and the
+        code that writes each usage record, so you can check this policy against what the server does.
+      </p>
 
       <h2>Cookies</h2>
       <p>
@@ -93,6 +108,44 @@ export default function Privacy() {
         <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> to see, correct or delete it, and it will be removed within
         30 days, except records the law requires to be kept, such as payment records held by Stripe. Anonymous usage counts
         are kept to improve the catalog and can&apos;t be linked back to you.
+      </p>
+
+      <h2>Where your data is stored</h2>
+      <p>
+        Cuely is run from the United States, and the services listed above store and process data in the United States.
+        If you use Cuely from the European Union, the United Kingdom or elsewhere, your data is transferred to the United
+        States. Where a service offers them, Cuely relies on the safeguards in its data processing terms for these
+        transfers, such as the European Commission&apos;s Standard Contractual Clauses.
+      </p>
+
+      <h2>If you&apos;re in the EU or UK</h2>
+      <p>Under the GDPR and the UK GDPR, Cuely uses your data on these grounds:</p>
+      <ul>
+        <li>
+          <strong>To provide the service you signed up for:</strong> your account, sign-in, API keys, plan limits and,
+          if you subscribe, billing.
+        </li>
+        <li>
+          <strong>Legitimate interests:</strong> anonymous usage counts to improve the catalog, and protecting the service
+          from abuse. These are kept minimal and can&apos;t be linked back to you.
+        </li>
+        <li>
+          <strong>Legal obligations:</strong> payment and tax records that the law requires to be kept.
+        </li>
+      </ul>
+      <p>You have the right to:</p>
+      <ul>
+        <li>see the data Cuely holds about you and get a copy of it</li>
+        <li>have it corrected if it&apos;s wrong</li>
+        <li>have it deleted</li>
+        <li>restrict or object to how it&apos;s used, including the anonymous usage counts</li>
+        <li>receive it in a format you can take to another service</li>
+        <li>complain to the data protection authority where you live or work</li>
+      </ul>
+      <p>
+        To use any of these rights, email <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>. You&apos;ll get an
+        answer within one month. Cuely doesn&apos;t sell your data, doesn&apos;t use it for advertising, and doesn&apos;t
+        make automated decisions about you that have legal or similar effects.
       </p>
 
       <h2>Children</h2>

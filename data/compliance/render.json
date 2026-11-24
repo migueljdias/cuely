@@ -1,6 +1,6 @@
 {
   "slug": "render",
-  "readOn": "2026-11-13",
+  "readOn": "2026-11-23",
   "pages": [
     {
       "url": "https://render.com/security",
@@ -21,9 +21,6 @@
     {
       "url": "https://render.com/docs/hipaa-compliance",
       "lines": [
-        "Regions",
-        "HIPAA (US health data)",
-        "HIPAA best practices",
         "HIPAA on Render",
         "Run HIPAA-compliant apps and store protected health information.",
         "HIPAA-enabled workspaces require a Scale or Enterprise plan.",
@@ -51,15 +48,16 @@
         "Never process or store PHI on Render outside of a HIPAA-enabled workspace.",
         "Not all resources in a HIPAA-enabled workspace support HIPAA-compliant processing and storing of PHI. See the following table for details:",
         "Workflows are not available in HIPAA-enabled workspaces.",
-        "Your primary databases, read replicas, and high availability standby databases all support HIPAA-compliant workflows."
+        "Your primary databases, read replicas, and high availability standby databases all support HIPAA-compliant workflows.",
+        "Regions",
+        "HIPAA (US health data)",
+        "HIPAA best practices"
       ]
     },
     {
       "url": "https://render.com/docs/regions",
       "lines": [
         "Regions",
-        "HIPAA (US health data)",
-        "HIPAA best practices",
         "You can deploy Render services to any of the following regions to minimize latency for your users:",
         "Frankfurt, Germany",
         "We'll continue to add regions over time. If you're interested in a particular region, vote for it at feedback.render.com.",
@@ -70,7 +68,9 @@
         "Changing a service's region",
         "Render doesn't currently support changing the region for an existing service or database. Instead, create a new service or database in the desired region, then migrate your configuration and data as needed.",
         "Each region provides a separate private network for your services. This means that services in different regions can't communicate directly over a private network.",
-        "To communicate between services across regions, you need to properly secure that communication for traversal over the public internet."
+        "To communicate between services across regions, you need to properly secure that communication for traversal over the public internet.",
+        "HIPAA (US health data)",
+        "HIPAA best practices"
       ]
     }
   ]

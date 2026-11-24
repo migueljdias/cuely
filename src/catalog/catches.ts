@@ -6,10 +6,15 @@
 export interface Catch {
   id: string;
   /** Profile flag that triggers it. */
-  when: "mobile_paid" | "mobile" | "mobile_social_login" | "marketplace" | "in_person" | "ai" | "rag" | "usage_billing" | "internal" | "internal_workspace" | "realtime" | "game" | "health_data";
+  when: "mobile_paid" | "mobile" | "mobile_social_login" | "marketplace" | "in_person" | "ai" | "rag" | "usage_billing" | "internal" | "internal_workspace" | "realtime" | "game" | "health_data" | "sms";
   text: string;
   source: string;
   verifiedOn: string;
+  /**
+   * Phone apps only: "native_ios" for an iPhone app in Swift with no Android build,
+   * "cross_platform" for apps that ship on both stores. Absent means both.
+   */
+  platforms?: "native_ios" | "cross_platform";
 }
 
 const V = "2026-11-07";
@@ -35,6 +40,15 @@ export const CATCHES: Catch[] = [
     text: "The stores take a cut of in-app revenue: Apple 15% under the Small Business Program (up to $1M in proceeds a year), Google Play 10% + 5% billing fee on auto-renewing subscriptions for the first $1M in the US, EEA and UK.",
     source: "https://support.google.com/googleplay/android-developer/answer/112622",
     verifiedOn: V,
+    platforms: "cross_platform",
+  },
+  {
+    id: "app-store-fees",
+    when: "mobile_paid",
+    text: "Apple takes 15% of paid apps and in-app purchases under the App Store Small Business Program, for developers new to the store or with up to $1M in proceeds the prior calendar year; above that the standard rate applies.",
+    source: "https://developer.apple.com/app-store/small-business-program/",
+    verifiedOn: "2026-11-18",
+    platforms: "native_ios",
   },
   {
     id: "store-accounts",
@@ -42,6 +56,15 @@ export const CATCHES: Catch[] = [
     text: "Store accounts cost $99 a year for the Apple Developer Program and $25 once for Google Play.",
     source: "https://developer.apple.com/programs/",
     verifiedOn: V,
+    platforms: "cross_platform",
+  },
+  {
+    id: "ios-sdk-minimum",
+    when: "mobile",
+    text: "Since April 28, 2026, App Store Connect only accepts builds made with Xcode 26 or later and the iOS 26 SDK, so a Swift app needs a current Mac and Xcode (or Xcode Cloud). The Apple Developer Program is $99 a year.",
+    source: "https://developer.apple.com/news/upcoming-requirements/",
+    verifiedOn: "2026-11-18",
+    platforms: "native_ios",
   },
   {
     id: "sign-in-with-apple",
@@ -126,5 +149,19 @@ export const CATCHES: Catch[] = [
     text: "Show live percentages by polling one cached results endpoint every few seconds instead of a realtime service: Supabase Realtime Free allows 200 concurrent connections, Ably Free 500 monthly users and Pusher's Sandbox 100 connections, and a viral day passes those in minutes.",
     source: "https://supabase.com/pricing",
     verifiedOn: "2026-11-09",
+  },
+  {
+    id: "sms-10dlc",
+    when: "sms",
+    text: "Texts to US phones from a normal 10-digit number must go through a registered A2P 10DLC campaign, or carriers block them. Register before launch: Twilio lists a $4.50 one-time brand fee (low volume), a $15 campaign vetting fee and $1.50 to $10 a month per campaign. Toll-free numbers need their own verification.",
+    source: "https://help.twilio.com/articles/1260803965530-What-pricing-and-fees-are-associated-with-the-A2P-10DLC-service-",
+    verifiedOn: "2026-11-20",
+  },
+  {
+    id: "sms-carrier-fees",
+    when: "sms",
+    text: "US carriers add their own fee to every text on top of the provider's rate, for example $0.0035 on AT&T and $0.0045 on T-Mobile, so budget roughly double the advertised per-text price for low-cost providers.",
+    source: "https://telnyx.com/pricing/messaging",
+    verifiedOn: "2026-11-20",
   },
 ];

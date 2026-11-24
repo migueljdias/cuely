@@ -1,0 +1,30 @@
+{
+  "slug": "trigger-dev",
+  "readOn": "2026-11-21",
+  "pages": [
+    {
+      "url": "https://trigger.dev/security",
+      "lines": [
+        "Is Trigger.dev SOC2 compliant?",
+        "Yes, Trigger.dev is SOC 2 Type II compliant. Visit our Security Portal for more information. Our latest report is available upon request for our Enterprise customers.",
+        "Is Trigger.dev GDPR compliant?",
+        "Yes, Trigger.dev is GDPR compliant. Visit our Security Portal for more information, or contact us to request data deletion.",
+        "Is Trigger.dev HIPAA compliant?",
+        "Yes. Trigger.dev meets HIPAA Business Associate requirements. To run tasks that process PHI on Trigger.dev Cloud you'll need a signed BAA with us, which is available as a $500/month add-on. Request a BAA or view the full set of controls on our Security Portal .",
+        "Where can I find your list of sub-processors?",
+        "You can find our list of our active sub-processors on our Sub-processors page.",
+        "Can I view Trigger.dev's Data Processing Agreement?",
+        "Yes, our Data Processing Agreement is formed as part of our Terms of Service and applies automatically upon sign-up.",
+        "Data Processing Agreement",
+        "Sub-processors",
+        "SOC 2 Type II",
+        "HIPAA BAA available",
+        "GDPR Compliant",
+        "DPA",
+        "SOC2",
+        "GDPR",
+        "HIPAA"
+      ]
+    }
+  ]
+}
