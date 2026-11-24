@@ -14,7 +14,7 @@ import { accountSession, day } from "../../_session";
 import { deleteStackAction, markSeenAction } from "../actions";
 import { StackForm } from "../_stack-form";
 
-export const metadata: Metadata = { title: "Stack · Cuely", robots: { index: false } };
+export const metadata: Metadata = { title: "Project · Cuely", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
 export default async function StackPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ saved?: string }> }) {
@@ -37,7 +37,7 @@ export default async function StackPage({ params, searchParams }: { params: Prom
     <div className="account">
       <div className="app-section">
         <Link href="/account/stacks" className="back-link">
-          <ArrowLeft size={14} aria-hidden="true" /> My stacks
+          <ArrowLeft size={14} aria-hidden="true" /> Projects
         </Link>
         <h1 className="app-title">{stack.name}</h1>
         <p className="app-lede">{stack.description || `${tools.length} tools. Add a description to get keep-or-change advice.`}</p>

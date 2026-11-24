@@ -8,7 +8,7 @@ import { toolOptions } from "../_options";
 import { accountSession, day } from "../_session";
 import { StackForm } from "./_stack-form";
 
-export const metadata: Metadata = { title: "My stacks · Cuely", robots: { index: false } };
+export const metadata: Metadata = { title: "Projects · Cuely", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
 export default async function StacksPage() {
@@ -20,7 +20,7 @@ export default async function StacksPage() {
   return (
     <div className="account">
       <div className="app-section">
-        <h1 className="app-title">My stacks</h1>
+        <h1 className="app-title">Projects</h1>
         <p className="app-lede">
           Save the tools each project uses. Cuely re-reads vendor pricing and compliance pages and measures outages on a
           schedule, and shows you here what changed since you last looked.

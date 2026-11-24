@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Check } from "lucide-react";
+import { redirect } from "next/navigation";
 import { checkoutOpen, paymentsConfig } from "@/billing/stripe";
+import { syncCheckoutSession } from "@/billing/sync";
 import { PLANS } from "@/plans";
 import { SITE_URL } from "@/site";
 import { accountSession, day } from "../_session";
@@ -9,11 +11,21 @@ import { checkoutAction, portalAction } from "../actions";
 export const metadata: Metadata = { title: "Plan & billing · Cuely", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
-export default async function BillingPage({ searchParams }: { searchParams: Promise<{ checkout?: string }> }) {
-  const { account, plan } = await accountSession();
+export default async function BillingPage({ searchParams }: { searchParams: Promise<{ checkout?: string; session_id?: string }> }) {
+  const { user, store, account, plan } = await accountSession();
   const payments = paymentsConfig();
   const canCheckout = checkoutOpen(payments);
-  const { checkout } = await searchParams;
+  const { checkout, session_id } = await searchParams;
+
+  // Back from Stripe: apply the subscription now rather than waiting for the webhook.
+  if (checkout === "done" && session_id && store) {
+    try {
+      await syncCheckoutSession(payments, store, user.id, session_id);
+    } catch (err) {
+      console.warn(JSON.stringify({ event: "checkout_sync_failed", account: user.id, reason: err instanceof Error ? err.message : String(err) }));
+    }
+    redirect("/account/billing?checkout=done");
+  }
 
   return (
     <div className="account">
@@ -36,7 +48,9 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
       )}
       {checkout === "done" && (
         <p className="notice" role="status">
-          Thanks. Your plan updates as soon as Stripe confirms the payment, usually within a few seconds.
+          {plan.id === "pro"
+            ? "Thanks, you're on Pro. Your new limits apply right away."
+            : "Thanks. Your plan updates as soon as Stripe confirms the payment, usually within a few seconds."}
         </p>
       )}
 
