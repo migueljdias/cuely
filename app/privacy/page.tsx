@@ -52,10 +52,11 @@ export default function Privacy() {
           last used. The full key is shown to you once and never stored.
         </li>
         <li>
-          <strong>Saved stacks:</strong> if you save a stack on your account pages, Cuely stores the name, the tools and the
+          <strong>Projects:</strong> if you save a project on your account pages, Cuely stores the name, the tools and the
           optional description you typed, plus those tools&apos; prices and compliance answers on the day you last looked, so
-          it can show you what changed. You can edit or delete a stack at any time. Questions you ask on the Ask Cuely page
-          aren&apos;t stored unless you save the answer as a stack.
+          it can show you what changed. When you tick an item on a project&apos;s launch checklist, Cuely stores which item
+          and the date, nothing else. You can edit or delete a project, and its ticks, at any time. Questions you ask on the
+          Ask Cuely page aren&apos;t stored unless you save the answer as a project.
         </li>
         <li>
           <strong>Connector sign-in:</strong> when you connect Cuely in Claude or another AI tool, Clerk signs you in and

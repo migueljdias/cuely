@@ -58,7 +58,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             </Link>
           </li>
           <li>
-            <Link className="row-link" href="/account/stacks">
+            <Link className="row-link" href="/account/projects">
               <span className="row-main">
                 <strong>Saved stacks</strong>
                 <span className="muted small">Only the names, descriptions and tools you save. Delete any of them there.</span>

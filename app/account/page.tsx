@@ -66,7 +66,7 @@ export default async function HomePage() {
       label: `${KIND_LABEL[c.kind]} · ${c.name}`,
       text: plain(c.text),
       where: c.projects.join(", "),
-      href: c.projects.length === 1 ? `/account/stacks/${c.projectId}` : "/account/alerts",
+      href: c.projects.length === 1 ? `/account/projects/${c.projectId}` : "/account/alerts",
     })),
     ...troubled
       .filter((t) => !healthChanged.has(t.slug))
@@ -79,6 +79,13 @@ export default async function HomePage() {
         href: `${SITE_URL}/tools/${t.slug}`,
       })),
   ].slice(0, 5);
+
+  // Launch checklists across projects; the card opens the project with the most left to do.
+  const checksDone = projects.reduce((sum, p) => sum + p.ready.done, 0);
+  const checksTotal = projects.reduce((sum, p) => sum + p.ready.total, 0);
+  const blockers = projects.reduce((sum, p) => sum + p.ready.blockersLeft, 0);
+  const mostLeft = [...projects].sort((a, b) => b.ready.total - b.ready.done - (a.ready.total - a.ready.done))[0];
+  const checklistHref = mostLeft ? `/account/projects/${mostLeft.stack.id}#ready` : "/account/projects";
 
   const steps = [
     {
@@ -99,7 +106,7 @@ export default async function HomePage() {
       done: projects.length > 0,
       title: "Save a project to watch",
       text: "Cuely tells you here when a price, free plan, outage record or compliance answer changes.",
-      href: "/account/stacks",
+      href: "/account/projects",
       cta: "Add a project",
     },
   ];
@@ -127,7 +134,7 @@ export default async function HomePage() {
       </div>
 
       <section className="home-stats" aria-label="Summary">
-        <Link className="stat-card" href="/account/stacks">
+        <Link className="stat-card" href="/account/projects">
           <span className="stat-label">Monthly spend, all projects</span>
           <span className="stat-value">
             {priced.length ? `$${n(spend)}` : "–"}
@@ -146,12 +153,13 @@ export default async function HomePage() {
             <small>{alertCount ? " need a look" : " all clear"}</small>
           </span>
         </Link>
-        <Link className="stat-card" href="/account/stacks">
-          <span className="stat-label">Projects watched</span>
+        <Link className="stat-card" href={checklistHref}>
+          <span className="stat-label">Launch checklists</span>
           <span className="stat-value">
-            {n(projects.length)}
-            <small> / {n(plan.maxStacks)}</small>
+            {projects.length ? n(checksDone) : "–"}
+            <small>{projects.length ? ` of ${n(checksTotal)} done` : " add a project"}</small>
           </span>
+          {blockers > 0 && <span className="stat-note">{plural(blockers, "item")} blocking launch</span>}
         </Link>
         <Link className="stat-card" href="/account/usage">
           <span className="stat-label">Agent calls today</span>
@@ -195,7 +203,7 @@ export default async function HomePage() {
         <section aria-labelledby="h-proj" className="home-main">
           <div className="section-head">
             <h2 id="h-proj">Projects</h2>
-            <Link href="/account/stacks">All projects</Link>
+            <Link href="/account/projects">All projects</Link>
           </div>
 
           {!hasStore ? (
@@ -204,12 +212,12 @@ export default async function HomePage() {
             </p>
           ) : projects.length ? (
             <div className="project-grid">
-              {projects.slice(0, 4).map(({ stack, tools, changes }) => {
+              {projects.slice(0, 4).map(({ stack, tools, changes, ready }) => {
                 const worse = changes.filter((c) => c.tone === "worse").length;
                 const lead = changes.find((c) => c.tone === "worse") ?? changes[0];
                 const cost = tools.map(monthlyAt1k).filter((v): v is number => v !== null);
                 return (
-                  <Link key={stack.id} href={`/account/stacks/${stack.id}`} className="project-card">
+                  <Link key={stack.id} href={`/account/projects/${stack.id}`} className="project-card">
                     <span className="project-card-top">
                       <span className="project-card-name">
                         <strong>{stack.name}</strong>
@@ -218,7 +226,9 @@ export default async function HomePage() {
                           {cost.length ? ` · $${n(cost.reduce((s, v) => s + v, 0))}/mo at 1k users` : ""}
                         </span>
                       </span>
-                      {changes.length ? (
+                      {ready.blockersLeft ? (
+                        <span className="badge badge-warn">{plural(ready.blockersLeft, "blocker")}</span>
+                      ) : changes.length ? (
                         <span className={`badge ${worse ? "badge-warn" : "badge-info"}`}>{plural(changes.length, "change")}</span>
                       ) : (
                         <span className="badge badge-good">Up to date</span>
@@ -231,6 +241,17 @@ export default async function HomePage() {
                           ? stack.description
                           : "Nothing has changed for these tools since you last looked."}
                     </span>
+                    {ready.total > 0 && (
+                      <span className="ready-bar">
+                        <span className="ready-bar-label">
+                          <span>Launch readiness</span>
+                          <span>{ready.pct}%</span>
+                        </span>
+                        <span className="app-meter" aria-hidden="true">
+                          <i style={{ width: `${ready.pct}%` }} />
+                        </span>
+                      </span>
+                    )}
                     <span className="logo-stack" aria-hidden="true">
                       {tools.slice(0, 8).map((t) => (
                         <ToolLogo key={t.slug} slug={t.slug} name={t.name} size={24} />
@@ -247,7 +268,7 @@ export default async function HomePage() {
                 Add the tools a project uses and Cuely will flag price changes, new free-plan limits, outages and
                 compliance answers here.
               </p>
-              <Link className="btn-app btn-app-small" href="/account/stacks">
+              <Link className="btn-app btn-app-small" href="/account/projects">
                 Add a project
               </Link>
             </div>

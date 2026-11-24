@@ -132,3 +132,6 @@ create table if not exists saved_stacks (
   updated_at  timestamptz not null default now()
 );
 create index if not exists saved_stacks_user_idx on saved_stacks (user_id);
+-- Launch checklist ticks: practice id -> the date its holder ticked it. Readiness is worked
+-- out from these on the project page. Only ids and dates; nothing the holder wrote.
+alter table saved_stacks add column if not exists checks jsonb not null default '{}';

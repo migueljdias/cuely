@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { getAccountStore } from "@/accounts/store";
+import { projectChecklist, readiness } from "@/accounts/checklist";
 import { getStackStore, stackChanges } from "@/accounts/stacks";
 import { getRepository } from "@/repo";
 import { authConfigured, currentUser } from "@/auth/server";
@@ -34,7 +35,7 @@ export const projectsOverview = cache(async () => {
   const bySlug = new Map(snap.tools.map((t) => [t.slug, t]));
   const projects = stacks.map((stack) => {
     const tools = stack.tools.map((t) => bySlug.get(t)).filter((t) => t !== undefined);
-    return { stack, tools, changes: stackChanges(stack.baseline, tools) };
+    return { stack, tools, changes: stackChanges(stack.baseline, tools), ready: readiness(projectChecklist(stack, tools)) };
   });
   const alertCount = projects.reduce((sum, p) => sum + p.changes.length, 0);
   const lastRead = snap.tools.reduce((max, t) => (t.verifiedOn > max ? t.verifiedOn : max), "");

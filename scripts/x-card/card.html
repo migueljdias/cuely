@@ -1,0 +1,51 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:G;src:url(../../node_modules/geist/dist/fonts/geist-sans/Geist-Regular.woff2);font-weight:400}
+@font-face{font-family:G;src:url(../../node_modules/geist/dist/fonts/geist-sans/Geist-Medium.woff2);font-weight:500}
+@font-face{font-family:G;src:url(../../node_modules/geist/dist/fonts/geist-sans/Geist-SemiBold.woff2);font-weight:600}
+@font-face{font-family:M;src:url(../../node_modules/geist/dist/fonts/geist-mono/GeistMono-Regular.woff2);font-weight:400}
+@font-face{font-family:M;src:url(../../node_modules/geist/dist/fonts/geist-mono/GeistMono-Medium.woff2);font-weight:500}
+*{box-sizing:border-box}html,body{margin:0}
+body{width:1200px;height:630px;overflow:hidden;font-family:G;color:#eef1f8;
+ background:radial-gradient(900px 520px at 88% 8%,rgba(47,91,255,.38),transparent 62%),radial-gradient(700px 500px at -10% 110%,rgba(47,91,255,.16),transparent 60%),#0b1020}
+.wrap{position:absolute;inset:0;padding:64px 64px 0;display:grid;grid-template-columns:1fr 470px;gap:48px}
+.brand{display:flex;align-items:center;gap:14px}
+.brand span{font-size:34px;font-weight:600;letter-spacing:-.02em;color:#9db2ff}
+h1{margin:70px 0 0;font-size:66px;line-height:1.02;font-weight:500;letter-spacing:-.045em}
+h1 em{font-style:normal;color:#9db2ff}
+p.sub{margin:26px 0 0;font-size:25px;line-height:1.35;color:#c9d0e0;max-width:540px}
+.chips{display:flex;gap:10px;margin-top:30px}
+.chips span{font-family:M;font-size:16px;padding:7px 12px;border:1px solid #3a4670;border-radius:10px;color:#c9d0e0;background:rgba(20,27,51,.6)}
+.term{align-self:start;margin-top:6px;border-radius:20px;background:#141b33;border:1px solid #2a3456;box-shadow:0 40px 80px -30px rgba(0,0,0,.7);overflow:hidden}
+.bar{display:flex;gap:7px;padding:16px 18px;border-bottom:1px solid #2a3456}
+.bar i{width:11px;height:11px;border-radius:50%;background:#2a3456}
+.ask{padding:20px 22px 6px;font-family:M;font-size:17px;line-height:1.5;color:#c9d0e0}
+.ask b{color:#9db2ff;font-weight:500}
+.rows{padding:6px 22px 18px}
+.row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-top:1px solid #222b4a;font-size:21px}
+.row:first-child{border-top:0}
+.row .cat{font-family:M;font-size:15px;color:#9aa3bc;letter-spacing:.04em;text-transform:uppercase;width:120px}
+.row .pick{flex:1;display:flex;align-items:center;gap:10px;font-weight:500}
+.row .pick:before{content:"";width:9px;height:9px;border-radius:50%;background:#4f76ff;box-shadow:0 0 12px #4f76ff}
+.row .why{font-size:15px;color:#79dfa9;font-family:M}
+.foot{padding:14px 22px 18px;border-top:1px solid #2a3456;font-family:M;font-size:15px;color:#9aa3bc}
+.foot b{color:#f6b97d;font-weight:500}
+</style></head><body><div class="wrap">
+<div>
+ <div class="brand"><svg width="52" height="52" viewBox="0 0 224 224"><rect width="224" height="224" rx="56" fill="#2f5bff"/><path d="M40 150a72 72 0 0 1 144 0z" fill="#c7d3ff"/></svg><span>cuely</span></div>
+ <h1>Your coding agent<br>asks. <em>Cuely picks<br>the stack.</em></h1>
+ <p class="sub">Honest tool picks, setup steps and a launch checklist, read from each vendor's own pages.</p>
+ <div class="chips"><span>Free MCP server</span><span>No paid placement</span></div>
+</div>
+<div class="term">
+ <div class="bar"><i></i><i></i><i></i></div>
+ <div class="ask"><b>&gt;</b> Use Cuely to choose the stack for a B2B SaaS with team sign-in and subscriptions</div>
+ <div class="rows">
+  <div class="row"><span class="cat">Hosting</span><span class="pick">Vercel</span></div>
+  <div class="row"><span class="cat">Database</span><span class="pick">Neon</span></div>
+  <div class="row"><span class="cat">Auth</span><span class="pick">WorkOS AuthKit</span><span class="why">SSO ready</span></div>
+  <div class="row"><span class="cat">Payments</span><span class="pick">Stripe</span></div>
+  <div class="row"><span class="cat">Email</span><span class="pick">Resend</span></div>
+ </div>
+ <div class="foot">+ monthly cost · <b>launch checklist</b> · setup steps</div>
+</div>
+</div></body></html>

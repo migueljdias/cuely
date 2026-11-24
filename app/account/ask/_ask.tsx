@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import Link from "next/link";
 import { ToolPicker, type ToolOption } from "../_tool-picker";
-import { createStackAction, type StackFormState } from "../stacks/actions";
+import { createStackAction, type StackFormState } from "../projects/actions";
 import { askAction, type AskMode, type AskState } from "./actions";
 import { CheckView, CompareView, StartView } from "./_results";
 
@@ -26,7 +26,7 @@ function SaveStack({ tools, description, name, canSave }: { tools: string[]; des
   if (!canSave) {
     return (
       <p className="muted small">
-        You&apos;ve saved as many stacks as your plan allows. <Link href="/account/stacks">Manage stacks</Link>
+        You&apos;ve saved as many stacks as your plan allows. <Link href="/account/projects">Manage stacks</Link>
       </p>
     );
   }

@@ -41,7 +41,7 @@ export async function createStackAction(_prev: StackFormState, form: FormData): 
   }
   const id = await stacks.create(user.id, { name: f.name, description: f.description, tools: f.tools.map((t) => t.slug), baseline: baselineFor(f.tools) });
   revalidatePath("/account", "layout");
-  redirect(`/account/stacks/${id}?saved=1`);
+  redirect(`/account/projects/${id}?saved=1`);
 }
 
 export async function updateStackAction(_prev: StackFormState, form: FormData): Promise<StackFormState> {
@@ -53,7 +53,7 @@ export async function updateStackAction(_prev: StackFormState, form: FormData): 
   const ok = await stacks.update(user.id, id, { name: f.name, description: f.description, tools: f.tools.map((t) => t.slug), fresh: baselineFor(f.tools) });
   if (!ok) return { error: "That stack wasn't found." };
   revalidatePath("/account", "layout");
-  redirect(`/account/stacks/${id}`);
+  redirect(`/account/projects/${id}`);
 }
 
 /** Takes today's facts as the stack's baseline, so the changes it showed are cleared. */
@@ -73,5 +73,19 @@ export async function deleteStackAction(form: FormData): Promise<void> {
   const id = stackId(form);
   if (stacks && id) await stacks.remove(user.id, id);
   revalidatePath("/account", "layout");
-  redirect("/account/stacks");
+  redirect("/account/projects");
+}
+
+/** Ticks or unticks one launch checklist item on a project. */
+export async function setCheckAction(id: number, practiceId: string, done: boolean): Promise<{ ok: boolean }> {
+  const { user, stacks } = await accountSession();
+  if (!stacks || !Number.isInteger(id) || id <= 0) return { ok: false };
+  try {
+    await stacks.setCheck(user.id, id, practiceId, done);
+  } catch (e) {
+    console.error("setCheck failed", e);
+    return { ok: false };
+  }
+  revalidatePath("/account", "layout");
+  return { ok: true };
 }

@@ -4,7 +4,7 @@ import { Bell } from "lucide-react";
 import { ToolLogo } from "../../_components/tool-logo";
 import { plain } from "../_options";
 import { day, projectsOverview } from "../_session";
-import { markSeenAction } from "../stacks/actions";
+import { markSeenAction } from "../projects/actions";
 
 export const metadata: Metadata = { title: "Alerts · Cuely", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -29,7 +29,7 @@ export default async function AlertsPage() {
           <section key={stack.id} className="panel" aria-labelledby={`alerts-${stack.id}`}>
             <div className="card-head">
               <h2 id={`alerts-${stack.id}`}>
-                <Link href={`/account/stacks/${stack.id}`}>{stack.name}</Link>
+                <Link href={`/account/projects/${stack.id}`}>{stack.name}</Link>
               </h2>
               <span className="muted small">Since {day(stack.seenAt)}</span>
             </div>
@@ -60,7 +60,7 @@ export default async function AlertsPage() {
               : "Add a project and Cuely will flag changes to its tools here."}
           </p>
           {!projects.length && (
-            <Link className="btn-app btn-app-small" href="/account/stacks">
+            <Link className="btn-app btn-app-small" href="/account/projects">
               Add a project
             </Link>
           )}
