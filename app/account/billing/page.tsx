@@ -28,6 +28,12 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
           plan keeps working with the same answers, and this button will take you straight to checkout once it&apos;s ready.
         </p>
       )}
+      {checkout === "unavailable" && (
+        <p className="notice" role="alert">
+          Checkout couldn&apos;t start just now, and you weren&apos;t charged. The reason has been logged so it can be fixed.
+          Please try again later, or write to support.
+        </p>
+      )}
       {checkout === "done" && (
         <p className="notice" role="status">
           Thanks. Your plan updates as soon as Stripe confirms the payment, usually within a few seconds.

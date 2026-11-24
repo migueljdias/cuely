@@ -6,10 +6,9 @@ import { getAccountStore } from "@/accounts/store";
 import { currentUser } from "@/auth/server";
 import { checkoutOpen, paymentsConfig, priceMatches, stripeGet, stripePost, type StripePrice } from "@/billing/stripe";
 import { PLANS, planFor } from "@/plans";
-import { APP_URL, SITE_URL } from "@/site";
+import { APP_URL } from "@/site";
 
-// Overridable for local testing; production uses cuely.dev and app.cuely.dev.
-const SITE = process.env.CUELY_SITE_URL ?? SITE_URL;
+// Overridable for local testing; production uses app.cuely.dev.
 const APP = process.env.CUELY_APP_URL ?? APP_URL;
 
 async function requireUser() {
@@ -56,44 +55,66 @@ export async function revokeKeyAction(form: FormData): Promise<void> {
 }
 
 /** Starts Stripe Checkout for Pro. Only runs where checkoutOpen() allows it. */
+/** Logs why checkout didn't start, with no keys or ids beyond the account, so the reason is in the runtime logs. */
+function blocked(account: string, reason: string, extra: Record<string, unknown> = {}) {
+  console.warn(JSON.stringify({ event: "checkout_blocked", account, reason, ...extra }));
+}
+
 export async function checkoutAction(): Promise<void> {
   const { user, store, account } = await requireUser();
   const cfg = paymentsConfig();
   if (cfg.mode === "off" || !checkoutOpen(cfg)) {
-    // Payments aren't switched on yet: grant nothing, start nothing, and note the interest in the logs.
+    // Payments aren't switched on here: grant nothing, start nothing, and log why.
+    blocked(account.userId, cfg.mode === "off" ? (cfg.reason ?? "Payments are off.") : "Test mode doesn't open checkout in production.", {
+      mode: cfg.mode,
+      vercelEnv: process.env.VERCEL_ENV ?? null,
+    });
     console.info(JSON.stringify({ event: "pro_interest", account: account.userId }));
     redirect("/account/billing?checkout=soon");
   }
   if (account.plan === "pro") redirect("/account/billing");
 
-  // Never charge a different amount from the one the pricing page shows.
-  const price = await stripeGet<StripePrice>(cfg, `prices/${cfg.priceId}`);
-  if (!priceMatches(price, PLANS.pro.priceCents)) redirect(`${SITE}/pricing?payments=mismatch`);
+  let url: string | null = null;
+  try {
+    // Never charge a different amount from the one the pricing page shows.
+    const price = await stripeGet<StripePrice>(cfg, `prices/${cfg.priceId}`);
+    if (!priceMatches(price, PLANS.pro.priceCents)) {
+      blocked(account.userId, "The Stripe price doesn't match the pricing page.", {
+        mode: cfg.mode,
+        want: { amount: PLANS.pro.priceCents, currency: "usd", interval: "month", active: true },
+        got: { amount: price.unit_amount, currency: price.currency, interval: price.recurring?.interval ?? null, intervalCount: price.recurring?.interval_count ?? null, active: price.active },
+      });
+    } else {
+      let customerId = account.stripeCustomerId;
+      if (!customerId) {
+        // Created before checkout, so every webhook that follows can find this account.
+        const customer = await stripePost<{ id: string }>(cfg, "customers", {
+          email: user.email ?? undefined,
+          metadata: { cuely_user_id: user.id },
+        });
+        customerId = customer.id;
+        await store.setStripeCustomer(user.id, customerId);
+      }
 
-  let customerId = account.stripeCustomerId;
-  if (!customerId) {
-    // Created before checkout, so every webhook that follows can find this account.
-    const customer = await stripePost<{ id: string }>(cfg, "customers", {
-      email: user.email ?? undefined,
-      metadata: { cuely_user_id: user.id },
-    });
-    customerId = customer.id;
-    await store.setStripeCustomer(user.id, customerId);
+      const session = await stripePost<{ url: string }>(cfg, "checkout/sessions", {
+        mode: "subscription",
+        customer: customerId,
+        client_reference_id: user.id,
+        line_items: [{ price: cfg.priceId, quantity: 1 }],
+        allow_promotion_codes: "true",
+        success_url: `${APP}/account/billing?checkout=done`,
+        cancel_url: `${APP}/account/billing`,
+        subscription_data: { metadata: { cuely_user_id: user.id } },
+        // Stripe as merchant of record: it collects and files sales tax and VAT.
+        ...(cfg.managedPayments ? { managed_payments: { enabled: "true" } } : {}),
+      });
+      url = session.url;
+    }
+  } catch (err) {
+    // Stripe's message names the problem (unknown price, key for the wrong account, managed payments not enabled).
+    blocked(account.userId, err instanceof Error ? err.message : String(err), { mode: cfg.mode, managedPayments: cfg.managedPayments });
   }
-
-  const session = await stripePost<{ url: string }>(cfg, "checkout/sessions", {
-    mode: "subscription",
-    customer: customerId,
-    client_reference_id: user.id,
-    line_items: [{ price: cfg.priceId, quantity: 1 }],
-    allow_promotion_codes: "true",
-    success_url: `${APP}/account/billing?checkout=done`,
-    cancel_url: `${SITE}/pricing`,
-    subscription_data: { metadata: { cuely_user_id: user.id } },
-    // Stripe as merchant of record: it collects and files sales tax and VAT.
-    ...(cfg.managedPayments ? { managed_payments: { enabled: "true" } } : {}),
-  });
-  redirect(session.url);
+  redirect(url ?? "/account/billing?checkout=unavailable");
 }
 
 /** Opens the Stripe customer portal, where cards, invoices and cancelling live. */
