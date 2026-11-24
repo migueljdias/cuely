@@ -1,7 +1,7 @@
 {
   "slug": "clerk",
   "url": "https://clerk.com/pricing",
-  "readOn": "2026-11-12",
+  "readOn": "2026-11-24",
   "lines": [
     "Up to 3 dashboard seats",
     "Up to 5 user impersonations",
@@ -61,9 +61,9 @@
     "For many SaaS teams that need paid auth features, Clerk is often cheaper and more transparent. Clerk Pro is $20/mo billed annually and includes 50K MRUs plus 1 Enterprise connection, with published overage rates. Auth0's free tier is generous at 25K MAU, but its paid plans start at $35/mo for Essent…",
     "What happens when I exceed the first 50,000 monthly retained users or 100 monthly retained organizations?",
     "Once you exceed 50,000 monthly retained users you will be required to upgrade to the Pro plan. Once you exceed 100 monthly retained organizations, you will be required to upgrade to the B2B Authentication add-on. Each user or organization beyond the free tier allowance will be added to your monthly …",
-    "\"First Day Free\" is our way of helping you avoid charges for users that try your app and do not return. Since we don't count users as active unless they sign in at least one more time after the first 24 hour period, the first day the user access your application is free of charge.",
     "Clerk pricing is based on Monthly Retained Users (MRU), not traditional MAU. A user only counts as retained if they return to your app at least 24 hours after signing up, so someone who signs up and never comes back does not count toward MRU billing. That means MRU is often lower than raw MAU, espec…",
-    "A monthly retained organization is an organization with at least 2 members, where at least one of those members is a monthly retained user for that month. Like users, you are only billed for retained organizations.",
+    "Self-serve SSO is free in development. Production use requires the Pro or Business plan, which includes one SSO connection per app. Additional SSO connections are $75/mo each, with volume discounts. These Organizations count toward MRO usage only when they meet the monthly retained organization defi…",
+    "Directory Sync connections are counted separately from SSO connections. Paid plans include one Directory Sync connection per app. Additional Directory Sync connections are $75/mo each from January 1, 2027, with volume discounts. Directory Sync is optional for SSO. See self-serve SSO setup and requir…",
     "It depends on the type of B2C app. Clerk can be a strong fit for paid consumer apps, prosumer tools, marketplaces, communities, and subscription products where retained users are valuable and polished auth/user management matters. But if you're building a free, ad-supported, or very low-ARPU consume…",
     "Less than you might fear. Clerk bills on MRU, not raw signups or MAU, so a spike of users who sign up and never return after the first day does not count toward your MRU bill. If returning users push you past 50K MRUs, Clerk gives you a one-month grace period so your app keeps running while you upgr…"
   ]

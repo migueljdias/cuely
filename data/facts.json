@@ -12,8 +12,14 @@
     "claude-api": {
       "verifiedOn": "2026-11-19"
     },
+    "clerk": {
+      "verifiedOn": "2026-11-24"
+    },
     "cloudflare-workers": {
       "verifiedOn": "2026-11-19"
+    },
+    "inngest": {
+      "verifiedOn": "2026-11-24"
     },
     "lemon-squeezy": {
       "verifiedOn": "2026-11-16"
@@ -36,6 +42,9 @@
     "pgvector": {
       "verifiedOn": "2026-11-14"
     },
+    "pinecone": {
+      "verifiedOn": "2026-11-24"
+    },
     "plausible": {
       "verifiedOn": "2026-11-17"
     },
@@ -46,13 +55,16 @@
       "verifiedOn": "2026-11-16"
     },
     "shopify": {
-      "verifiedOn": "2026-11-23"
+      "verifiedOn": "2026-11-24"
+    },
+    "supabase": {
+      "verifiedOn": "2026-11-24"
     },
     "supabase-auth": {
-      "verifiedOn": "2026-11-20"
+      "verifiedOn": "2026-11-24"
     },
     "supabase-realtime": {
-      "verifiedOn": "2026-11-20"
+      "verifiedOn": "2026-11-24"
     },
     "upstash-redis": {
       "verifiedOn": "2026-11-18"
