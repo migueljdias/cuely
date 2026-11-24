@@ -1,6 +1,6 @@
 {
   "slug": "render",
-  "readOn": "2026-11-23",
+  "readOn": "2026-11-24",
   "pages": [
     {
       "url": "https://render.com/security",
@@ -26,9 +26,10 @@
         "HIPAA-enabled workspaces require a Scale or Enterprise plan.",
         "HIPAA is a United States federal law that sets standards for protecting individuals' healthcare data. It defines administrative, physical, and technical safeguards for organizations that process or store protected health information (PHI).",
         "Render provides HIPAA-enabled workspaces for organizations subject to HIPAA requirements. These workspaces run services and datastores on access-restricted hosts, helping to secure any PHI processed or stored by your applications. Access to these hosts by Render staff is subject to strict controls.",
+        "In the Render Dashboard, open your Workspace Settings page and scroll down to the HIPAA Compliance section:",
         "Click Get Started. This opens a confirmation flow to receive Render's Business Associate Agreement (BAA).",
         "After you complete the confirmation flow, Render emails you a link to sign the BAA.",
-        "After you sign the BAA, return to the Compliance section of your workspace settings. After about a minute, your HIPAA Compliance status updates to Pending:",
+        "After you sign the BAA, return to the HIPAA Compliance section of your Workspace Settings page. After about a minute, your HIPAA Compliance status updates to Pending:",
         "When you're ready, click Enable HIPAA to initiate the enablement process.",
         "If you don't initiate the enablement process manually, Render initiates it automatically 72 hours after you sign the BAA.",
         "After the process completes, your HIPAA Compliance status updates to Enabled:",

@@ -27,24 +27,24 @@
       "facts": {
         "dpa": {
           "answer": "yes",
-          "detail": "Self-serve: fill in the online form, then review and sign the DPA, which includes EU and UK SCCs.",
-          "quote": "You can sign our Data Processing Addendum (DPA) by entering your information atthis link.",
+          "detail": "The DPA can be signed through an online form; it includes the EU and UK Standard Contractual Clauses.",
+          "quote": "You can sign our Data Processing Addendum (DPA) by entering your information at this link.",
           "source": "https://www.airtable.com/security"
         },
         "eu_region": {
           "answer": "yes",
-          "detail": "Data can be stored in the European Union; no plan restriction is stated.",
+          "detail": "Customers can choose to have data stored in the European Union; no plan restriction is stated.",
           "quote": "Airtable offers our customers the option to have their data stored in the European Union.",
           "source": "https://www.airtable.com/security"
         },
         "soc2": {
           "answer": "yes",
-          "detail": "SOC 2 Type 2 report available from your account manager or sales@airtable.com.",
+          "detail": "SOC 2 Type 2 audit; request the report from your account manager or sales@airtable.com.",
           "quote": "Airtable has undergone a Service Organization Controls audit (SOC 2 Type 2).",
           "source": "https://www.airtable.com/security"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-24"
     },
     "algolia": {
       "facts": {
@@ -512,24 +512,24 @@
       "facts": {
         "baa": {
           "answer": "plan",
-          "detail": "BAA is signed only for one HIPAA-enabled workspace on a Scale or Enterprise plan, with a 20% fee on all usage; the Singapore region, free instances and Workflows are excluded.",
+          "detail": "BAA is signed for one HIPAA-enabled workspace on Scale or Enterprise plans, with a 20% usage surcharge. The Singapore region, free instances and Workflows are excluded.",
           "quote": "HIPAA-enabled workspaces require a Scale or Enterprise plan.",
           "source": "https://render.com/docs/hipaa-compliance"
         },
         "eu_region": {
           "answer": "yes",
-          "detail": "Services and datastores can be deployed to the Frankfurt, Germany region; static sites are served from a global CDN with no region choice.",
+          "detail": "Services and datastores can be deployed to Frankfurt, Germany. Static sites have no region choice because they are served from a global CDN.",
           "quote": "Frankfurt, Germany",
           "source": "https://render.com/docs/regions"
         },
         "soc2": {
           "answer": "yes",
-          "detail": "The security page lists a SOC 2 Type 2 report.",
+          "detail": "The security page lists SOC 2 Type 2.",
           "quote": "SOC 2 Type 2",
           "source": "https://render.com/security"
         }
       },
-      "readOn": "2026-11-23"
+      "readOn": "2026-11-24"
     },
     "resend": {
       "facts": {
@@ -731,30 +731,30 @@
       "facts": {
         "baa": {
           "answer": "plan",
-          "detail": "A BAA is available on request; contact turbopuffer. The plan eligibility in the partial line is not visible.",
-          "quote": "may request a Business Associate Agreement (BAA) with turbopuffer, under which",
+          "detail": "A BAA is available on request by contacting turbopuffer; the lines do not say which plans qualify.",
+          "quote": "may request a Business Associate Agreement (BAA) with turbopuffer.",
           "source": "https://turbopuffer.com/docs/security"
         },
         "dpa": {
           "answer": "yes",
-          "detail": "A DPA is provided for all customers for GDPR compliance.",
+          "detail": "A GDPR Data Processing Addendum is provided for all customers.",
           "quote": "turbopuffer provides a Data Processing Addendum (DPA) for all customers",
           "source": "https://turbopuffer.com/docs/security"
         },
         "eu_region": {
           "answer": "yes",
-          "detail": "EU regions include AWS eu-central-1 (Frankfurt) and eu-west-1 (Dublin), plus GCP europe-west3 and europe-west1; data stays in the selected region.",
+          "detail": "EU regions listed are AWS eu-central-1 (Frankfurt) and eu-west-1 (Dublin), plus GCP europe-west3 and europe-west1; AWS eu-west-2 (London) is UK, not EU; data stays in the selected region.",
           "quote": "aws - eu-central-1",
           "source": "https://turbopuffer.com/docs/regions"
         },
         "soc2": {
           "answer": "yes",
-          "detail": "A SOC 2 report exists; customers can request a copy of the latest report.",
+          "detail": "A SOC 2 report is available on request; the type (I or II) is not stated.",
           "quote": "You can request a copy of the latest SOC 2 report and Penetration Test",
           "source": "https://turbopuffer.com/docs/security"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-24"
     },
     "twilio": {
       "facts": {

@@ -1,6 +1,6 @@
 {
   "slug": "airtable",
-  "readOn": "2026-11-13",
+  "readOn": "2026-11-24",
   "pages": [
     {
       "url": "https://www.airtable.com/security",
@@ -8,15 +8,15 @@
         "SOC 2 Type 2",
         "Airtable has undergone a Service Organization Controls audit (SOC 2 Type 2). Please contact your account manager orsales@airtable.comto request Airtable's most recent report.",
         "HIPAA",
-        "The Health Insurance Portability and Accountability Act (HIPAA) are national standards to protect sensitive patient health information from disclosure. For more information, please seehere.",
+        "The Health Insurance Portability and Accountability Act (HIPAA) are national standards to protect sensitive patient health information from disclosure. For more information, please see here.",
         "GDPR",
-        "Airtable’s privacy program is designed for compliance with global privacy laws and regulations, including Europe’s General Data Protection Regulation (GDPR) and the United Kingdom GDPR.You can learn more about Airtable’s commitment to compliance with GDPRhere.",
+        "Airtable’s privacy program is designed for compliance with global privacy laws and regulations, including Europe’s General Data Protection Regulation (GDPR) and the United Kingdom GDPR.You can learn more about Airtable’s commitment to compliance with GDPR here.",
         "Data Processing Addendum",
-        "You can sign our Data Processing Addendum (DPA) by entering your information atthis link. You will be able to download and review the DPA before signing it.",
+        "You can sign our Data Processing Addendum (DPA) by entering your information at this link. You will be able to download and review the DPA before signing it.",
         "European Union Data Residency",
-        "Airtable offers our customers the option to have their data stored in the European Union. Read more about some of the common Frequently Asked Questionshere.",
+        "Airtable offers our customers the option to have their data stored in the European Union. Read more about some of the common Frequently Asked Questions here.",
         "Data Subprocessors",
-        "Airtable maintains a current list of Airtable’s data subprocessors for transparency found atthis link."
+        "Airtable maintains a current list of Airtable’s data subprocessors for transparency found at this link."
       ]
     },
     {

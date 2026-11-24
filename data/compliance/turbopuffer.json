@@ -1,6 +1,6 @@
 {
   "slug": "turbopuffer",
-  "readOn": "2026-11-13",
+  "readOn": "2026-11-24",
   "pages": [
     {
       "url": "https://turbopuffer.com/docs/security",
@@ -15,9 +15,9 @@
         "to enable compliance with the General Data Protection Regulation (GDPR) and the",
         "The DPA describes our commitment to policies that comply with the requirements",
         "and subprocessor management policies.",
-        "HIPAA",
-        "may request a Business Associate Agreement (BAA) with turbopuffer, under which",
-        "turbopuffer commits to compliance with the requirements of HIPAA on business",
+        "BAA",
+        "may request a Business Associate Agreement (BAA) with turbopuffer. The BAA sets",
+        "Customers can use the BAA to meet part of their own HIPAA obligations.",
         "Contact us if you require a BAA or have further questions.",
         "and our multi-tenant regions. This feature is available to",
         "AWS regions use AWS PrivateLink",
