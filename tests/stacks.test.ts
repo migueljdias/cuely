@@ -3,8 +3,9 @@ import path from "node:path";
 import { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
 import { accountStore } from "@/accounts/store";
+import { buildAlerts } from "@/accounts/alerts";
 import { checklistMarkdown, projectChecklist, readiness } from "@/accounts/checklist";
-import { baselineFor, stackChanges, stackStore } from "@/accounts/stacks";
+import { baselineFor, seenFacts, stackChanges, stackStore, toolFacts } from "@/accounts/stacks";
 import { tools } from "@/catalog";
 import type { Tool } from "@/catalog";
 
@@ -77,6 +78,21 @@ describe("Stack store", () => {
     expect(await stacks.list("user_a")).toEqual([]);
   });
 
+  it("marks one tool seen, keeping the project's other changes", async () => {
+    const ts = [tool("vercel"), tool("clerk")];
+    const base = baselineFor(ts);
+    const stale = { vercel: { ...base.vercel, paidStartsAt: "old" }, clerk: { ...base.clerk, paidStartsAt: "old" } };
+    const id = await stacks.create("user_a", { name: "Two", description: "", tools: ["vercel", "clerk"], baseline: stale });
+    expect(stackChanges((await stacks.get("user_a", id))!.baseline, ts).map((c) => c.tool).sort()).toEqual(["clerk", "vercel"]);
+    await stacks.markToolSeen("user_b", id, "vercel", base.vercel);
+    await stacks.markToolSeen("user_a", id, "stripe", base.vercel);
+    await stacks.markToolSeen("user_a", id, "vercel", base.vercel);
+    const after = (await stacks.get("user_a", id))!.baseline;
+    expect(stackChanges(after, ts).map((c) => c.tool)).toEqual(["clerk"]);
+    expect(after.stripe).toBeUndefined();
+    await stacks.remove("user_a", id);
+  });
+
   it("ticks and unticks checklist items, scoped to the owner, storing only ids and dates", async () => {
     const id = await stacks.create("user_a", { name: "Notes", description: "", tools: ["vercel"], baseline: {} });
     expect((await stacks.get("user_a", id))!.checks).toEqual({});
@@ -122,5 +138,51 @@ describe("Project checklist and readiness", () => {
     expect(md).toContain("# Launch checklist: Notes");
     expect(md).toContain("- [x] **Keep keys and passwords out of the code**");
     expect(md).toContain("## Before real data goes in");
+  });
+});
+
+describe("Alerts", () => {
+  const stack = (id: number, name: string, tools: string[]) => ({
+    id, name, description: "", tools, baseline: {}, checks: {}, seenAt: "2026-11-01T00:00:00.000Z", createdAt: "", updatedAt: "",
+  });
+
+  it("groups a change shared by projects, sorts worst first and types each one", () => {
+    const vercel = tool("vercel");
+    const shared = { tool: "vercel", name: "Vercel", kind: "price" as const, tone: "neutral" as const, text: "Paid plans now start at x." };
+    const better = { tool: "clerk", name: "Clerk", kind: "health" as const, tone: "better" as const, text: "Up." };
+    const worse = { tool: "clerk", name: "Clerk", kind: "compliance" as const, tone: "worse" as const, text: "HIPAA BAA: now stated as not offered." };
+    const alerts = buildAlerts([
+      { stack: stack(1, "A", ["vercel", "clerk"]), tools: [vercel, tool("clerk")], changes: [shared, better, worse] },
+      { stack: stack(2, "B", ["vercel"]), tools: [vercel], changes: [shared] },
+    ]).filter((a) => a.source === "change");
+    expect(alerts.map((a) => a.type)).toEqual(["compliance", "price", "better"]);
+    expect(alerts.find((a) => a.type === "price")!.projects.map((p) => p.name)).toEqual(["A", "B"]);
+  });
+
+  it("adds measured problems once per tool, unless the tool already has a health change", () => {
+    const sick = { ...tool("vercel"), health: { score: -2, reasons: ["Many incidents."], measuredOn: "2026-11-24" } };
+    const two = [
+      { stack: stack(1, "A", ["vercel"]), tools: [sick], changes: [] },
+      { stack: stack(2, "B", ["vercel"]), tools: [sick], changes: [] },
+    ];
+    const measured = buildAlerts(two).filter((a) => a.source === "measured");
+    expect(measured).toHaveLength(1);
+    expect(measured[0]).toMatchObject({ type: "outages", measuredOn: "2026-11-24" });
+    expect(measured[0].projects.map((p) => p.id)).toEqual([1, 2]);
+    const worse = buildAlerts([{ ...two[0], changes: [{ tool: "vercel", name: "Vercel", kind: "health", tone: "worse", text: "Down." }] }]);
+    expect(worse.filter((a) => a.source === "measured")).toHaveLength(0);
+    // Better than before but still negative: the problem is still worth showing.
+    const better = buildAlerts([{ ...two[0], changes: [{ tool: "vercel", name: "Vercel", kind: "health", tone: "better", text: "Up." }] }]);
+    expect(better.filter((a) => a.source === "measured")).toHaveLength(1);
+  });
+});
+
+describe("Marking one change seen", () => {
+  it("moves only the fields behind that kind of change", () => {
+    const now = toolFacts(tool("vercel"));
+    const was = { ...now, paidStartsAt: "old", health: now.health + 1 };
+    const priceSeen = seenFacts(was, now, "price");
+    expect(stackChanges({ vercel: priceSeen }, [tool("vercel")]).map((c) => c.kind)).toEqual(["health"]);
+    expect(seenFacts(undefined, now, "price")).toEqual(now);
   });
 });
