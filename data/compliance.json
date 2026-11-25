@@ -329,36 +329,7 @@
       "facts": {
         "baa": {
           "answer": "plan",
-          "detail": "BAA (with Databricks) is accepted self-serve when enabling HIPAA on the Scale plan; currently free but a 15% surcharge is planned, and the Data API is not covered.",
-          "quote": "Neon offers HIPAA compliance as a self-serve feature available to customers on the Scale plan.",
-          "source": "https://neon.com/docs/security/hipaa"
-        },
-        "dpa": {
-          "answer": "yes",
-          "detail": "Neon offers Data Processing Agreements; no plan restriction is stated.",
-          "quote": "We offer Data Processing Agreements (DPA) and support compliant cross-border data transfers.",
-          "source": "https://neon.com/security"
-        },
-        "eu_region": {
-          "answer": "yes",
-          "detail": "Choose AWS Frankfurt (aws-eu-central-1) at project creation; London is UK, not EU, and the region cannot be changed later.",
-          "quote": "🇩🇪 AWS Europe (Frankfurt) — aws-eu-central-1",
-          "source": "https://neon.com/docs/introduction/regions"
-        },
-        "soc2": {
-          "answer": "yes",
-          "detail": "Annual SOC 2 Type II audits; a public SOC 3 summary is in the Trust Center.",
-          "quote": "Neon undergoes annual SOC 2 Type II audits performed by accredited independent third party auditors.",
-          "source": "https://neon.com/security"
-        }
-      },
-      "readOn": "2026-11-13"
-    },
-    "neon-auth": {
-      "facts": {
-        "baa": {
-          "answer": "plan",
-          "detail": "Neon signs a BAA (with parent company Databricks) via self-serve HIPAA enablement on the Scale plan; a 15% surcharge may apply later. Neon Auth is not named, and only the Data API is listed as excluded.",
+          "detail": "BAA (with Databricks, Neon's parent company) is accepted self-serve on the Scale plan; a 15% surcharge is planned, and the Data API is not covered.",
           "quote": "Neon offers HIPAA compliance as a self-serve feature available to customers on the Scale plan.",
           "source": "https://neon.com/docs/security/hipaa"
         },
@@ -370,18 +341,47 @@
         },
         "eu_region": {
           "answer": "yes",
-          "detail": "Managed Better Auth runs in all regions, including AWS Frankfurt (aws-eu-central-1); London (aws-eu-west-2) is also listed. The region is fixed when the project is created.",
-          "quote": "aws-eu-central-1 (Frankfurt)",
+          "detail": "Projects can be created in AWS Frankfurt (aws-eu-central-1), and London (aws-eu-west-2) is also offered; the region is fixed at project creation, and some non-Postgres products are not yet in every region.",
+          "quote": "AWS Europe (Frankfurt): aws-eu-central-1",
           "source": "https://neon.com/docs/introduction/regions"
         },
         "soc2": {
           "answer": "yes",
-          "detail": "Neon has annual SOC 2 Type II audits; a public SOC 3 summary is in the Trust Center.",
+          "detail": "Annual SOC 2 Type II audits; a public SOC 3 summary is in the Trust Center.",
           "quote": "Neon undergoes annual SOC 2 Type II audits performed by accredited independent third party auditors.",
           "source": "https://neon.com/security"
         }
       },
-      "readOn": "2026-11-13"
+      "readOn": "2026-11-25"
+    },
+    "neon-auth": {
+      "facts": {
+        "baa": {
+          "answer": "plan",
+          "detail": "Neon signs a BAA (with parent Databricks) through self-serve HIPAA enablement on the Scale plan; a 15% surcharge is planned, and the HIPAA page does not name Neon Auth specifically.",
+          "quote": "Neon offers HIPAA compliance as a self-serve feature available to customers on the Scale plan.",
+          "source": "https://neon.com/docs/security/hipaa"
+        },
+        "dpa": {
+          "answer": "yes",
+          "detail": "Neon offers a DPA with no plan restriction stated.",
+          "quote": "We offer Data Processing Agreements (DPA) and support compliant cross-border data transfers.",
+          "source": "https://neon.com/security"
+        },
+        "eu_region": {
+          "answer": "yes",
+          "detail": "Managed Better Auth runs in all Neon regions, including AWS Frankfurt (aws-eu-central-1); the region is fixed when the project is created.",
+          "quote": "Postgres and Managed Better Auth run in all regions.",
+          "source": "https://neon.com/docs/introduction/regions"
+        },
+        "soc2": {
+          "answer": "yes",
+          "detail": "Neon has annual SOC 2 Type II audits, and a public SOC 3 summary is in the Trust Center.",
+          "quote": "Neon undergoes annual SOC 2 Type II audits performed by accredited independent third party auditors.",
+          "source": "https://neon.com/security"
+        }
+      },
+      "readOn": "2026-11-25"
     },
     "netlify": {
       "facts": {
