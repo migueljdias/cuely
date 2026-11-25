@@ -1,7 +1,7 @@
 {
   "slug": "upstash-redis",
   "url": "https://upstash.com/pricing/redis",
-  "readOn": "2026-11-18",
+  "readOn": "2026-11-25",
   "lines": [
     "$0",
     "250 MB",
@@ -38,7 +38,7 @@
     "Are paid databases' first 250MB data and 500K commands free?",
     "You can set a maximum monthly budget for your database so you won't be charged beyond that limit. We send email notifications when you reach 70% and 90% of your monthly budget so you can adjust the limit or upgrade to a Fixed plan.",
     "Yes. But for Global databases, the write commands are replicated to all read regions in addition to the primary region. Replications are also counted as commands. For example, if you have one primary and one read region, 100K writes cost $0.4 ($0.2 x 2).",
-    "For each database, the first 1GB is free. Beyond that, storage is charged at $0.25 per GB of total storage.",
+    "Storage is charged at $0.25 per GB of total storage. There is no free storage allowance on paid plans.",
     "A free account can have 1 database. On a paid account, the first 10 databases have no per-database charge, and each additional database costs $0.50 per month, up to 100 databases.",
     "For more than 100 databases, contact support@upstash.com. The charge is calculated based on the number of active databases at the end of the month.",
     "What happens if I delete my database after 2-3 days?",
@@ -101,7 +101,7 @@
     "$ 1500 /month",
     "+$ 750 /region",
     "Commands: $0.20 per 100K commands",
-    "Storage: $0.25 per GB (first 1 GB free)",
+    "Storage: $0.25 per GB, counted on every replica",
     "Bandwidth: Free up to 200 GB/month, then $0.03/GB",
     "Max data size: 100 GB",
     "Max request size: 10 MB",
