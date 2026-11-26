@@ -1,6 +1,7 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import type { Alert } from "./alerts";
 import type { AlertKind } from "./store";
+import { html } from "@/html";
 
 /**
  * Alert emails: which alerts go in each kind of email, how a change is remembered as sent,
@@ -32,7 +33,6 @@ const INTRO: Record<AlertKind, string> = {
   prices: "A tool in your projects changed its price or free plan.",
 };
 
-const escape = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const plain = (s: string) => s.replace(/\s*\(https?:\/\/[^)\s]+\)/g, "");
 
 export function renderAlertEmail(kind: AlertKind, alerts: Alert[], links: { alerts: string; settings: string; unsubscribe: string }) {
@@ -47,23 +47,21 @@ export function renderAlertEmail(kind: AlertKind, alerts: Alert[], links: { aler
     `You get this because you turned it on. Change it: ${links.settings}`,
     `Stop these emails: ${links.unsubscribe}`,
   ].join("\n");
-  const html = `<!doctype html><html><body style="margin:0;padding:24px;background:#f4f6fb;font-family:-apple-system,Segoe UI,sans-serif;color:#14161c">
+  const body = html`<!doctype html><html><body style="margin:0;padding:24px;background:#f4f6fb;font-family:-apple-system,Segoe UI,sans-serif;color:#14161c">
 <div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #e1e5ef;border-radius:16px;padding:24px">
 <p style="margin:0 0 16px;font-size:20px;font-weight:600;color:#1f4bd8">cuely</p>
-<p style="margin:0 0 16px;font-size:16px">${escape(INTRO[kind])}</p>
-${lines
-  .map(
-    (l) => `<div style="padding:14px 0;border-top:1px solid #e1e5ef">
-<p style="margin:0;font:500 12px ui-monospace,monospace;text-transform:uppercase;color:#8f4300">${escape(l.head)}</p>
-<p style="margin:4px 0 0;font-size:15px">${escape(l.body)}</p>
-<p style="margin:4px 0 0;font-size:13px;color:#5f6678">In: ${escape(l.where)}</p></div>`,
-  )
-  .join("\n")}
-<p style="margin:20px 0 0"><a href="${escape(links.alerts)}" style="display:inline-block;padding:10px 18px;border-radius:10px;background:#1f4bd8;color:#fff;text-decoration:none;font-weight:500">See every alert</a></p>
+<p style="margin:0 0 16px;font-size:16px">${INTRO[kind]}</p>
+${lines.map(
+  (l) => html`<div style="padding:14px 0;border-top:1px solid #e1e5ef">
+<p style="margin:0;font:500 12px ui-monospace,monospace;text-transform:uppercase;color:#8f4300">${l.head}</p>
+<p style="margin:4px 0 0;font-size:15px">${l.body}</p>
+<p style="margin:4px 0 0;font-size:13px;color:#5f6678">In: ${l.where}</p></div>`,
+)}
+<p style="margin:20px 0 0"><a href="${links.alerts}" style="display:inline-block;padding:10px 18px;border-radius:10px;background:#1f4bd8;color:#fff;text-decoration:none;font-weight:500">See every alert</a></p>
 </div>
-<p style="max-width:560px;margin:16px auto 0;font-size:12px;color:#5f6678">You get this because you turned it on in Cuely. <a href="${escape(links.settings)}" style="color:#1a3fb8">Change your alert emails</a> or <a href="${escape(links.unsubscribe)}" style="color:#1a3fb8">stop these emails</a>.</p>
+<p style="max-width:560px;margin:16px auto 0;font-size:12px;color:#5f6678">You get this because you turned it on in Cuely. <a href="${links.settings}" style="color:#1a3fb8">Change your alert emails</a> or <a href="${links.unsubscribe}" style="color:#1a3fb8">stop these emails</a>.</p>
 </body></html>`;
-  return { subject, text, html };
+  return { subject, text, html: body.value };
 }
 
 /** HMAC of the account and kind, so an unsubscribe link only turns off that one email for that one account. */
