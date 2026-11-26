@@ -46,7 +46,7 @@
       "verifiedOn": "2026-11-24"
     },
     "plausible": {
-      "verifiedOn": "2026-11-17"
+      "verifiedOn": "2026-11-26"
     },
     "render": {
       "verifiedOn": "2026-11-14"
@@ -58,16 +58,16 @@
       "verifiedOn": "2026-11-25"
     },
     "supabase": {
-      "verifiedOn": "2026-11-25"
+      "verifiedOn": "2026-11-26"
     },
     "supabase-auth": {
-      "verifiedOn": "2026-11-25"
+      "verifiedOn": "2026-11-26"
     },
     "supabase-realtime": {
-      "verifiedOn": "2026-11-25"
+      "verifiedOn": "2026-11-26"
     },
     "upstash-redis": {
-      "verifiedOn": "2026-11-25",
+      "verifiedOn": "2026-11-26",
       "paidStartsAt": "Pay as you go: $0.20 per 100K commands; storage $0.25 per GB with no free allowance on paid plans, counted on every replica; bandwidth free up to 200 GB a month, then $0.03/GB. Fixed 250 MB: $10/month with no per-command billing."
     },
     "vercel": {
