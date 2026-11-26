@@ -4,13 +4,14 @@ import { SUPPORT_EMAIL } from "@/site";
 import { Avatar } from "../_avatar";
 import { accountSession, projectsOverview } from "../_session";
 import { productUpdatesAction } from "../actions";
+import { DeleteAccount } from "./_delete-account";
 import { ThemePicker } from "./_theme-picker";
 
 export const metadata: Metadata = { title: "Settings · Cuely", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ updates?: string }> }) {
-  const [{ user, store, account }, { projects }] = await Promise.all([accountSession(), projectsOverview()]);
+  const [{ user, store, account, plan }, { projects }] = await Promise.all([accountSession(), projectsOverview()]);
   const { updates } = await searchParams;
   const [keys, usage] = await Promise.all([store ? store.listKeys(user.id) : [], store ? store.usage(user.id, 400) : []]);
   const label = user.name || user.email || "You";
@@ -48,14 +49,14 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
               Email
             </h2>
             <ul className="deliver-list settings-email">
-              <li className="is-soon">
-                <input type="checkbox" disabled aria-label="Alerts for my projects (coming soon)" />
+              <li>
                 <span>
-                  <strong>
-                    Alerts for my projects <span className="badge">Soon</span>
-                  </strong>
+                  <strong>Alerts for my projects</strong>
                   <span>
-                    Weekly digest and launch blockers. Until then they show on <Link href="/account/alerts">Alerts</Link>.
+                    {account && (account.alerts.digest || account.alerts.blockers || account.alerts.prices)
+                      ? `On: ${[account.alerts.digest && "weekly digest", account.alerts.blockers && "launch blockers", account.alerts.prices && "price changes"].filter(Boolean).join(", ")}. `
+                      : "Off. "}
+                    Choose them on the <Link href="/account/alerts#h-deliver">Alerts</Link> page.
                   </span>
                 </span>
               </li>
@@ -122,12 +123,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
               Delete account
             </h2>
             <p className="card-sub">
-              Removes your projects, keys and usage, and cancels Pro at the end of the period. This can&apos;t be undone.
-              Send the request from your account email.
+              Removes your projects, keys and usage, and stops Pro from renewing. This can&apos;t be undone.
             </p>
-            <a className="btn-app btn-app-small btn-app-danger" href={deleteMail}>
-              Ask to delete my account
-            </a>
+            {account ? <DeleteAccount pro={plan.id === "pro"} /> : <a className="btn-app btn-app-small btn-app-danger" href={deleteMail}>Ask support to delete it</a>}
           </section>
         </div>
       </div>

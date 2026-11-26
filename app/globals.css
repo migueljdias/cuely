@@ -3895,8 +3895,22 @@ a.add-card:hover {
   font-size: 15px;
   color: var(--text-3);
 }
-.deliver-list li {
-  opacity: 0.75;
+.deliver-list label {
+  cursor: pointer;
+}
+.deliver-list label strong,
+.deliver-list label span {
+  display: block;
+}
+.deliver-list label span {
+  font-size: 15px;
+  color: var(--text-3);
+}
+.deliver-save {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
 }
 .deliver-foot {
   margin: 16px 0 0;
@@ -4367,6 +4381,20 @@ a.add-card:hover {
 }
 .keeps a {
   flex: none;
+}
+.delete-confirm {
+  display: grid;
+  gap: 12px;
+}
+.delete-confirm p {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-2);
+}
+.delete-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 .danger-card {
   border-color: color-mix(in srgb, var(--warn) 35%, var(--line)) !important;

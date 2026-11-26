@@ -4,10 +4,11 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getAccountStore, THEMES, type Theme } from "@/accounts/store";
-import { currentUser } from "@/auth/server";
+import { deleteAccount } from "@/accounts/delete";
+import { currentUser, deleteAuthUser } from "@/auth/server";
 import { checkoutOpen, paymentsConfig, priceMatches, stripeGet, stripePost, type StripePrice } from "@/billing/stripe";
 import { PLANS, planFor } from "@/plans";
-import { APP_URL } from "@/site";
+import { APP_URL, SITE_URL } from "@/site";
 
 // Overridable for local testing; production uses app.cuely.dev.
 const APP = process.env.CUELY_APP_URL ?? APP_URL;
@@ -156,4 +157,40 @@ export async function portalAction(): Promise<void> {
     return_url: `${await appOrigin()}/account/billing`,
   });
   redirect(session.url);
+}
+
+export type DeleteState = { error?: string } | null;
+
+/**
+ * Deletes the signed-in account for good: stops Pro at the end of the paid period, removes
+ * every row the account owns, then deletes the Clerk user. Needs the word DELETE typed in.
+ */
+export async function deleteAccountAction(_prev: DeleteState, form: FormData): Promise<DeleteState> {
+  if (String(form.get("confirm") ?? "").trim() !== "DELETE") return { error: "Type DELETE to confirm." };
+  const { user, store, account } = await requireUser();
+  const cfg = paymentsConfig();
+  const live = account.plan === "pro" && account.stripeSubscriptionId && cfg.mode !== "off" ? account.stripeSubscriptionId : null;
+  const result = await deleteAccount({
+    subscriptionId: live,
+    cancelSubscription: async (id) => {
+      await stripePost(cfg, `subscriptions/${encodeURIComponent(id)}`, { cancel_at_period_end: true });
+    },
+    deleteRows: () => store.deleteAccount(user.id),
+    deleteAuthUser: () => deleteAuthUser(user.id),
+  });
+  if (!result.ok) return { error: result.error };
+  console.log(JSON.stringify({ event: "account_deleted", authDeleted: result.authDeleted }));
+  redirect(`${SITE_URL}/`);
+}
+
+/** Saves which alert emails the holder wants. Each is off until they turn it on. */
+export async function alertPrefsAction(form: FormData): Promise<void> {
+  const { user, store } = await requireUser();
+  await store.setAlertPrefs(user.id, {
+    digest: form.get("digest") === "on",
+    blockers: form.get("blockers") === "on",
+    prices: form.get("prices") === "on",
+  });
+  revalidatePath("/account", "layout");
+  redirect("/account/alerts?saved=1#h-deliver");
 }

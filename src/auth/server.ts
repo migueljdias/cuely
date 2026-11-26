@@ -1,4 +1,4 @@
-import { currentUser as clerkCurrentUser } from "@clerk/nextjs/server";
+import { clerkClient, currentUser as clerkCurrentUser } from "@clerk/nextjs/server";
 
 /**
  * True when Clerk keys are set. Without them the site still runs: the MCP works with no
@@ -33,4 +33,11 @@ export async function currentUser(): Promise<SessionUser | null> {
     console.warn("[auth] currentUser failed", err);
     return null;
   }
+}
+
+/** Deletes the user at Clerk, which also ends all their sessions. Throws on failure. */
+export async function deleteAuthUser(userId: string): Promise<void> {
+  if (!authConfigured()) throw new Error("Sign-in isn't configured.");
+  const client = await clerkClient();
+  await client.users.deleteUser(userId);
 }

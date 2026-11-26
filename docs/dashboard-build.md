@@ -4,7 +4,7 @@ Brief for building the approved signed-in design. Branch: `claude/relaxed-curie-
 
 ## The design
 
-Design canvas: https://claude.ai/artifact/1oMAGABsDWMAJVfCoSUJWZ, page **Screens**. Read it with the Artifact tool (`action: "read"`, then `path` for each `.dc.html` file). Files:
+Design canvas: a private Claude design artifact (ask the maintainer for the link), page **Screens**. Files:
 
 - `Sidebar.dc.html`: shared, collapsible rail (248px open, 72px collapsed). Groups: Workspace (Home, Projects, Alerts, Ask Cuely), Account (API keys, Usage, Plan & billing, Settings), Build (external links), profile.
 - `Home`, `Project`, `Projects`, `Alerts`, `Ask`, `Keys`, `Usage`, `Billing`, `Settings`.
@@ -62,3 +62,5 @@ Database changes reach production on their own: a production deploy on Vercel ru
 - [ ] `accounts.theme` and the `api_usage_detail` table (step 5: theme picker, usage by tool and by key or app): already on Neon `staging`. Come to `main` with the first production deploy. Check afterwards:
       `select (select count(*) from information_schema.columns where table_name = 'accounts' and column_name = 'theme') as theme, (select count(*) from information_schema.tables where table_name = 'api_usage_detail') as detail`
       Both should be 1. Usage split starts counting from that deploy; earlier days show totals only.
+- [ ] Alert emails: `accounts.alert_digest`, `alert_blockers`, `alert_prices` and the `alert_sends` table are on Neon `staging` and come to `main` with the first production deploy. Emails stay off until these are set in Vercel (Production): `CRON_SECRET` (any long random string; Vercel Cron sends it), `RESEND_API_KEY`, and `ALERTS_FROM` (a sender on a domain verified in Resend, e.g. `Cuely <alerts@cuely.dev>`). Optional: `ALERTS_SIGNING_SECRET` for unsubscribe links (defaults to `CRON_SECRET`). The crons are in `vercel.json`: daily at 14:17 UTC (blockers, prices) and Mondays at 08:41 UTC (digest).
+- [ ] Account deletion (Settings) cancels Stripe at period end, deletes the account rows, then the Clerk user. Try it once on staging with a `+clerk_test` account.
