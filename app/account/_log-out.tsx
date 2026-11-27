@@ -9,8 +9,8 @@ export function LogOutItem() {
   return (
     <SignOutButton redirectUrl={`${SITE_URL}/`}>
       <button type="button" title="Log out">
-        <LogOut size={17} strokeWidth={1.8} aria-hidden="true" />
-        <span>Log out</span>
+        <LogOut size={19} strokeWidth={1.9} aria-hidden="true" />
+        <span className="app-nav-label">Log out</span>
       </button>
     </SignOutButton>
   );

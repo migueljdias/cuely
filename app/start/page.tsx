@@ -11,7 +11,7 @@ import { Crumbs, JsonLd } from "../_components/json-ld";
 export const metadata = pageMeta({
   title: "Get started with Cuely: connect the MCP server in 2 minutes",
   description:
-    "Add Cuely's free MCP server to Claude, Claude Code, Cursor or VS Code, then ask your agent to pick the stack and setup steps for what you're building.",
+    "Add Cuely's free MCP server to Claude, ChatGPT, Claude Code, Codex, Cursor or VS Code, then ask your agent to pick the stack and setup steps for what you're building.",
   path: "/start",
 });
 
@@ -29,7 +29,7 @@ const FAQ = [
   },
   {
     q: "Which AI tools does Cuely work with?",
-    a: "Any client that supports remote MCP servers over Streamable HTTP: the Claude app, Claude Code, Cursor, VS Code and others. The Claude app signs you in with OAuth; the rest send a free API key.",
+    a: "Any client that supports remote MCP servers over Streamable HTTP: the Claude app, ChatGPT, Claude Code, Codex, Cursor, VS Code and others. The Claude and ChatGPT apps sign you in with OAuth; the rest send a free API key (Codex can also sign in with codex mcp login).",
   },
   {
     q: "Do vendors pay to be recommended?",
@@ -47,8 +47,8 @@ const FAQ = [
 
 export default function Start() {
   const steps = [
-    { name: "Pick your AI tool", text: "Choose Claude, Claude Code, Cursor, VS Code or any MCP client below." },
-    { name: "Get a free key", text: "Sign in with Google or GitHub and create a key. The Claude app skips this: it signs you in when you connect." },
+    { name: "Pick your AI tool", text: "Choose Claude, ChatGPT, Claude Code, Codex, Cursor, VS Code or any MCP client below." },
+    { name: "Get a free key", text: "Sign in with Google or GitHub and create a key. The Claude and ChatGPT apps skip this: they sign you in when you connect." },
     { name: "Add Cuely", text: `Paste the config for your tool. The endpoint is ${ENDPOINT}.` },
     { name: "Ask your first question", text: "Ask your agent to use Cuely to choose the stack for what you're building." },
   ];
@@ -88,7 +88,7 @@ export default function Start() {
             <h2>Get a free key</h2>
             <p>
               Sign in with Google or GitHub, then select <strong>Create key</strong> on your account page. Using the Claude
-              app? Skip this step: Claude signs you in when you connect.
+              or ChatGPT app? Skip this step: it signs you in when you connect.
             </p>
             <a className="btn btn-primary" href={KEY_PAGE}>
               Get a free key

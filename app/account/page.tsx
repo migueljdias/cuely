@@ -1,208 +1,286 @@
-import type { Metadata } from "next";
-import { redirect } from "next/navigation";
-import { getAccountStore } from "@/accounts/store";
-import { authConfigured, currentUser } from "@/auth/server";
-import { checkoutOpen, paymentsConfig } from "@/billing/stripe";
-import { PLANS, planFor } from "@/plans";
+import Link from "next/link";
+import { Check, Layers } from "lucide-react";
+import { buildAlerts } from "@/accounts/alerts";
+import type { Tool } from "@/catalog";
 import { SITE_URL } from "@/site";
-import { NewKey } from "./_new-key";
-import { LogOutItem } from "./_log-out";
-import { AppShell } from "./_shell";
-import { checkoutAction, portalAction, productUpdatesAction, revokeKeyAction } from "./actions";
+import { ToolLogo } from "../_components/tool-logo";
+import { Greeting } from "./_greeting";
+import { plain } from "./_options";
+import { accountSession, projectsOverview } from "./_session";
 
-export const metadata: Metadata = { title: "Account · Cuely", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
+const n = (v: number) => v.toLocaleString("en-US");
+const plural = (v: number, one: string, many = `${one}s`) => `${n(v)} ${v === 1 ? one : many}`;
 
-function day(iso: string | null) {
-  return iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "never";
-}
+/** What a tool costs a month at 1,000 users, when the catalog has worked it out. Staff-tool costs are left out. */
+const monthlyAt1k = (t: Tool) => (t.cost && t.cost.scale !== "10_staff" ? t.cost.monthly : null);
 
-export default async function AccountPage({ searchParams }: { searchParams: Promise<{ checkout?: string; updates?: string }> }) {
-  if (!authConfigured()) redirect("/sign-in");
-  const user = await currentUser();
-  if (!user) redirect("/sign-in");
-  const store = await getAccountStore();
-  const account = store ? await store.ensure(user.id, user.email) : null;
-  const keys = store ? await store.listKeys(user.id) : [];
-  const usage = store ? await store.usage(user.id, 14) : [];
+export default async function HomePage() {
+  const [{ user, store, plan }, { projects, alertCount, snap, lastRead, hasStore }] = await Promise.all([
+    accountSession(),
+    projectsOverview(),
+  ]);
+  const [keys, usage] = await Promise.all([store ? store.listKeys(user.id) : [], store ? store.usage(user.id, 30) : []]);
+
   const todayIso = new Date().toISOString().slice(0, 10);
-  const today = Math.min(usage.find((u) => u.day === todayIso)?.calls ?? 0, planFor(account?.plan).perDay);
-  const plan = planFor(account?.plan);
-  const payments = paymentsConfig();
-  const canCheckout = checkoutOpen(payments);
-  const { checkout, updates } = await searchParams;
+  const today = Math.min(usage.find((u) => u.day === todayIso)?.calls ?? 0, plan.perDay);
+  const everCalled = usage.some((u) => u.calls > 0);
+  const keyUsed = keys.some((k) => k.lastUsedAt);
+
+  // Spend across projects: each tool counted once per project, only where the catalog has a figure.
+  const priced = projects.flatMap((p) => p.tools.map(monthlyAt1k)).filter((v): v is number => v !== null);
+  const spend = priced.reduce((sum, v) => sum + v, 0);
+  const toolCount = projects.reduce((sum, p) => sum + p.tools.length, 0);
+
+  // The alerts panel: the same alerts as the Alerts page, worst first.
+  const feed = buildAlerts(projects)
+    .slice(0, 5)
+    .map((a) => ({
+      key: a.key,
+      tone: a.tone,
+      label: `${a.kind} · ${a.toolName}`,
+      text: plain(a.text),
+      where: a.projects.map((p) => p.name).join(", "),
+      href: a.source === "measured" ? `${SITE_URL}/tools/${a.tool}` : a.projects.length === 1 ? `/account/projects/${a.projects[0].id}` : "/account/alerts",
+    }));
+
+  // Launch checklists across projects; the card opens the project with the most left to do.
+  const checksDone = projects.reduce((sum, p) => sum + p.ready.done, 0);
+  const checksTotal = projects.reduce((sum, p) => sum + p.ready.total, 0);
+  const blockers = projects.reduce((sum, p) => sum + p.ready.blockersLeft, 0);
+  const mostLeft = [...projects].sort((a, b) => b.ready.total - b.ready.done - (a.ready.total - a.ready.done))[0];
+  const checklistHref = mostLeft ? `/account/projects/${mostLeft.stack.id}#ready` : "/account/projects";
+
+  const steps = [
+    {
+      done: keys.length > 0 || everCalled,
+      title: "Get a key or connect Claude",
+      text: "Claude signs in on its own. Cursor, VS Code and Claude Code use an API key.",
+      href: "/account/keys",
+      cta: "Create a key",
+    },
+    {
+      done: keyUsed || everCalled,
+      title: "Ask your agent something",
+      text: "Try: “Use Cuely to choose the stack for what I'm building.”",
+      href: "/account/keys#connect",
+      cta: "Setup for your tool",
+    },
+    {
+      done: projects.length > 0,
+      title: "Save a project to watch",
+      text: "Cuely tells you here when a price, free plan, outage record or compliance answer changes.",
+      href: "/account/projects",
+      cta: "Add a project",
+    },
+  ];
+  const doneSteps = steps.filter((s) => s.done).length;
+  const first = user.name?.split(" ")[0] ?? null;
+  const readToday = lastRead === todayIso;
 
   return (
-    <AppShell email={user.email ?? ""} name={user.name} imageUrl={user.imageUrl} plan={plan.name} logOut={<LogOutItem />}>
-      <div className="account">
-        <div id="overview" className="app-section">
-          <h1 className="app-title">Your account</h1>
-          <p className="app-lede">Signed in as {user.email}</p>
-          <div className="app-stats">
-            <a className="app-stat" href="#usage">
-              <span className="app-stat-label">Tool calls today</span>
-              <span className="app-stat-value">
-                {today.toLocaleString("en-US")}
-                <small> / {plan.perDay.toLocaleString("en-US")}</small>
-              </span>
-              <span className="app-meter" aria-hidden="true">
-                <i style={{ width: `${Math.min(100, (today / plan.perDay) * 100)}%` }} />
-              </span>
-            </a>
-            <a className="app-stat" href="#keys">
-              <span className="app-stat-label">Active API keys</span>
-              <span className="app-stat-value">
-                {keys.length}
-                <small> / {plan.maxKeys}</small>
-              </span>
-              <span className="app-meter" aria-hidden="true">
-                <i style={{ width: `${Math.min(100, (keys.length / plan.maxKeys) * 100)}%` }} />
-              </span>
-            </a>
-            <a className="app-stat" href="#plan">
-              <span className="app-stat-label">Plan</span>
-              <span className="app-stat-value">{plan.name}</span>
-              <span className="app-stat-note">{plan.perMinute} requests a minute</span>
-            </a>
-          </div>
+    <div className="home">
+      <div className="home-head">
+        <div>
+          <p className="home-date">
+            <Greeting part="date" />
+            {lastRead && ` · vendor pages read ${readToday ? "today" : `on ${lastRead}`}`}
+          </p>
+          <h1 className="app-h1">
+            <Greeting part="hello" name={first} />
+          </h1>
         </div>
+        <div className="home-actions">
+          <Link className="btn-app btn-app-primary" href="/account/ask?mode=start">
+            Plan a new project
+          </Link>
+        </div>
+      </div>
 
-        {checkout === "soon" && (
-          <p className="notice" role="status">
-            Thanks for choosing Pro. Upgrades are being switched on right now, so you can&apos;t check out just yet. Your
-            Free plan keeps working with the same answers, and this button will take you straight to checkout once
-            it&apos;s ready.
-          </p>
-        )}
+      <section className="home-stats" aria-label="Summary">
+        <Link className="stat-card" href="/account/projects">
+          <span className="stat-label">Monthly spend, all projects</span>
+          <span className="stat-value">
+            {priced.length ? `$${n(spend)}` : "–"}
+            <small> at 1k users</small>
+          </span>
+          {priced.length < toolCount && (
+            <span className="stat-note">
+              {plural(toolCount - priced.length, "tool")} without a figure in the catalog
+            </span>
+          )}
+        </Link>
+        <Link className="stat-card" href="/account/alerts">
+          <span className="stat-label">Open alerts</span>
+          <span className={`stat-value${alertCount ? " is-warn" : ""}`}>
+            {n(alertCount)}
+            <small>{alertCount ? " need a look" : " all clear"}</small>
+          </span>
+        </Link>
+        <Link className="stat-card" href={checklistHref}>
+          <span className="stat-label">Launch checklists</span>
+          <span className="stat-value">
+            {projects.length ? n(checksDone) : "–"}
+            <small>{projects.length ? ` of ${n(checksTotal)} done` : " add a project"}</small>
+          </span>
+          {blockers > 0 && <span className="stat-note">{plural(blockers, "item")} blocking launch</span>}
+        </Link>
+        <Link className="stat-card" href="/account/usage">
+          <span className="stat-label">Agent calls today</span>
+          <span className="stat-value">
+            {n(today)}
+            <small> / {n(plan.perDay)}</small>
+          </span>
+        </Link>
+      </section>
 
-        {checkout === "done" && (
-          <p className="notice" role="status">
-            Thanks. Your plan updates as soon as Stripe confirms the payment, usually within a few seconds.
-          </p>
-        )}
-
-        <section id="plan" className="panel" aria-labelledby="plan-title">
-          <div className="panel-head">
-            <h2 id="plan-title">
-              {plan.name} plan
-              {payments.mode === "test" && canCheckout && <span className="tag">Test mode</span>}
-            </h2>
-            <p className="muted">
-              {plan.perDay.toLocaleString("en-US")} tool calls a day, {plan.perMinute} requests a minute
-            </p>
+      {doneSteps < steps.length && (
+        <section className="card" aria-labelledby="setup-title">
+          <div className="card-head">
+            <h2 id="setup-title">Get set up</h2>
+            <span className="muted">
+              {doneSteps} of {steps.length} done
+            </span>
           </div>
-          <p>
-            Every plan gets the same recommendations. Plans change limits, never answers.
-            {account?.currentPeriodEnd && plan.id === "pro" && <> Renews {day(account.currentPeriodEnd)}.</>}
-          </p>
-          {plan.id === "pro" ? (
-            payments.mode !== "off" && account?.stripeCustomerId ? (
-              <form action={portalAction}>
-                <button type="submit" className="btn btn-quiet">
-                  Manage billing
-                </button>
-              </form>
-            ) : null
+          <ol className="steps-list">
+            {steps.map((s) => (
+              <li key={s.title} className={s.done ? "is-done" : undefined}>
+                <span className="steps-dot" aria-hidden="true">
+                  {s.done ? <Check size={14} strokeWidth={2.5} /> : null}
+                </span>
+                <div>
+                  <strong>{s.title}</strong>
+                  <span className="muted small">{s.text}</span>
+                </div>
+                {!s.done && (
+                  <Link className="btn-app btn-app-small" href={s.href}>
+                    {s.cta}
+                  </Link>
+                )}
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
+      <div className="home-grid">
+        <section aria-labelledby="h-proj" className="home-main">
+          <div className="section-head">
+            <h2 id="h-proj">Projects</h2>
+            <Link href="/account/projects">All projects</Link>
+          </div>
+
+          {!hasStore ? (
+            <p className="notice" role="status">
+              Projects need a database, and none is configured on this deployment.
+            </p>
+          ) : projects.length ? (
+            <div className="project-grid">
+              {projects.slice(0, 4).map(({ stack, tools, changes, ready }) => {
+                const worse = changes.filter((c) => c.tone === "worse").length;
+                const lead = changes.find((c) => c.tone === "worse") ?? changes[0];
+                const cost = tools.map(monthlyAt1k).filter((v): v is number => v !== null);
+                return (
+                  <Link key={stack.id} href={`/account/projects/${stack.id}`} className="project-card">
+                    <span className="project-card-top">
+                      <span className="project-card-name">
+                        <strong>{stack.name}</strong>
+                        <span>
+                          {plural(tools.length, "tool")}
+                          {cost.length ? ` · $${n(cost.reduce((s, v) => s + v, 0))}/mo at 1k users` : ""}
+                        </span>
+                      </span>
+                      {ready.blockersLeft ? (
+                        <span className="badge badge-warn">{plural(ready.blockersLeft, "blocker")}</span>
+                      ) : changes.length ? (
+                        <span className={`badge ${worse ? "badge-warn" : "badge-info"}`}>{plural(changes.length, "change")}</span>
+                      ) : (
+                        <span className="badge badge-good">Up to date</span>
+                      )}
+                    </span>
+                    <span className="project-card-text">
+                      {lead
+                        ? `${lead.name}: ${plain(lead.text)}`
+                        : stack.description
+                          ? stack.description
+                          : "Nothing has changed for these tools since you last looked."}
+                    </span>
+                    {ready.total > 0 && (
+                      <span className="ready-bar">
+                        <span className="ready-bar-label">
+                          <span>Launch readiness</span>
+                          <span>{ready.pct}%</span>
+                        </span>
+                        <span className="app-meter" aria-hidden="true">
+                          <i style={{ width: `${ready.pct}%` }} />
+                        </span>
+                      </span>
+                    )}
+                    <span className="logo-stack" aria-hidden="true">
+                      {tools.slice(0, 8).map((t) => (
+                        <ToolLogo key={t.slug} slug={t.slug} name={t.name} size={24} />
+                      ))}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
           ) : (
-            <div className="upgrade">
-              <h3>
-                Pro, {PLANS.pro.priceLabel}
-              </h3>
-              <ul>
-                {PLANS.pro.features.slice(1).map((f) => (
-                  <li key={f}>{f}</li>
-                ))}
-              </ul>
-              <form action={checkoutAction}>
-                <button type="submit" className="btn btn-primary">
-                  Upgrade to Pro
-                </button>
-              </form>
+            <div className="empty">
+              <Layers size={20} strokeWidth={1.6} aria-hidden="true" />
+              <p>
+                Add the tools a project uses and Cuely will flag price changes, new free-plan limits, outages and
+                compliance answers here.
+              </p>
+              <Link className="btn-app btn-app-small" href="/account/projects">
+                Add a project
+              </Link>
             </div>
           )}
+
+          <div className="quick-grid">
+            <Link className="quick" href="/account/ask?mode=start">
+              <strong>Plan a new build</strong>
+              <span>Stack, cost and checklist</span>
+            </Link>
+            <Link className="quick" href="/account/ask?mode=check">
+              <strong>Check a stack</strong>
+              <span>Keep, change or add</span>
+            </Link>
+            <Link className="quick" href="/account/ask?mode=compare">
+              <strong>Compare two tools</strong>
+              <span>A verdict for your case</span>
+            </Link>
+          </div>
         </section>
 
-        <section id="usage" className="panel" aria-labelledby="usage-title">
-          <div className="panel-head">
-            <h2 id="usage-title">Usage</h2>
-            <p className="muted">Counted for your whole account. Days reset at 00:00 UTC.</p>
+        <aside aria-labelledby="h-alerts" className="card home-alerts">
+          <div className="section-head">
+            <h2 id="h-alerts">Alerts</h2>
+            <Link href="/account/alerts">View all</Link>
           </div>
-          <p>
-            Today: <strong>{today.toLocaleString("en-US")}</strong> of {plan.perDay.toLocaleString("en-US")} tool calls.
-          </p>
-          {plan.id === "pro" && usage.length > 0 && (
-            <ul className="key-list">
-              {usage.map((u) => (
-                <li key={u.day}>
-                  <span>{day(`${u.day}T12:00:00Z`)}</span>
-                  <span className="muted">{u.calls.toLocaleString("en-US")} calls</span>
+          {feed.length ? (
+            <ul className="alert-feed">
+              {feed.map((a) => (
+                <li key={a.key}>
+                  <a href={a.href}>
+                    <span className={`alert-kind is-${a.tone}`}>{a.label}</span>
+                    <span className="alert-text">{a.text}</span>
+                    {a.where && <span className="alert-where">{a.where}</span>}
+                  </a>
                 </li>
               ))}
             </ul>
-          )}
-        </section>
-
-        <section id="keys" className="panel" aria-labelledby="keys-title">
-          <div className="panel-head">
-            <h2 id="keys-title">API keys</h2>
-            <p className="muted">
-              For Cursor, VS Code, Claude Code and scripts. The Claude app signs in on its own and needs no key.{" "}
-              {plan.id === "free" ? "Free includes one key." : `Pro includes up to ${plan.maxKeys}.`}
-            </p>
-          </div>
-          {keys.length > 0 && (
-            <ul className="key-list">
-              {keys.map((k) => (
-                <li key={k.id}>
-                  <div>
-                    <code>{k.prefix}…</code>
-                    <span className="key-name">{k.name}</span>
-                  </div>
-                  <span className="muted">Last used {day(k.lastUsedAt)}</span>
-                  <form action={revokeKeyAction}>
-                    <input type="hidden" name="id" value={k.id} />
-                    <button type="submit" className="btn btn-quiet btn-small">
-                      Revoke
-                    </button>
-                  </form>
-                </li>
-              ))}
-            </ul>
-          )}
-          <NewKey />
-          <p className="muted small">
-            Create a key and the setup for Claude Code, Cursor and VS Code appears here with it filled in. Lost a key?
-            Revoke it and make a new one. Step-by-step help: <a href={`${SITE_URL}/start`}>Get started</a>.
-          </p>
-        </section>
-
-        <section id="email" className="panel" aria-labelledby="email-title">
-          <div className="panel-head">
-            <h2 id="email-title">Email</h2>
-            <p className="muted">Account and billing email always goes to {user.email}. Everything else is your call.</p>
-          </div>
-          {account && (
-            <form action={productUpdatesAction} className="optin">
-              <label>
-                <input type="checkbox" name="product_updates" defaultChecked={account.productUpdates} />
-                <span>
-                  <strong>Product updates</strong>
-                  <span className="muted"> A few emails a year when something big ships. Unsubscribe anytime.</span>
-                </span>
-              </label>
-              <button type="submit" className="btn btn-quiet btn-small">
-                Save
-              </button>
-            </form>
-          )}
-          {updates === "saved" && (
-            <p className="muted small" role="status">
-              Saved.
+          ) : (
+            <p className="muted alert-empty">
+              {projects.length
+                ? "Nothing has changed in your projects since you last looked."
+                : "Alerts show up here once you add a project."}
             </p>
           )}
-        </section>
+        </aside>
       </div>
-    </AppShell>
+    </div>
   );
 }

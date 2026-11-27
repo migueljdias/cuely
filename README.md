@@ -42,6 +42,16 @@ claude mcp add --transport http cuely https://cuely.dev/api/mcp
 Cursor (`~/.cursor/mcp.json`): `{ "mcpServers": { "cuely": { "url": "https://cuely.dev/api/mcp" } } }`
 VS Code (`.vscode/mcp.json`): `{ "servers": { "cuely": { "type": "http", "url": "https://cuely.dev/api/mcp" } } }`
 
+```sh
+# Codex (API key from https://app.cuely.dev/account, read from the environment)
+export CUELY_KEY=cuely_...
+codex mcp add cuely --url https://cuely.dev/api/mcp --bearer-token-env-var CUELY_KEY
+# or sign in instead of using a key
+codex mcp add cuely --url https://cuely.dev/api/mcp && codex mcp login cuely
+```
+
+ChatGPT (web): turn on Developer mode (Settings → Apps → Advanced settings), create an app with the URL `https://cuely.dev/api/mcp` and OAuth, and sign in. The Claude app works the same way through Settings → Connectors → Add custom connector. Custom apps in ChatGPT depend on the plan.
+
 ## How picks are made
 
 The rule that can't bend: money never touches the ranking. There are no sponsored answers and no affiliate links (a test fails if a URL in the catalog carries query parameters).
@@ -184,8 +194,8 @@ From `/account` a signed-in user can make API keys (Free one, Pro up to 10). A k
 
 Every POST to `/api/mcp` needs one of:
 
-- **OAuth (Claude's custom connector, other OAuth MCP clients).** A request without a credential gets HTTP 401 with `WWW-Authenticate: Bearer resource_metadata="https://cuely.dev/.well-known/oauth-protected-resource/api/mcp"`. That RFC 9728 document names Clerk (`https://clerk.cuely.dev`) as the authorization server. The client registers with a Client ID Metadata Document (CIMD; dynamic client registration is off), signs the person in with Clerk and sends the access token as a Bearer. `src/mcp/oauth.ts` verifies it with `@clerk/backend` `authenticateRequest(..., { acceptsToken: "oauth_token", audience: "https://cuely.dev/api/mcp" })`. The Clerk production instance has this URL registered as an MCP server (audience claim and CIMD on). The first connector sign-in creates the Free account row.
-- **API key.** `Authorization: Bearer cuely_...` from `/account`. For Cursor, VS Code, Claude Code and scripts.
+- **OAuth (the Claude and ChatGPT apps, `codex mcp login`, other OAuth MCP clients).** A request without a credential gets HTTP 401 with `WWW-Authenticate: Bearer resource_metadata="https://cuely.dev/.well-known/oauth-protected-resource/api/mcp"`. That RFC 9728 document names Clerk (`https://clerk.cuely.dev`) as the authorization server. The client registers with a Client ID Metadata Document (CIMD; dynamic client registration is off), signs the person in with Clerk and sends the access token as a Bearer. `src/mcp/oauth.ts` verifies it with `@clerk/backend` `authenticateRequest(..., { acceptsToken: "oauth_token", audience: "https://cuely.dev/api/mcp" })`. The Clerk production instance has this URL registered as an MCP server (audience claim and CIMD on). The first connector sign-in creates the Free account row.
+- **API key.** `Authorization: Bearer cuely_...` from `/account`. For Cursor, VS Code, Claude Code, Codex and scripts. ChatGPT can't send a key, so it uses OAuth.
 
 Limits are per account, across all its keys and connectors (`src/plans.ts`):
 

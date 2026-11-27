@@ -280,7 +280,7 @@ describe("MCP access and plan limits", () => {
     expect(body.id).toBe(999);
     expect(body.error.data.limit).toBe("day");
     expect(body.error.data.reset_at).toBe(new Date(nextUtcMidnight(t)).toISOString());
-    expect(body.error.data.upgrade_url).toBe("https://app.cuely.dev/account");
+    expect(body.error.data.upgrade_url).toBe("https://app.cuely.dev/account/billing");
     expect(body.error.message).toContain(`${PLANS.free.perDay} tool calls a day`);
     expect(Number(over.headers.get("retry-after"))).toBeGreaterThan(0);
     // Listing tools still works, so the client can connect and show the error on the call.
@@ -314,5 +314,127 @@ describe("OAuth metadata", () => {
     expect(clerkIssuer({})).toBeNull();
     const meta = protectedResourceMetadata();
     expect(meta.resource).toBe("https://cuely.dev/api/mcp");
+  });
+});
+
+describe("Usage detail and theme", () => {
+  const db = new PGlite();
+  const query = async (text: string, params?: unknown[]) => (await db.query(text, params)).rows as Record<string, any>[];
+  const store = accountStore(query);
+
+  beforeAll(async () => {
+    await db.exec(schema);
+    await store.ensure("user_u", "u@example.com");
+    await store.ensure("user_v", "v@example.com");
+  });
+
+  it("counts calls by Cuely tool and source, storing nothing a client made up", async () => {
+    await store.countDetail("user_u", "key:7", ["check_project", "check_project", "not-a-tool; drop table"]);
+    await store.countDetail("user_u", "connector", ["recommend_stack"]);
+    await store.countDetail("user_u", "anything else", ["get_recipe"]);
+    await store.countDetail("user_v", "ask", ["start_project"]);
+    const rows = await store.usageDetail("user_u");
+    expect(rows).toEqual(
+      expect.arrayContaining([
+        { tool: "check_project", source: "key:7", calls: 2 },
+        { tool: "other", source: "key:7", calls: 1 },
+        { tool: "recommend_stack", source: "connector", calls: 1 },
+        { tool: "get_recipe", source: "other", calls: 1 },
+      ]),
+    );
+    expect(rows).toHaveLength(4);
+    expect(rows[0]).toMatchObject({ tool: "check_project", calls: 2 });
+  });
+
+  it("saves a valid theme and ignores anything else", async () => {
+    expect((await store.get("user_u"))!.theme).toBe("dark");
+    await store.setTheme("user_u", "light");
+    expect((await store.get("user_u"))!.theme).toBe("light");
+    await store.setTheme("user_u", "neon" as any);
+    expect((await store.get("user_u"))!.theme).toBe("light");
+  });
+});
+
+describe("MCP usage detail", () => {
+  it("records each tool call with the key that made it, after the limits pass", async () => {
+    const seen: { userId: string; source: string; tools: string[] }[] = [];
+    const handle = createMcpHandler({
+      repo: memoryRepository(),
+      keyLookup: async (k) => (k === "cuely_test" ? { keyId: 42, userId: "user_d", plan: "pro" } : null),
+      countUsage: memoryUsageCounter(),
+      countDetail: async (userId, source, tools) => {
+        seen.push({ userId, source, tools });
+      },
+    });
+    const post = (body: object) =>
+      handle(
+        new Request("http://x/api/mcp", {
+          method: "POST",
+          headers: { authorization: "Bearer cuely_test", "content-type": "application/json", accept: "application/json, text/event-stream" },
+          body: JSON.stringify(body),
+        }),
+      );
+    await post({ jsonrpc: "2.0", id: 1, method: "tools/list" });
+    expect(seen).toEqual([]);
+    await post({ jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: "list_categories", arguments: {} } });
+    expect(seen).toEqual([{ userId: "user_d", source: "key:42", tools: ["list_categories"] }]);
+  });
+});
+
+describe("Deleting an account", () => {
+  const steps = (log: string[], fail?: "cancel" | "rows" | "auth") => ({
+    cancelSubscription: async (id: string) => {
+      log.push(`cancel ${id}`);
+      if (fail === "cancel") throw new Error("stripe down");
+    },
+    deleteRows: async () => {
+      log.push("rows");
+      if (fail === "rows") throw new Error("db down");
+    },
+    deleteAuthUser: async () => {
+      log.push("auth");
+      if (fail === "auth") throw new Error("clerk down");
+    },
+  });
+
+  it("stops Pro first, then the data, then the sign-in", async () => {
+    const log: string[] = [];
+    const { deleteAccount } = await import("@/accounts/delete");
+    expect(await deleteAccount({ subscriptionId: "sub_1", ...steps(log) })).toEqual({ ok: true, authDeleted: true });
+    expect(log).toEqual(["cancel sub_1", "rows", "auth"]);
+  });
+
+  it("deletes nothing when Stripe can't stop the subscription", async () => {
+    const log: string[] = [];
+    const { deleteAccount } = await import("@/accounts/delete");
+    const r = await deleteAccount({ subscriptionId: "sub_1", ...steps(log, "cancel") });
+    expect(r.ok).toBe(false);
+    expect(log).toEqual(["cancel sub_1"]);
+  });
+
+  it("skips Stripe on Free, and reports a sign-in that couldn't be removed", async () => {
+    const log: string[] = [];
+    const { deleteAccount } = await import("@/accounts/delete");
+    expect(await deleteAccount({ subscriptionId: null, ...steps(log, "auth") })).toEqual({ ok: true, authDeleted: false });
+    expect(log).toEqual(["rows", "auth"]);
+  });
+
+  it("removes the account's keys, usage and projects with the account row", async () => {
+    const db = new PGlite();
+    const query = async (text: string, params?: unknown[]) => (await db.query(text, params)).rows as Record<string, any>[];
+    await db.exec(schema);
+    const store = accountStore(query);
+    await store.ensure("user_x", "x@example.com");
+    await store.ensure("user_y", "y@example.com");
+    await store.createKey("user_x", "laptop");
+    await store.countRequest("user_x", 1);
+    await store.countDetail("user_x", "ask", ["start_project"]);
+    await query("insert into saved_stacks (user_id, name) values ('user_x', 'P'), ('user_y', 'Q')");
+    await store.deleteAccount("user_x");
+    for (const t of ["accounts", "api_keys", "api_usage", "api_usage_detail", "saved_stacks"]) {
+      const rows = await query(`select count(*)::int as n from ${t} where user_id = 'user_x'`);
+      expect(rows[0].n, t).toBe(0);
+    }
+    expect((await query("select count(*)::int as n from saved_stacks where user_id = 'user_y'"))[0].n).toBe(1);
   });
 });

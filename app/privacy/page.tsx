@@ -32,7 +32,8 @@ export default function Privacy() {
         real example). For each call Cuely records which tool was used and which categories, needs or recipe the answer
         covered, so it can see what builders need. It does not store the description or tool list your agent sends, and
         it does not store your IP address. It counts your account&apos;s calls per day and per minute to apply your
-        plan&apos;s limits, and keeps those daily counts so you can see your usage. Requests without a valid key or
+        plan&apos;s limits, and keeps those daily counts, split by Cuely tool and by which of your API keys or
+        signed-in apps made the call, so you can see your usage. These are counts only, never what was asked. Requests without a valid key or
         sign-in are limited by IP address, in memory only.
       </p>
 
@@ -44,12 +45,19 @@ export default function Privacy() {
           basic profile with Clerk, and Cuely asks for nothing more.
         </li>
         <li>
-          <strong>Account record:</strong> Cuely stores your user ID, email, plan, whether you chose to get product update emails (and when), and, if you subscribe, your Stripe customer
+          <strong>Account record:</strong> Cuely stores your user ID, email, plan, whether you chose to get product update emails (and when), the colour theme you picked, which alert emails you turned on and which alerts were already emailed to you, and, if you subscribe, your Stripe customer
           and subscription IDs and renewal date.
         </li>
         <li>
           <strong>API keys:</strong> Cuely stores only a hash of each key, its name, its first few characters and when it was
           last used. The full key is shown to you once and never stored.
+        </li>
+        <li>
+          <strong>Projects:</strong> if you save a project on your account pages, Cuely stores the name, the tools and the
+          optional description you typed, plus those tools&apos; prices and compliance answers on the day you last looked, so
+          it can show you what changed. When you tick an item on a project&apos;s launch checklist, Cuely stores which item
+          and the date, nothing else. You can edit or delete a project, and its ticks, at any time. Questions you ask on the
+          Ask Cuely page aren&apos;t stored unless you save the answer as a project.
         </li>
         <li>
           <strong>Connector sign-in:</strong> when you connect Cuely in Claude or another AI tool, Clerk signs you in and
@@ -79,8 +87,9 @@ export default function Privacy() {
           <strong>Stripe</strong> handles payments.
         </li>
         <li>
-          <strong>Resend</strong> sends account and billing email, if Cuely sends you any, and product updates only if you
-          turn them on in your account.
+          <strong>Resend</strong> sends account and billing email, if Cuely sends you any, and product updates and alert
+          emails about your projects only if you turn them on in your account. Each alert email has a one-click
+          unsubscribe.
         </li>
       </ul>
       <p>These services process data only to run Cuely. Cuely doesn&apos;t sell or rent your data to anyone.</p>
@@ -98,9 +107,11 @@ export default function Privacy() {
 
       <h2>Keeping and deleting data</h2>
       <p>
-        Your account data is kept while your account is open. Email{" "}
+        Your account data is kept while your account is open. On your account&apos;s Settings page you can download all of
+        it as a file, or delete your account: that removes your projects, keys and usage straight away, deletes your
+        sign-in at Clerk, and stops a Pro subscription from renewing. You can also email{" "}
         <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> to see, correct or delete it, and it will be removed within
-        30 days, except records the law requires to be kept, such as payment records held by Stripe. Anonymous usage counts
+        30 days. Records the law requires to be kept, such as payment records held by Stripe, stay with Stripe. Anonymous usage counts
         are kept to improve the catalog and can&apos;t be linked back to you.
       </p>
 

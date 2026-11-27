@@ -466,7 +466,7 @@ export default function Home() {
               <div data-rv>
                 <h3>It needs a free account</h3>
                 <p>
-                  Claude signs you in when you connect. For other tools, <a href={KEY_PAGE}>get a free key</a> with Google or GitHub. Free includes{" "}
+                  The Claude and ChatGPT apps sign you in when you connect. For other tools, <a href={KEY_PAGE}>get a free key</a> with Google or GitHub. Free includes{" "}
                   {free.perDay.toLocaleString("en-US")} tool calls a day.
                 </p>
                 <h3>It never sees your code</h3>

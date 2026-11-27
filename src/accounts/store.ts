@@ -7,9 +7,31 @@ export interface Account {
   plan: "free" | "pro";
   planStatus: string | null;
   stripeCustomerId: string | null;
+  stripeSubscriptionId: string | null;
   currentPeriodEnd: string | null;
   /** Opted in to product-update emails. Off by default; only the account holder turns it on. */
   productUpdates: boolean;
+  /** The app's colour theme. */
+  theme: Theme;
+  /** Which alert emails the holder turned on. All off by default. */
+  alerts: AlertPrefs;
+}
+
+export type AlertKind = "digest" | "blockers" | "prices";
+export const ALERT_KINDS: AlertKind[] = ["digest", "blockers", "prices"];
+export type AlertPrefs = Record<AlertKind, boolean>;
+
+export type Theme = "dark" | "light" | "system";
+export const THEMES: Theme[] = ["dark", "light", "system"];
+
+/** Cuely's MCP tools: the only names the usage breakdown stores. Anything else counts as "other". */
+export const USAGE_TOOLS = ["start_project", "recommend_stack", "check_project", "get_recipe", "compare_tools", "list_categories"] as const;
+
+export interface UsageDetail {
+  tool: string;
+  /** "key:<id>", "connector" or "ask". */
+  source: string;
+  calls: number;
 }
 
 export interface UsageCount {
@@ -35,8 +57,11 @@ const toAccount = (r: Record<string, any>): Account => ({
   plan: r.plan === "pro" ? "pro" : "free",
   planStatus: r.plan_status ?? null,
   stripeCustomerId: r.stripe_customer_id ?? null,
+  stripeSubscriptionId: r.stripe_subscription_id ?? null,
   currentPeriodEnd: r.current_period_end ? new Date(r.current_period_end).toISOString() : null,
   productUpdates: r.product_updates === true,
+  theme: THEMES.includes(r.theme) ? r.theme : "dark",
+  alerts: { digest: r.alert_digest === true, blockers: r.alert_blockers === true, prices: r.alert_prices === true },
 });
 
 /** Subscription statuses that keep Pro on. Anything else falls back to Free. */
@@ -67,6 +92,50 @@ export function accountStore(query: QueryFn) {
          where user_id = $1 and product_updates is distinct from $2`,
         [userId, on],
       );
+    },
+
+    /** Deletes the account row; keys, usage and projects go with it (on delete cascade). */
+    async deleteAccount(userId: string): Promise<void> {
+      await query("delete from accounts where user_id = $1", [userId]);
+    },
+
+    async setAlertPrefs(userId: string, prefs: AlertPrefs): Promise<void> {
+      await query("update accounts set alert_digest = $2, alert_blockers = $3, alert_prices = $4, updated_at = now() where user_id = $1", [
+        userId,
+        prefs.digest === true,
+        prefs.blockers === true,
+        prefs.prices === true,
+      ]);
+    },
+
+    /** Turns one kind of alert email off, from an unsubscribe link. */
+    async disableAlert(userId: string, kind: AlertKind): Promise<void> {
+      if (!ALERT_KINDS.includes(kind)) return;
+      await query(`update accounts set alert_${kind} = false, updated_at = now() where user_id = $1`, [userId]);
+    },
+
+    /** Accounts with an email address that turned this kind of alert email on. */
+    async alertRecipients(kind: AlertKind): Promise<{ userId: string; email: string }[]> {
+      if (!ALERT_KINDS.includes(kind)) return [];
+      const rows = await query(`select user_id, email from accounts where alert_${kind} = true and email is not null order by user_id`);
+      return rows.map((r) => ({ userId: String(r.user_id), email: String(r.email) }));
+    },
+
+    /** Change keys already emailed to this account in this kind of email. */
+    async sentAlertKeys(userId: string, kind: AlertKind): Promise<Set<string>> {
+      const rows = await query("select change_key from alert_sends where user_id = $1 and kind = $2", [userId, kind]);
+      return new Set(rows.map((r) => String(r.change_key)));
+    },
+
+    async recordAlertsSent(userId: string, kind: AlertKind, keys: string[]): Promise<void> {
+      for (const k of keys) {
+        await query("insert into alert_sends (user_id, kind, change_key) values ($1, $2, $3) on conflict do nothing", [userId, kind, k]);
+      }
+    },
+
+    async setTheme(userId: string, theme: Theme): Promise<void> {
+      if (!THEMES.includes(theme)) return;
+      await query("update accounts set theme = $2, updated_at = now() where user_id = $1", [userId, theme]);
     },
 
     async setStripeCustomer(userId: string, customerId: string): Promise<void> {
@@ -169,6 +238,38 @@ export function accountStore(query: QueryFn) {
         [userId, days],
       );
       return rows.map((r) => ({ day: String(r.day), calls: Number(r.calls) }));
+    },
+
+    /**
+     * Adds tool calls to the per-tool, per-source counts for today (UTC). Unknown tool names
+     * are counted as "other", so nothing a client sends ends up stored as text.
+     */
+    async countDetail(userId: string, source: string, tools: string[]): Promise<void> {
+      const src = /^(key:\d{1,12}|connector|ask)$/.test(source) ? source : "other";
+      const tally = new Map<string, number>();
+      for (const t of tools) {
+        const name = (USAGE_TOOLS as readonly string[]).includes(t) ? t : "other";
+        tally.set(name, (tally.get(name) ?? 0) + 1);
+      }
+      for (const [tool, n] of tally) {
+        await query(
+          `insert into api_usage_detail as d (user_id, day, tool, source, calls)
+           values ($1, (now() at time zone 'utc')::date, $2, $3, $4)
+           on conflict (user_id, day, tool, source) do update set calls = d.calls + excluded.calls`,
+          [userId, tool, src, n],
+        );
+      }
+    },
+
+    /** Tool calls over the last `days` days, summed by tool and source. */
+    async usageDetail(userId: string, days = 14): Promise<UsageDetail[]> {
+      const rows = await query(
+        `select tool, source, sum(calls)::int as calls from api_usage_detail
+         where user_id = $1 and day > (now() at time zone 'utc')::date - $2::int
+         group by tool, source order by calls desc`,
+        [userId, days],
+      );
+      return rows.map((r) => ({ tool: String(r.tool), source: String(r.source), calls: Number(r.calls) }));
     },
 
     /** Looks a presented key up. Returns its id and the owner's plan, or null. */

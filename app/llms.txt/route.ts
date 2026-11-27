@@ -12,7 +12,7 @@ export function GET() {
     "MCP endpoint (Streamable HTTP): https://cuely.dev/api/mcp",
     "",
     "## Access",
-    "- The MCP server needs a free Cuely account. OAuth sign-in (Clerk) is advertised at https://cuely.dev/.well-known/oauth-protected-resource/api/mcp; Claude's custom connectors use it.",
+    "- The MCP server needs a free Cuely account. OAuth sign-in (Clerk) is advertised at https://cuely.dev/.well-known/oauth-protected-resource/api/mcp; the Claude and ChatGPT apps, Codex (codex mcp login) and other OAuth MCP clients use it, registering with a Client ID Metadata Document (dynamic client registration is off).",
     "- Or send an API key from https://app.cuely.dev/account as: Authorization: Bearer cuely_...",
     `- Free: ${PLANS.free.perDay} tool calls a day, ${PLANS.free.perMinute} requests a minute. Pro ($10/month): ${PLANS.pro.perDay} tool calls a day, ${PLANS.pro.perMinute} requests a minute. Same answers on every plan.`,
     "- Over a limit: HTTP 429 with Retry-After and the reset time. Days reset at 00:00 UTC.",

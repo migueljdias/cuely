@@ -16,6 +16,8 @@ export interface Plan {
   perDay: number;
   /** Active API keys an account can hold. */
   maxKeys: number;
+  /** Stacks an account can save and watch on its account pages. */
+  maxStacks: number;
   priceLabel: string;
   /** Monthly price in US cents. Checkout refuses a Stripe price that doesn't match. */
   priceCents: number;
@@ -25,8 +27,8 @@ export interface Plan {
 
 const n = (v: number) => v.toLocaleString("en-US");
 
-const free = { perMinute: 30, perDay: 50, maxKeys: 1 };
-const pro = { perMinute: 120, perDay: 5000, maxKeys: 10 };
+const free = { perMinute: 30, perDay: 50, maxKeys: 1, maxStacks: 3 };
+const pro = { perMinute: 120, perDay: 5000, maxKeys: 10, maxStacks: 50 };
 
 export const PLANS: Record<PlanId, Plan> = {
   free: {
@@ -40,6 +42,7 @@ export const PLANS: Record<PlanId, Plan> = {
       "Every tool, recipe and recommendation",
       "The same answers as every other plan",
       "One API key for your agents",
+      `${free.maxStacks} projects, watched for price and outage changes, each with a launch checklist`,
       `${n(free.perDay)} tool calls a day, ${free.perMinute} requests a minute`,
     ],
   },
@@ -54,6 +57,7 @@ export const PLANS: Record<PlanId, Plan> = {
       "Everything in Free, with the same answers",
       `${n(pro.perDay)} tool calls a day, ${pro.perMinute} requests a minute`,
       `Up to ${pro.maxKeys} API keys`,
+      `Up to ${pro.maxStacks} projects`,
       "Daily usage history on your account page",
     ],
   },

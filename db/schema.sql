@@ -84,6 +84,13 @@ create table if not exists accounts (
 -- Product-update emails: off unless the account holder turns them on. The time records when they chose.
 alter table accounts add column if not exists product_updates boolean not null default false;
 alter table accounts add column if not exists product_updates_at timestamptz;
+-- The app's colour theme, chosen on Settings: dark (the default), light, or system.
+alter table accounts add column if not exists theme text not null default 'dark' check (theme in ('dark', 'light', 'system'));
+-- Alert emails, each off until the account holder turns it on: the Monday digest, launch
+-- blockers (a compliance answer for the worse) and price changes, both checked daily.
+alter table accounts add column if not exists alert_digest boolean not null default false;
+alter table accounts add column if not exists alert_blockers boolean not null default false;
+alter table accounts add column if not exists alert_prices boolean not null default false;
 
 -- Optional MCP API keys. Only a SHA-256 hash is stored, the key is shown once.
 create table if not exists api_keys (
@@ -115,3 +122,45 @@ create table if not exists api_usage (
   minute_calls integer not null default 0,
   primary key (user_id, day)
 );
+
+-- Tool calls per day split by Cuely tool and by where they came from, for the Usage page.
+-- Counts only: the tool name (from Cuely's fixed list) and the source ("key:<id>" for an API
+-- key, "connector" for a signed-in MCP client, "ask" for Ask Cuely). Never what was asked.
+create table if not exists api_usage_detail (
+  user_id text not null references accounts(user_id) on delete cascade,
+  day     date not null,
+  tool    text not null,
+  source  text not null,
+  calls   integer not null default 0,
+  primary key (user_id, day, tool, source)
+);
+
+-- Which alerts have been emailed, so each change is sent once per kind of email. The key
+-- names the change (tool, kind and wording), never anything the holder typed.
+create table if not exists alert_sends (
+  user_id    text not null references accounts(user_id) on delete cascade,
+  kind       text not null check (kind in ('digest', 'blockers', 'prices')),
+  change_key text not null,
+  sent_at    timestamptz not null default now(),
+  primary key (user_id, kind, change_key)
+);
+
+-- Stacks an account holder saved on their account page, to watch for price, health and
+-- compliance changes. Only what they typed or picked in the web app: a name, an optional
+-- plain description and catalog tool slugs. MCP calls never write here.
+-- baseline holds each tool's facts as they were when the holder last marked the stack seen.
+create table if not exists saved_stacks (
+  id          bigserial primary key,
+  user_id     text not null references accounts(user_id) on delete cascade,
+  name        text not null,
+  description text not null default '',
+  tools       text[] not null default '{}',
+  baseline    jsonb not null default '{}',
+  seen_at     timestamptz not null default now(),
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+create index if not exists saved_stacks_user_idx on saved_stacks (user_id);
+-- Launch checklist ticks: practice id -> the date its holder ticked it. Readiness is worked
+-- out from these on the project page. Only ids and dates; nothing the holder wrote.
+alter table saved_stacks add column if not exists checks jsonb not null default '{}';

@@ -1,7 +1,7 @@
 /** Site-wide facts used by the legal pages and footer. Change them here only. */
 export const SUPPORT_EMAIL = "cuely-support@googlegroups.com";
 export const OPERATOR = "Miguel Dias";
-export const LEGAL_UPDATED = "November 20, 2026";
+export const LEGAL_UPDATED = "November 24, 2026";
 /** Public source. Pages link to files here so readers can check claims against the code. */
 export const REPO_URL = "https://github.com/migueljdias/cuely";
 

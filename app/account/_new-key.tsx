@@ -15,7 +15,7 @@ export function NewKey() {
           <span className="sr-only">Key name</span>
           <input name="name" type="text" placeholder="Name, like laptop or CI" maxLength={60} />
         </label>
-        <button type="submit" className="btn btn-quiet" disabled={pending}>
+        <button type="submit" className="btn-app btn-app-primary" disabled={pending}>
           {pending ? "Creating…" : "Create key"}
         </button>
       </form>
@@ -34,7 +34,7 @@ export function NewKey() {
           <div className="connect-next">
             <h3>Now add Cuely to your AI tool</h3>
             <p className="muted small">Your key is already filled in. Paste the one for your tool, then start a new chat.</p>
-            <ConnectTabs options={connectOptions(state.key).filter((o) => o.id !== "claude")} />
+            <ConnectTabs options={connectOptions(state.key).filter((o) => !o.oauth)} />
             <p className="muted small">
               Then ask: <q>Use Cuely to choose the stack for what I&apos;m building.</q>
             </p>

@@ -1,17 +1,22 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import {
+  Bell,
   BookOpen,
   CreditCard,
-  ExternalLink,
   Gauge,
+  House,
   KeyRound,
-  LayoutGrid,
+  Layers,
   LifeBuoy,
   Menu,
+  MessageCircle,
   PanelLeft,
   Rocket,
+  Settings,
   UserRound,
   Wrench,
   X,
@@ -21,21 +26,32 @@ import { Avatar } from "./_avatar";
 
 /*
   The signed-in app: a left sidebar instead of the site's top bar. On wide screens the sidebar
-  can shrink to an icon rail (remembered in this browser); under 900px it becomes a drawer
-  opened from the top bar. Styles: the "App shell" block in globals.css.
+  can shrink to a 72px icon rail (remembered in this browser); under 900px it becomes a drawer
+  opened from the top bar. Styles: the "App shell" block in globals.css, which also holds the
+  app's colour tokens (dark by default, light when [data-theme="light"], or the system's). The
+  theme comes from the account, so the first paint is already right.
 
-  The account sections are anchors on /account; Profile is its own page (/account/profile),
-  reached from the sidebar item above Support or the avatar in the top bar.
+  Every item is its own page under /account, so the layout (and this shell) stays mounted
+  while the content changes. Old links to /account#keys and friends are sent to their page.
 */
 
-const ACCOUNT = [
-  { href: "#overview", label: "Overview", icon: LayoutGrid },
-  { href: "#plan", label: "Plan & billing", icon: CreditCard },
-  { href: "#usage", label: "Usage", icon: Gauge },
-  { href: "#keys", label: "API keys", icon: KeyRound },
+type Item = { href: string; label: string; icon: typeof House; badge?: "projects" | "alerts" };
+
+const WORKSPACE: Item[] = [
+  { href: "/account", label: "Home", icon: House },
+  { href: "/account/projects", label: "Projects", icon: Layers, badge: "projects" },
+  { href: "/account/alerts", label: "Alerts", icon: Bell, badge: "alerts" },
+  { href: "/account/ask", label: "Ask Cuely", icon: MessageCircle },
 ];
 
-const PROFILE_HREF = "/account/profile";
+const ACCOUNT: Item[] = [
+  { href: "/account/keys", label: "API keys", icon: KeyRound },
+  { href: "/account/usage", label: "Usage", icon: Gauge },
+  { href: "/account/billing", label: "Plan & billing", icon: CreditCard },
+  { href: "/account/settings", label: "Settings", icon: Settings },
+];
+
+const PROFILE: Item = { href: "/account/profile", label: "Profile", icon: UserRound };
 
 const BUILD = [
   { href: `${SITE_URL}/start`, label: "Get started", icon: Rocket },
@@ -43,14 +59,28 @@ const BUILD = [
   { href: `${SITE_URL}/tools`, label: "Tools", icon: Wrench },
 ];
 
+/** Where the anchors of the old single account page live now. */
+const OLD_ANCHORS: Record<string, string> = {
+  "#overview": "/account",
+  "#plan": "/account/billing",
+  "#usage": "/account/usage",
+  "#keys": "/account/keys",
+  "#email": "/account/settings",
+};
+
 const RAIL_KEY = "cuely-sidebar-rail";
+
+function isActive(pathname: string, href: string) {
+  return href === "/account" ? pathname === "/account" : pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export function AppShell({
   email,
   name,
   imageUrl,
   plan,
-  page = "account",
+  counts,
+  theme,
   logOut,
   children,
 }: {
@@ -59,15 +89,18 @@ export function AppShell({
   /** The user's profile picture, or null to show their initial. */
   imageUrl: string | null;
   plan: string;
-  /** Which page is showing: the account sections, or the profile editor. */
-  page?: "account" | "profile";
+  /** Saved projects, and the changes across them since they were last looked at. */
+  counts: { projects: number; alerts: number };
+  /** Saved on the account and chosen on Settings: "dark", "light" or "system". */
+  theme: string;
   /** The sign-out item, passed in so the shell itself doesn't need Clerk. */
   logOut: ReactNode;
   children: ReactNode;
 }) {
+  const pathname = usePathname() ?? "/account";
+  const router = useRouter();
   const [rail, setRail] = useState(false);
   const [open, setOpen] = useState(false);
-  const [active, setActive] = useState("#overview");
 
   useEffect(() => {
     try {
@@ -75,21 +108,15 @@ export function AppShell({
     } catch {}
   }, []);
 
-  // Highlights the section nearest the top of the window as the page scrolls.
+  // Bookmarks and emails from the one-page account point at anchors; open the page instead.
   useEffect(() => {
-    if (page !== "account") return;
-    const ids = ACCOUNT.map((a) => a.href.slice(1));
-    const els = ids.map((id) => document.getElementById(id)).filter((e): e is HTMLElement => Boolean(e));
-    const onScroll = () => {
-      let cur = els[0]?.id;
-      for (const el of els) if (el.getBoundingClientRect().top < 140) cur = el.id;
-      if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 4) cur = els[els.length - 1]?.id;
-      if (cur) setActive(`#${cur}`);
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [page]);
+    if (pathname !== "/account") return;
+    const to = OLD_ANCHORS[window.location.hash];
+    if (to && to !== "/account") router.replace(`${to}${window.location.search}`);
+  }, [pathname, router]);
+
+  // Closes the drawer after navigating.
+  useEffect(() => setOpen(false), [pathname]);
 
   useEffect(() => {
     if (!open) return;
@@ -106,12 +133,34 @@ export function AppShell({
     } catch {}
   };
 
-  const onProfile = page === "profile";
-  const current = onProfile ? "Profile" : (ACCOUNT.find((a) => a.href === active)?.label ?? "Overview");
+  const current = [...WORKSPACE, ...ACCOUNT, PROFILE].find((i) => isActive(pathname, i.href));
   const label = name || email;
 
+  const navLink = ({ href, label, icon: Icon, badge }: Item) => {
+    const active = isActive(pathname, href);
+    const count = badge ? counts[badge] : 0;
+    return (
+      <Link
+        key={href}
+        href={href}
+        className={active ? "is-active" : undefined}
+        aria-current={active ? "page" : undefined}
+        title={rail ? label : undefined}
+      >
+        <Icon size={19} strokeWidth={1.9} aria-hidden="true" />
+        <span className="app-nav-label">{label}</span>
+        {count > 0 && (
+          <span className={`app-count${badge === "alerts" ? " is-warn" : ""}`}>
+            {count}
+            <span className="sr-only">{badge === "alerts" ? " alerts" : " projects"}</span>
+          </span>
+        )}
+      </Link>
+    );
+  };
+
   return (
-    <div className={`app${rail ? " is-rail" : ""}${open ? " is-open" : ""}`}>
+    <div className={`app${rail ? " is-rail" : ""}${open ? " is-open" : ""}`} data-theme={theme}>
       <a className="skip" href="#main">
         Skip to content
       </a>
@@ -119,66 +168,62 @@ export function AppShell({
       <aside className="app-side" aria-label="Account navigation">
         <div className="app-side-top">
           <a href={`${SITE_URL}/`} className="app-logo" aria-label="Cuely home">
-            <picture className="app-logo-full">
-              <source srcSet="/brand/cuely-logo-dark.svg" media="(prefers-color-scheme: dark)" />
-              <img src="/brand/cuely-logo-light.svg" alt="Cuely" width={76} height={24} />
-            </picture>
-            <img className="app-logo-mark" src="/brand/cuely-icon-light.svg" alt="" width={24} height={24} />
+            <svg width="28" height="28" viewBox="0 0 224 224" aria-hidden="true">
+              <rect width="224" height="224" rx="56" fill="#2f5bff" />
+              <path d="M40 150a72 72 0 0 1 144 0z" fill="#c7d3ff" />
+            </svg>
+            <span className="app-logo-word">cuely</span>
           </a>
+          <button
+            type="button"
+            className="app-icon-btn app-rail-btn"
+            onClick={toggleRail}
+            aria-label={rail ? "Expand sidebar" : "Collapse sidebar"}
+            aria-pressed={rail}
+          >
+            <PanelLeft size={18} strokeWidth={2} />
+          </button>
           <button type="button" className="app-icon-btn app-close" onClick={() => setOpen(false)} aria-label="Close menu">
             <X size={18} />
           </button>
         </div>
 
-        <div className="app-who">
+        <Link href={PROFILE.href} className="app-who" title={rail ? "Your profile" : undefined}>
           <Avatar className="app-avatar" imageUrl={imageUrl} label={label} />
           <span className="app-who-text">
-            <span className="app-who-email">{email}</span>
+            <span className="app-who-name">{label}</span>
             <span className="app-who-plan">{plan} plan</span>
           </span>
-        </div>
+        </Link>
 
+        <nav className="app-nav" aria-label="Workspace">
+          {WORKSPACE.map(navLink)}
+        </nav>
+
+        <p className="app-nav-head">Account</p>
         <nav className="app-nav" aria-label="Account">
-          {ACCOUNT.map(({ href, label, icon: Icon }) => (
-            <a
-              key={href}
-              href={onProfile ? `/account${href}` : href}
-              className={!onProfile && active === href ? "is-active" : undefined}
-              aria-current={!onProfile && active === href ? "location" : undefined}
-              onClick={() => setOpen(false)}
-              title={rail ? label : undefined}
-            >
-              <Icon size={17} strokeWidth={1.8} aria-hidden="true" />
-              <span>{label}</span>
-            </a>
-          ))}
+          {ACCOUNT.map(navLink)}
         </nav>
 
         <p className="app-nav-head">Build</p>
         <nav className="app-nav" aria-label="Build">
           {BUILD.map(({ href, label, icon: Icon }) => (
             <a key={href} href={href} title={rail ? label : undefined}>
-              <Icon size={17} strokeWidth={1.8} aria-hidden="true" />
-              <span>{label}</span>
-              <ExternalLink className="app-ext" size={13} aria-hidden="true" />
+              <Icon size={19} strokeWidth={1.9} aria-hidden="true" />
+              <span className="app-nav-label">{label}</span>
+              <span className="app-ext" aria-hidden="true">
+                ↗
+              </span>
             </a>
           ))}
         </nav>
 
         <div className="app-side-foot">
           <nav className="app-nav" aria-label="Help">
-            <a
-              href={PROFILE_HREF}
-              className={onProfile ? "is-active" : undefined}
-              aria-current={onProfile ? "page" : undefined}
-              title={rail ? "Profile" : undefined}
-            >
-              <UserRound size={17} strokeWidth={1.8} aria-hidden="true" />
-              <span>Profile</span>
-            </a>
+            {navLink(PROFILE)}
             <a href={`mailto:${SUPPORT_EMAIL}`} title={rail ? "Support" : undefined}>
-              <LifeBuoy size={17} strokeWidth={1.8} aria-hidden="true" />
-              <span>Support</span>
+              <LifeBuoy size={19} strokeWidth={1.9} aria-hidden="true" />
+              <span className="app-nav-label">Support</span>
             </a>
             {logOut}
           </nav>
@@ -192,23 +237,20 @@ export function AppShell({
           <button type="button" className="app-icon-btn app-menu" onClick={() => setOpen(true)} aria-label="Open menu">
             <Menu size={18} />
           </button>
-          <button
-            type="button"
-            className="app-icon-btn app-rail-btn"
-            onClick={toggleRail}
-            aria-label={rail ? "Expand sidebar" : "Collapse sidebar"}
-            aria-pressed={rail}
-          >
-            <PanelLeft size={18} strokeWidth={1.8} />
-          </button>
           <nav className="app-crumbs" aria-label="Breadcrumb">
-            <span>Account</span>
-            <span aria-hidden="true">/</span>
-            <strong>{current}</strong>
+            {current && current.href !== "/account" ? (
+              <>
+                <Link href="/account">Home</Link>
+                <span aria-hidden="true">/</span>
+                {pathname === current.href ? <strong>{current.label}</strong> : <Link href={current.href}>{current.label}</Link>}
+              </>
+            ) : (
+              <strong>Home</strong>
+            )}
           </nav>
-          <a className="app-top-avatar" href={PROFILE_HREF} aria-label="Your profile" title="Your profile">
+          <Link className="app-top-avatar" href={PROFILE.href} aria-label="Your profile" title="Your profile">
             <Avatar imageUrl={imageUrl} label={label} />
-          </a>
+          </Link>
         </header>
         <main id="main" className="app-main">
           {children}

@@ -25,7 +25,7 @@ export default function Pricing() {
         </p>
         <p className="page-lede">
           Anyone can browse Cuely&apos;s recipes and catalog on this site. The MCP server, which your agent calls, needs a
-          free account: Claude signs you in when you connect, and other tools use a free API key.
+          free account: the Claude and ChatGPT apps sign you in when you connect, and other tools use a free API key.
         </p>
 
         <div className="plan-table" role="list">

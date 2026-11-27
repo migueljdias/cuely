@@ -9,14 +9,22 @@ import { clientIp, createRateLimiter, type RateLimiter } from "./rate-limit";
 import { OAUTH_SCOPES, RESOURCE_METADATA_URL, verifyOAuthToken } from "./oauth";
 import { createCuelyServer } from "./server";
 
-export const KEY_URL = `${APP_URL}/account`;
-export const UPGRADE_URL = `${APP_URL}/account`;
+export const KEY_URL = `${APP_URL}/account/keys`;
+export const UPGRADE_URL = `${APP_URL}/account/billing`;
 
 export type KeyOwner = { keyId: number; userId: string; plan: PlanId };
 /** Resolves a presented key. null means unknown or revoked; a throw means the lookup itself failed. */
 export type KeyLookup = (key: string) => Promise<KeyOwner | null>;
 /** Counts one request (and its tool calls) against an account and returns the running totals. */
 export type UsageCounter = (userId: string, toolCalls: number) => Promise<UsageCount>;
+
+/** Adds tool calls to the per-tool, per-source counts. Counts only; never what was asked. */
+export type DetailCounter = (userId: string, source: string, tools: string[]) => Promise<void>;
+
+const defaultDetailCounter: DetailCounter = async (userId, source, tools) => {
+  const store = await getAccountStore();
+  if (store) await store.countDetail(userId, source, tools);
+};
 
 /** Key lookups are cached for a minute, so a busy agent costs one key read a minute per instance. */
 const keyCache = new Map<string, { at: number; value: KeyOwner | null }>();
@@ -32,7 +40,7 @@ const defaultKeyLookup: KeyLookup = async (key) => {
   return value;
 };
 
-/** Verifies a Clerk OAuth token (from Claude's connector sign-in and other OAuth clients). */
+/** Verifies a Clerk OAuth token (from the Claude and ChatGPT app sign-ins and other OAuth clients). */
 export type OAuthLookup = (req: Request, token: string) => Promise<KeyOwner | null>;
 
 /** OAuth tokens are cached by hash for a minute too, with the owner's plan. */
@@ -122,15 +130,16 @@ function inWords(seconds: number): string {
 }
 
 /** The JSON-RPC messages in a request body: tool calls count toward the daily limit, the rest don't. */
-function readBody(text: string): { toolCalls: number; id: string | number | null } {
+function readBody(text: string): { toolCalls: number; tools: string[]; id: string | number | null } {
   try {
     const parsed = JSON.parse(text);
     const msgs: any[] = Array.isArray(parsed) ? parsed : [parsed];
-    const toolCalls = msgs.filter((m) => m && m.method === "tools/call").length;
+    const calls = msgs.filter((m) => m && m.method === "tools/call");
+    const tools = calls.map((m) => (typeof m.params?.name === "string" ? m.params.name : "other"));
     const id = !Array.isArray(parsed) && (typeof parsed?.id === "string" || typeof parsed?.id === "number") ? parsed.id : null;
-    return { toolCalls, id };
+    return { toolCalls: calls.length, tools, id };
   } catch {
-    return { toolCalls: 0, id: null };
+    return { toolCalls: 0, tools: [], id: null };
   }
 }
 
@@ -139,6 +148,7 @@ export interface HandlerOptions {
   keyLookup?: KeyLookup;
   oauthLookup?: OAuthLookup;
   countUsage?: UsageCounter;
+  countDetail?: DetailCounter;
   /** Limits requests without a valid key, per IP, before any database work. */
   guard?: RateLimiter;
   now?: () => number;
@@ -157,6 +167,7 @@ export function createMcpHandler(opts: HandlerOptions = {}) {
   const lookupKey = opts.keyLookup ?? defaultKeyLookup;
   const lookupToken = opts.oauthLookup ?? defaultOAuthLookup;
   const countUsage = opts.countUsage ?? defaultUsageCounter;
+  const countDetail = opts.countDetail ?? (opts.countUsage ? null : defaultDetailCounter);
   const guard = opts.guard ?? createRateLimiter(30);
   const now = opts.now ?? Date.now;
   // Once an account is over a limit, this instance answers 429 without the database until it resets.
@@ -208,17 +219,19 @@ export function createMcpHandler(opts: HandlerOptions = {}) {
     }
 
     const bodyText = await req.clone().text();
-    const { toolCalls, id } = readBody(bodyText);
+    const { toolCalls, tools, id } = readBody(bodyText);
     const ip = clientIp(req);
     const t = now();
 
     // Who is calling. Requests without a valid key are capped per IP after the lookup; the Vercel firewall caps per IP before it.
     let owner: KeyOwner | null = null;
     let count: UsageCounter = countUsage;
+    let detail = countDetail;
     const presented = readApiKey(req);
     if (!injected && devOpen()) {
       owner = { keyId: 0, userId: `dev:${ip}`, plan: "free" };
       count = devCounter;
+      detail = null;
     } else {
       const refuse = (message: string, invalidToken = false) => {
         const g = guard.check(ip, t);
@@ -227,7 +240,7 @@ export function createMcpHandler(opts: HandlerOptions = {}) {
       };
       if (!presented) {
         return refuse(
-          `Cuely needs a free account. Sign in when your AI tool asks (Claude's connectors do this for you), or get an API key at ${KEY_URL} and send it as "Authorization: Bearer cuely_...".`,
+          `Cuely needs a free account. Sign in when your AI tool asks (the Claude and ChatGPT apps do this for you), or get an API key at ${KEY_URL} and send it as "Authorization: Bearer cuely_...".`,
         );
       }
       const isKey = presented.startsWith("cuely_");
@@ -310,6 +323,15 @@ export function createMcpHandler(opts: HandlerOptions = {}) {
       blocked.set(blockKey, { until: dayReset, plan: owner.plan, kind: "day" });
       if (blocked.size > 5000) blocked.clear();
       return dayLimited({ ...rlHeaders, "x-ratelimit-remaining": "0" });
+    }
+
+    // The Usage page's breakdown: which tools, from which key or connector. Counts only.
+    if (detail && toolCalls > 0) {
+      try {
+        await detail(owner.userId, owner.keyId > 0 ? `key:${owner.keyId}` : "connector", tools);
+      } catch (err) {
+        console.error("usage detail failed", err);
+      }
     }
 
     const repo = opts.repo ?? (await getRepository());
